@@ -20,3 +20,5 @@ The web app is built with Preact, and aims to deploy on Cloudflare Workers.
 - In JSX, use `class` rather than `className`.
 - Prefer to early-exit/throw functions, rather than nesting code.
 - Use '…' rather than '...' for ellipses in strings.
+- Prefer for-of rather than .forEach loops.
+- Prefer single line if/for/while statements without braces for single statements.
