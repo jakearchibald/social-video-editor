@@ -24,12 +24,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    "types": ["vite/client"],
+    "types": ["vite/client", "@types/wicg-file-system-access"],
     "plugins": [
       {
         "name": "typescript-plugin-css-modules"
       }
     ]
   },
-  "include": ["app"]
+  "include": ["app", "project-schema"]
 }

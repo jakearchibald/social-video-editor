@@ -1,0 +1,63 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "VideoClip": {
+            "properties": {
+                "duration": {
+                    "description": "Duration",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "Relative path to video file",
+                    "type": "string"
+                },
+                "start": {
+                    "description": "Start time",
+                    "type": "string"
+                },
+                "type": {
+                    "const": "video",
+                    "type": "string"
+                },
+                "videoStart": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "duration",
+                "source",
+                "start",
+                "type"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "appCommit": {
+            "type": "string"
+        },
+        "fps": {
+            "type": "number"
+        },
+        "height": {
+            "type": "integer"
+        },
+        "timeline": {
+            "items": {
+                "$ref": "#/definitions/VideoClip"
+            },
+            "type": "array"
+        },
+        "width": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "fps",
+        "height",
+        "timeline",
+        "width"
+    ],
+    "type": "object"
+}
+

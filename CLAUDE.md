@@ -13,3 +13,10 @@ This project is a web app that allows the user to edit and output video by overl
 # Technology
 
 The web app is built with Preact, and aims to deploy on Cloudflare Workers.
+
+# Coding styles
+
+- Avoid prefixing global APIs with `window.` unless necessary for disambiguation.
+- In JSX, use `class` rather than `className`.
+- Prefer to early-exit/throw functions, rather than nesting code.
+- Use '…' rather than '...' for ellipses in strings.
