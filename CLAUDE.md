@@ -22,3 +22,4 @@ The web app is built with Preact, and aims to deploy on Cloudflare Workers.
 - Use '…' rather than '...' for ellipses in strings.
 - Prefer for-of rather than .forEach loops.
 - Prefer single line if/for/while statements without braces for single statements.
+- Use Preact signals rather than `useState` where possible.

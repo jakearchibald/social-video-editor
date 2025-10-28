@@ -1,5 +1,5 @@
 import type { FunctionComponent } from 'preact';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 
 interface Props {
   projectDir: FileSystemDirectoryHandle;
@@ -20,11 +20,11 @@ const Video: FunctionComponent<Props> = ({ projectDir, source }) => {
       }
       const fileHandle = await dirHandle.getFileHandle(fileName);
       const file = await fileHandle.getFile();
-      console.log(file);
+      console.log({ file });
     })();
   }, [projectDir, source]);
 
-  return <div>VIDEO</div>;
+  return <div>Video Component</div>;
 };
 
 export default Video;
