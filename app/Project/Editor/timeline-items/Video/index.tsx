@@ -27,22 +27,22 @@ const Video: FunctionComponent<Props> = ({ projectDir, source }) => {
 
       const decoder = new VideoFrameDecoder(file);
       videoDecoderRef.current = decoder;
+      await decoder.ready;
 
       // Get the first frame and draw it
       const canvas = canvasRef.current;
+      canvas!.width = decoder.videoData?.width || 640;
+      canvas!.height = decoder.videoData?.height || 360;
       if (!canvas) return;
 
-      const ctx = canvas.getContext('bitmaprenderer');
+      const ctx = canvas.getContext('2d');
       if (!ctx) {
-        console.error('bitmaprenderer not supported');
+        console.error('2d context not supported');
         return;
       }
 
       try {
-        const bitmap = await decoder.getFrameAt(26_000);
-        canvas.width = bitmap.width;
-        canvas.height = bitmap.height;
-        ctx.transferFromImageBitmap(bitmap);
+        await decoder.drawFrameAt(26_000, ctx);
       } catch (error) {
         console.error('Failed to decode frame:', error);
       }
