@@ -7,13 +7,13 @@ import {
 } from '@preact/signals';
 import { useEffect, useRef } from 'preact/hooks';
 import { VideoFrameDecoder } from '../../../../utils/video-decoder';
-import useThrottledSignal from '../../../../utils/useThrottledSignal';
+import { parseTime } from '../../../../utils/time';
 
 interface Props {
   projectDir: FileSystemDirectoryHandle;
   source: string;
-  start: number;
-  videoStart: number;
+  start: Signal<number | string>;
+  videoStart: Signal<number | string | undefined>;
   time: Signal<number>;
 }
 
@@ -24,8 +24,10 @@ const Video: FunctionComponent<Props> = ({
   videoStart,
   start,
 }) => {
-  const localTime = useComputed(() => time.value - start);
-  const debouncedTime = useThrottledSignal(time, 50);
+  const localTime = useComputed(() => time.value - parseTime(start.value));
+  const videoTime = useComputed(
+    () => localTime.value + parseTime(videoStart.value || 0)
+  );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoDecoder = useSignal<VideoFrameDecoder | null>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -54,8 +56,7 @@ const Video: FunctionComponent<Props> = ({
     const decoder = videoDecoder.value;
     if (!decoder) return;
 
-    const frameTime = debouncedTime.value;
-
+    const frameTime = videoTime.value;
     const canvas = canvasRef.current!;
 
     if (!canvasContextRef.current) {

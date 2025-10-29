@@ -1,26 +1,25 @@
 import type { FunctionComponent } from 'preact';
-import {
-  useComputed,
-  useSignal,
-  type ReadonlySignal,
-  type Signal,
-} from '@preact/signals';
+import { Signal, useComputed, useSignal } from '@preact/signals';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
 import IframeContent from './IframeContent';
 import { parseTime } from '../../utils/time';
 import Video from './timeline-items/Video';
-
-const videoStartTimes = new WeakMap<any, number>();
+import useThrottledSignal from '../../utils/useThrottledSignal';
+import type { DeepSignal } from 'deepsignal';
 
 interface Props {
-  project: ProjectSchema;
+  project: DeepSignal<ProjectSchema>;
   projectDir: FileSystemDirectoryHandle;
 }
 
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const width = useComputed(() => project.width);
   const height = useComputed(() => project.height);
+  const time = useSignal(0);
+  const throttledTime = useThrottledSignal(time, 50);
+  // TODO: later, this will be non-throttled for live playback
+  const activeTime = useComputed(() => throttledTime.value);
 
   const duration = useComputed(() => {
     return (
@@ -33,33 +32,26 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       ) || 0
     );
   });
-  const time = useSignal(0);
+
   const activeTimelineItems = useComputed(() => {
     return project.timeline.filter((item) => {
       const start = parseTime(item.start);
       const duration = parseTime(item.duration);
       const end = start + duration;
-      return time.value >= start && time.value < end;
+      return activeTime.value >= start && activeTime.value < end;
     });
   });
   const iframeChildren = useComputed(() =>
     activeTimelineItems.value.map((item) => {
       // TODO: add keys to JSX
       if (item.type === 'video') {
-        if (!videoStartTimes.has(item)) {
-          videoStartTimes.set(item, parseTime(item.videoStart || '0'));
-        }
-
-        const start = parseTime(item.start);
-        const videoStart = videoStartTimes.get(item)!;
-
         return (
           <Video
             projectDir={projectDir}
             source={item.source}
-            time={time}
-            start={start}
-            videoStart={videoStart}
+            time={throttledTime}
+            start={item.$start!}
+            videoStart={item.$videoStart || new Signal(0)}
           />
         );
       }
