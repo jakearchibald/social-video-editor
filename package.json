@@ -17,6 +17,7 @@
     "@preact/signals": "^2.3.2",
     "@types/node": "^24.7.0",
     "@types/wicg-file-system-access": "^2023.10.7",
+    "deepsignal": "^1.6.0",
     "idb": "^8.0.3",
     "mediabunny": "^1.24.2",
     "preact": "^10.27.2",

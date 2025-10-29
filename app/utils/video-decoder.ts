@@ -1,4 +1,10 @@
-import { BlobSource, Input, MP4, VideoSampleSink } from 'mediabunny';
+import {
+  BlobSource,
+  Input,
+  MP4,
+  VideoSample,
+  VideoSampleSink,
+} from 'mediabunny';
 
 interface VideoData {
   width: number;
@@ -6,7 +12,7 @@ interface VideoData {
 }
 
 export class VideoFrameDecoder {
-  #input: Input;
+  #input!: Input;
   ready: Promise<void>;
   #videoSink?: VideoSampleSink;
   #videoData?: VideoData;
@@ -31,16 +37,8 @@ export class VideoFrameDecoder {
     return this.#videoData;
   }
 
-  async drawFrameAt(
-    time: number,
-    ctx: CanvasRenderingContext2D
-  ): Promise<void> {
+  async getSampleAt(time: number): Promise<VideoSample | null> {
     await this.ready;
-    const sample = await this.#videoSink!.getSample(time);
-    sample!.draw(ctx, 0, 0);
-  }
-
-  destroy(): void {
-    // TODO
+    return this.#videoSink!.getSample(time / 1000);
   }
 }

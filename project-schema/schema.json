@@ -4,23 +4,33 @@
         "VideoClip": {
             "properties": {
                 "duration": {
-                    "description": "Duration",
-                    "type": "string"
+                    "description": "Duration. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
                 },
                 "source": {
                     "description": "Relative path to video file",
                     "type": "string"
                 },
                 "start": {
-                    "description": "Start time",
-                    "type": "string"
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
                 },
                 "type": {
                     "const": "video",
                     "type": "string"
                 },
                 "videoStart": {
-                    "type": "string"
+                    "description": "Start time within the video file. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
                 }
             },
             "required": [

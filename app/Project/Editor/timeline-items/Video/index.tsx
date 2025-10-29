@@ -1,15 +1,34 @@
 import type { FunctionComponent } from 'preact';
+import {
+  useComputed,
+  useSignal,
+  useSignalEffect,
+  type Signal,
+} from '@preact/signals';
 import { useEffect, useRef } from 'preact/hooks';
 import { VideoFrameDecoder } from '../../../../utils/video-decoder';
+import useThrottledSignal from '../../../../utils/useThrottledSignal';
 
 interface Props {
   projectDir: FileSystemDirectoryHandle;
   source: string;
+  start: number;
+  videoStart: number;
+  time: Signal<number>;
 }
 
-const Video: FunctionComponent<Props> = ({ projectDir, source }) => {
+const Video: FunctionComponent<Props> = ({
+  projectDir,
+  source,
+  time,
+  videoStart,
+  start,
+}) => {
+  const localTime = useComputed(() => time.value - start);
+  const debouncedTime = useThrottledSignal(time, 50);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const videoDecoderRef = useRef<VideoFrameDecoder | null>(null);
+  const videoDecoder = useSignal<VideoFrameDecoder | null>(null);
+  const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -26,32 +45,42 @@ const Video: FunctionComponent<Props> = ({ projectDir, source }) => {
       const file = await fileHandle.getFile();
 
       const decoder = new VideoFrameDecoder(file);
-      videoDecoderRef.current = decoder;
       await decoder.ready;
+      videoDecoder.value = decoder;
+    })();
+  }, [projectDir, source]);
 
-      // Get the first frame and draw it
-      const canvas = canvasRef.current;
-      canvas!.width = decoder.videoData?.width || 640;
-      canvas!.height = decoder.videoData?.height || 360;
-      if (!canvas) return;
+  useSignalEffect(() => {
+    const decoder = videoDecoder.value;
+    if (!decoder) return;
 
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        console.error('2d context not supported');
-        return;
-      }
+    const frameTime = debouncedTime.value;
 
-      try {
-        await decoder.drawFrameAt(26_000, ctx);
-      } catch (error) {
-        console.error('Failed to decode frame:', error);
-      }
+    const canvas = canvasRef.current!;
+
+    if (!canvasContextRef.current) {
+      const ctx = canvas.getContext('2d')!;
+      canvasContextRef.current = ctx;
+      canvas.width = decoder.videoData!.width;
+      canvas.height = decoder.videoData!.height;
+    }
+
+    const ctx = canvasContextRef.current;
+    let aborted = false;
+
+    (async () => {
+      const sample = await decoder.getSampleAt(frameTime);
+      if (!sample) return;
+      if (!aborted) sample.draw(ctx, 0, 0);
+      sample.close();
     })();
 
     return () => {
-      videoDecoderRef.current?.destroy();
+      aborted = true;
     };
-  }, [projectDir, source]);
+  });
+
+  console.log('render');
 
   return <canvas ref={canvasRef} />;
 };

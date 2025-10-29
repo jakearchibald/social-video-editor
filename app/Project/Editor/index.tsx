@@ -1,55 +1,67 @@
 import type { FunctionComponent } from 'preact';
-import { useComputed, useSignal, type Signal } from '@preact/signals';
+import {
+  useComputed,
+  useSignal,
+  type ReadonlySignal,
+  type Signal,
+} from '@preact/signals';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
 import IframeContent from './IframeContent';
-import { parseTime } from '../../utils/parseTime';
+import { parseTime } from '../../utils/time';
 import Video from './timeline-items/Video';
 
+const videoStartTimes = new WeakMap<any, number>();
+
 interface Props {
-  project: Signal<ProjectSchema>;
+  project: ProjectSchema;
   projectDir: FileSystemDirectoryHandle;
 }
 
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
-  const timelineItemTimes = useComputed(() => {
-    return new WeakMap(
-      project.value.timeline.map((item) => {
-        const start = parseTime(item.start);
-        const duration = parseTime(item.duration);
-        return [
-          item,
-          {
-            start,
-            duration,
-            end: start + duration,
-          },
-        ];
-      })
-    );
-  });
-  const width = useComputed(() => project.value.width);
-  const height = useComputed(() => project.value.height);
+  const width = useComputed(() => project.width);
+  const height = useComputed(() => project.height);
+
   const duration = useComputed(() => {
     return (
       Math.max(
-        ...project.value.timeline.map(
-          (item) => timelineItemTimes.value.get(item)!.end
-        )
+        ...project.timeline.map((item) => {
+          const start = parseTime(item.start);
+          const duration = parseTime(item.duration);
+          return start + duration;
+        })
       ) || 0
     );
   });
   const time = useSignal(0);
   const activeTimelineItems = useComputed(() => {
-    return project.value.timeline.filter((item) => {
-      const times = timelineItemTimes.value.get(item)!;
-      return time.value >= times.start && time.value < times.end;
+    return project.timeline.filter((item) => {
+      const start = parseTime(item.start);
+      const duration = parseTime(item.duration);
+      const end = start + duration;
+      return time.value >= start && time.value < end;
     });
   });
   const iframeChildren = useComputed(() =>
     activeTimelineItems.value.map((item) => {
+      // TODO: add keys to JSX
       if (item.type === 'video') {
-        return <Video projectDir={projectDir} source={item.source} />;
+        if (!videoStartTimes.has(item)) {
+          videoStartTimes.set(item, parseTime(item.videoStart || '0'));
+        }
+
+        const start = parseTime(item.start);
+        const videoStart = videoStartTimes.get(item)!;
+
+        return (
+          <Video
+            projectDir={projectDir}
+            source={item.source}
+            time={time}
+            start={start}
+            videoStart={videoStart}
+          />
+        );
       }
       throw new Error(`Unknown timeline item type: ${(item as any).type}`);
     })

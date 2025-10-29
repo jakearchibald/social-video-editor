@@ -1,16 +1,17 @@
 import type { FunctionComponent } from 'preact';
-import { Signal, useSignal } from '@preact/signals';
+import { Signal, useSignal, type ReadonlySignal } from '@preact/signals';
 
 import type { Project as ProjectSchema } from '../../project-schema/schema';
 import { useEffect } from 'preact/hooks';
 import Editor from './Editor';
+import { deepSignal, type DeepSignal } from 'deepsignal';
 
 interface Props {
   projectDir: FileSystemDirectoryHandle;
 }
 
 const Project: FunctionComponent<Props> = ({ projectDir }) => {
-  const project = useSignal<null | ProjectSchema>(null);
+  const project = useSignal<null | DeepSignal<ProjectSchema>>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,7 +23,7 @@ const Project: FunctionComponent<Props> = ({ projectDir }) => {
         const text = await file.text();
         const proj = JSON.parse(text) as ProjectSchema;
         if (cancelled) return;
-        project.value = proj;
+        project.value = deepSignal(proj);
       } catch (err) {
         console.error('Error loading project:', err);
       }
@@ -35,12 +36,7 @@ const Project: FunctionComponent<Props> = ({ projectDir }) => {
 
   if (!project.value) return <p>Loading project…</p>;
 
-  return (
-    <Editor
-      project={project as Signal<ProjectSchema>}
-      projectDir={projectDir}
-    />
-  );
+  return <Editor project={project.value} projectDir={projectDir} />;
 };
 
 export default Project;
