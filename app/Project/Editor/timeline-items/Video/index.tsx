@@ -1,11 +1,12 @@
 import type { FunctionComponent } from 'preact';
-import { useSignal, useSignalEffect, type Signal } from '@preact/signals';
+import { useSignal, type Signal } from '@preact/signals';
 import { useEffect, useRef } from 'preact/hooks';
 import { VideoFrameDecoder } from '../../../../utils/video-decoder';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';
-
+import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 import styles from './styles.module.css';
+import { waitUntil } from '../../../../utils/waitUntil';
 
 interface Props {
   projectDir: FileSystemDirectoryHandle;
@@ -31,7 +32,7 @@ const Video: FunctionComponent<Props> = ({
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
   useEffect(() => {
-    (async () => {
+    const p = (async () => {
       const path = new URL(source, 'https://example.com/').pathname.slice(1);
       const splitPath = path.split('/');
       const dirPaths = splitPath.slice(0, -1);
@@ -48,9 +49,11 @@ const Video: FunctionComponent<Props> = ({
       await decoder.ready;
       videoDecoder.value = decoder;
     })();
+
+    waitUntil(p);
   }, [projectDir, source]);
 
-  useSignalEffect(() => {
+  useSignalLayoutEffect(() => {
     const decoder = videoDecoder.value;
     if (!decoder) return;
 
@@ -64,20 +67,21 @@ const Video: FunctionComponent<Props> = ({
       canvas.height = decoder.videoData!.height;
     }
 
-    const ctx = canvasContextRef.current;
+    const ctx = canvasContextRef.current!;
     let aborted = false;
 
-    (async () => {
+    const p = (async () => {
       try {
         const frame = await decoder.getFrameAt(frameTime);
-        if (!frame) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!frame || aborted) return;
         ctx.drawImage(frame.canvas, 0, 0);
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
         throw err;
       }
     })();
+
+    waitUntil(p);
 
     return () => {
       aborted = true;

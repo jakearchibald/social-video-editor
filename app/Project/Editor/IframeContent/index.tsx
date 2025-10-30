@@ -3,6 +3,7 @@ import { type Signal } from '@preact/signals';
 
 import { useLayoutEffect, useRef } from 'preact/hooks';
 import useOptimComputed from '../../../utils/useOptimComputed';
+import styles from './styles.module.css';
 
 interface Props {
   width: Signal<number>;
@@ -56,7 +57,14 @@ const IframeContent: FunctionComponent<Props> = ({
     render(children, iframeDoc.body);
   }, [children]);
 
-  return <iframe src="about:blank" style={iframeStyle} ref={iframeRef} />;
+  return (
+    <iframe
+      class={styles.iframe}
+      src="about:blank"
+      style={iframeStyle}
+      ref={iframeRef}
+    />
+  );
 };
 
 export default IframeContent;

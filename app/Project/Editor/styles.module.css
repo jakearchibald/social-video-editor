@@ -19,3 +19,9 @@
     transform-origin: 0 0;
   }
 }
+
+.output {
+  position: absolute;
+  top: 0;
+  left: 0;
+}

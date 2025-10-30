@@ -1,10 +1,9 @@
 import type { FunctionComponent } from 'preact';
-import { Signal, useSignal } from '@preact/signals';
+import { useSignal } from '@preact/signals';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
 import IframeContent from './IframeContent';
 import { parseTime } from '../../utils/time';
-import Video from './timeline-items/Video';
 import useThrottledSignal from '../../utils/useThrottledSignal';
 import type { DeepSignal } from 'deepsignal';
 import useOptimComputed from '../../utils/useOptimComputed';
@@ -12,6 +11,8 @@ import useOptimComputed from '../../utils/useOptimComputed';
 import styles from './styles.module.css';
 import { useLayoutEffect, useRef } from 'preact/hooks';
 import Container from './timeline-items/Container';
+import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
+import { wait } from '../../utils/waitUntil';
 
 interface Props {
   project: DeepSignal<ProjectSchema>;
@@ -20,6 +21,7 @@ interface Props {
 
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const stageRef = useRef<HTMLDivElement>(null);
+  const outputRef = useRef<HTMLDivElement>(null);
   const width = useOptimComputed(() => project.width);
   const height = useOptimComputed(() => project.height);
   const time = useSignal(0);
@@ -30,7 +32,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     width: 0,
     height: 0,
   });
-  const stateStyle = useOptimComputed(() => {
+  const stageStyle = useOptimComputed(() => {
     const projectWidth = project.width;
     const projectHeight = project.height;
     const scaleX = stageSize.value.width / projectWidth;
@@ -73,16 +75,46 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     return Math.max(0, previousFrame);
   });
 
+  const outputCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  useSignalLayoutEffect(() => {
+    activeTime.valueOf();
+    const outputCanvas = outputCanvasRef.current!;
+    const context = outputCanvas.getContext('2d')!;
+    const stageDiv = outputRef.current!;
+
+    let aborted = false;
+
+    (async () => {
+      await wait();
+      if (aborted) return;
+      context.drawElementImage(stageDiv, 0, 0, width.value, height.value);
+    })();
+
+    return () => {
+      aborted = true;
+    };
+  });
+
   return (
     <div class={styles.editor}>
-      <div class={styles.stage} ref={stageRef} style={stateStyle}>
-        <IframeContent width={width} height={height}>
-          <Container
-            projectDir={projectDir}
-            timeline={project.$timeline!}
-            time={activeTime}
-          />
-        </IframeContent>
+      <div class={styles.stage} ref={stageRef} style={stageStyle}>
+        <canvas
+          layoutsubtree
+          ref={outputCanvasRef}
+          width={width}
+          height={height}
+        >
+          <div class={styles.output} ref={outputRef}>
+            <IframeContent width={width} height={height}>
+              <Container
+                projectDir={projectDir}
+                timeline={project.$timeline!}
+                time={activeTime}
+              />
+            </IframeContent>
+          </div>
+        </canvas>
       </div>
       <input
         type="range"
