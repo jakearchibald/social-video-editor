@@ -1,5 +1,3 @@
-import { useComputed, type ReadonlySignal } from '@preact/signals';
-
 export function parseTime(timeStr: string | number): number {
   if (typeof timeStr === 'number') return timeStr;
   const parts = timeStr.split(':').map(Number);
@@ -12,18 +10,6 @@ export function parseTime(timeStr: string | number): number {
   }
 
   return ms;
-}
-
-export function useComputedTime(
-  time: ReadonlySignal<string | number>
-): ReadonlySignal<number> {
-  return useComputed(() => {
-    const value = time.value;
-    if (typeof value === 'string') {
-      return parseTime(value);
-    }
-    return value;
-  });
 }
 
 export function formatTime(ms: number): string {

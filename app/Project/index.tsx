@@ -1,5 +1,5 @@
 import type { FunctionComponent } from 'preact';
-import { Signal, useSignal, type ReadonlySignal } from '@preact/signals';
+import { useSignal } from '@preact/signals';
 
 import type { Project as ProjectSchema } from '../../project-schema/schema';
 import { useEffect } from 'preact/hooks';

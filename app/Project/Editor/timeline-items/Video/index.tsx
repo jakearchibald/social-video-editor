@@ -1,13 +1,9 @@
 import type { FunctionComponent } from 'preact';
-import {
-  useComputed,
-  useSignal,
-  useSignalEffect,
-  type Signal,
-} from '@preact/signals';
+import { useSignal, useSignalEffect, type Signal } from '@preact/signals';
 import { useEffect, useRef } from 'preact/hooks';
 import { VideoFrameDecoder } from '../../../../utils/video-decoder';
 import { parseTime } from '../../../../utils/time';
+import useOptimComputed from '../../../../utils/useOptimComputed';
 
 interface Props {
   projectDir: FileSystemDirectoryHandle;
@@ -24,8 +20,8 @@ const Video: FunctionComponent<Props> = ({
   videoStart,
   start,
 }) => {
-  const localTime = useComputed(() => time.value - parseTime(start.value));
-  const videoTime = useComputed(
+  const localTime = useOptimComputed(() => time.value - parseTime(start.value));
+  const videoTime = useOptimComputed(
     () => localTime.value + parseTime(videoStart.value || 0)
   );
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -70,10 +66,16 @@ const Video: FunctionComponent<Props> = ({
     let aborted = false;
 
     (async () => {
-      const sample = await decoder.getSampleAt(frameTime);
-      if (!sample) return;
-      if (!aborted) sample.draw(ctx, 0, 0);
-      sample.close();
+      try {
+        const frame = await decoder.getFrameAt(frameTime);
+        if (!frame) return;
+        console.log('drawing frame');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(frame.canvas, 0, 0);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        throw err;
+      }
     })();
 
     return () => {

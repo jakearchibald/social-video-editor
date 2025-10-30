@@ -1,5 +1,5 @@
 import type { FunctionComponent } from 'preact';
-import { Signal, useComputed, useSignal } from '@preact/signals';
+import { Signal, useSignal } from '@preact/signals';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
 import IframeContent from './IframeContent';
@@ -7,6 +7,7 @@ import { parseTime } from '../../utils/time';
 import Video from './timeline-items/Video';
 import useThrottledSignal from '../../utils/useThrottledSignal';
 import type { DeepSignal } from 'deepsignal';
+import useOptimComputed from '../../utils/useOptimComputed';
 
 interface Props {
   project: DeepSignal<ProjectSchema>;
@@ -14,26 +15,29 @@ interface Props {
 }
 
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
-  const width = useComputed(() => project.width);
-  const height = useComputed(() => project.height);
+  const width = useOptimComputed(() => project.width);
+  const height = useOptimComputed(() => project.height);
   const time = useSignal(0);
   const throttledTime = useThrottledSignal(time, 50);
   // TODO: later, this will be non-throttled for live playback
-  const activeTime = useComputed(() => throttledTime.value);
+  const activeTime = useOptimComputed(() => throttledTime.value);
 
-  const duration = useComputed(() => {
-    return (
-      Math.max(
-        ...project.timeline.map((item) => {
-          const start = parseTime(item.start);
-          const duration = parseTime(item.duration);
-          return start + duration;
-        })
-      ) || 0
+  const duration = useOptimComputed(() => {
+    const lastEndTime = Math.max(
+      ...project.timeline.map((item) => {
+        const start = parseTime(item.start);
+        const duration = parseTime(item.duration);
+        return start + duration;
+      })
     );
+
+    // The very last time will always be blank, so step back one frame
+    const previousFrame = lastEndTime - 1000 / project.fps;
+
+    return Math.max(0, previousFrame);
   });
 
-  const activeTimelineItems = useComputed(() => {
+  const activeTimelineItems = useOptimComputed(() => {
     return project.timeline.filter((item) => {
       const start = parseTime(item.start);
       const duration = parseTime(item.duration);
@@ -41,7 +45,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       return activeTime.value >= start && activeTime.value < end;
     });
   });
-  const iframeChildren = useComputed(() =>
+  const iframeChildren = useOptimComputed(() =>
     activeTimelineItems.value.map((item) => {
       // TODO: add keys to JSX
       if (item.type === 'video') {
