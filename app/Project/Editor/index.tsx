@@ -1,5 +1,12 @@
 import type { FunctionComponent } from 'preact';
 import { useSignal } from '@preact/signals';
+import { useCallback, useLayoutEffect, useRef } from 'preact/hooks';
+import {
+  Output,
+  Mp4OutputFormat,
+  StreamTarget,
+  CanvasSource,
+} from 'mediabunny';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
 import IframeContent from './IframeContent';
@@ -7,12 +14,11 @@ import { parseTime } from '../../utils/time';
 import useThrottledSignal from '../../utils/useThrottledSignal';
 import type { DeepSignal } from 'deepsignal';
 import useOptimComputed from '../../utils/useOptimComputed';
-
-import styles from './styles.module.css';
-import { useLayoutEffect, useRef } from 'preact/hooks';
 import Container from './timeline-items/Container';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
+
+import styles from './styles.module.css';
 
 interface Props {
   project: DeepSignal<ProjectSchema>;
@@ -20,14 +26,16 @@ interface Props {
 }
 
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
+  const outputting = useSignal(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
   const width = useOptimComputed(() => project.width);
   const height = useOptimComputed(() => project.height);
   const time = useSignal(0);
   const throttledTime = useThrottledSignal(time, 50);
-  // TODO: later, this will be non-throttled for live playback
-  const activeTime = useOptimComputed(() => throttledTime.value);
+  const activeTime = useOptimComputed(() =>
+    outputting.value ? time.value : throttledTime.value
+  );
   const stageSize = useSignal<{ width: number; height: number }>({
     width: 0,
     height: 0,
@@ -81,20 +89,58 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     activeTime.valueOf();
     const outputCanvas = outputCanvasRef.current!;
     const context = outputCanvas.getContext('2d')!;
-    const stageDiv = outputRef.current!;
+    const outputDiv = outputRef.current!;
 
     let aborted = false;
 
     (async () => {
       await wait();
       if (aborted) return;
-      context.drawElementImage(stageDiv, 0, 0, width.value, height.value);
+      context.drawElementImage(outputDiv, 0, 0, width.value, height.value);
     })();
 
     return () => {
       aborted = true;
     };
   });
+
+  const output = useCallback(async () => {
+    outputting.value = true;
+
+    const outputCanvas = outputCanvasRef.current!;
+    const file = await projectDir.getFileHandle('output.mp4', { create: true });
+    const fileStream = await file.createWritable();
+    const videoOutput = new Output({
+      format: new Mp4OutputFormat(),
+      target: new StreamTarget(fileStream),
+    });
+    const canvasSource = new CanvasSource(outputCanvas, {
+      codec: 'avc',
+      bitrateMode: 'variable',
+      bitrate: 35_000_000,
+      hardwareAcceleration: 'prefer-software',
+    });
+    videoOutput.addVideoTrack(canvasSource, {
+      frameRate: project.fps,
+    });
+
+    await videoOutput.start();
+
+    for (
+      let timeValue = 0;
+      timeValue <= duration.value;
+      timeValue += 1000 / project.fps
+    ) {
+      time.value = timeValue;
+      await 0;
+      await wait();
+      await 0;
+      await canvasSource.add(timeValue / 1000, 1 / project.fps);
+    }
+    outputting.value = false;
+
+    await videoOutput.finalize();
+  }, []);
 
   return (
     <div class={styles.editor}>
@@ -122,10 +168,14 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
         max={duration}
         step="any"
         value={time.value}
+        disabled={outputting}
         onInput={(e) => {
           time.value = (e.target as HTMLInputElement).valueAsNumber;
         }}
       />
+      <div>
+        <button onClick={output}>Output video</button>
+      </div>
     </div>
   );
 };
