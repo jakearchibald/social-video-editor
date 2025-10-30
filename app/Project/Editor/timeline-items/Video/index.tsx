@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'preact';
 import { useSignal, type Signal } from '@preact/signals';
-import { useEffect, useRef } from 'preact/hooks';
+import { useLayoutEffect, useRef } from 'preact/hooks';
 import { VideoFrameDecoder } from '../../../../utils/video-decoder';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';
@@ -31,7 +31,7 @@ const Video: FunctionComponent<Props> = ({
   const videoDecoder = useSignal<VideoFrameDecoder | null>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const p = (async () => {
       const path = new URL(source, 'https://example.com/').pathname.slice(1);
       const splitPath = path.split('/');
