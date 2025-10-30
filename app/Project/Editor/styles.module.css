@@ -1,0 +1,21 @@
+.editor {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-columns: 100%;
+}
+
+.stage {
+  position: relative;
+
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    scale: var(--scale);
+    translate: var(--x) var(--y);
+    transform-origin: 0 0;
+  }
+}

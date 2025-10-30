@@ -5,6 +5,8 @@ import { VideoFrameDecoder } from '../../../../utils/video-decoder';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 
+import styles from './styles.module.css';
+
 interface Props {
   projectDir: FileSystemDirectoryHandle;
   source: string;
@@ -69,7 +71,6 @@ const Video: FunctionComponent<Props> = ({
       try {
         const frame = await decoder.getFrameAt(frameTime);
         if (!frame) return;
-        console.log('drawing frame');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(frame.canvas, 0, 0);
       } catch (err) {
@@ -85,7 +86,7 @@ const Video: FunctionComponent<Props> = ({
 
   console.log('render');
 
-  return <canvas ref={canvasRef} />;
+  return <canvas ref={canvasRef} class={styles.canvas} />;
 };
 
 export default Video;

@@ -8,7 +8,7 @@ export interface Project {
   timeline: TimelineItem[];
 }
 
-type TimelineItem = VideoClip;
+export type TimelineItem = VideoClip;
 
 interface TimelineBase {
   /** Start time. 00:00:00.000 or ms */
