@@ -41,12 +41,12 @@ type SimpleCSSDeclaration = {
     : never]?: string;
 };
 
-interface ContainerTimelineSetStyles {
+interface ContainerTimelineSetStyles extends TimelineItemBase {
   type: 'set-styles';
   styles: SimpleCSSDeclaration;
 }
 
-interface ContainerTimelineAddStyles {
+interface ContainerTimelineAddStyles extends TimelineItemBase {
   type: 'add-styles';
   styles: SimpleCSSDeclaration;
 }
