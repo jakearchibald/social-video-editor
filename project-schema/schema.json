@@ -3,6 +3,10 @@
     "definitions": {
         "VideoClip": {
             "properties": {
+                "audioSource": {
+                    "description": "Relative path to audio file, used instead of video audio",
+                    "type": "string"
+                },
                 "duration": {
                     "description": "Duration. 00:00:00.000 or ms",
                     "type": [
@@ -46,6 +50,9 @@
         "appCommit": {
             "type": "string"
         },
+        "audioSampleRate": {
+            "type": "integer"
+        },
         "childrenTimeline": {
             "items": {
                 "$ref": "#/definitions/VideoClip"
@@ -63,6 +70,7 @@
         }
     },
     "required": [
+        "audioSampleRate",
         "childrenTimeline",
         "fps",
         "height",

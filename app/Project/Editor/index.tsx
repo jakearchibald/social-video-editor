@@ -147,9 +147,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       hardwareAcceleration: 'prefer-software',
     });
     const audioBufferSource = new AudioBufferSource({
-      codec: 'aac',
-      bitrate: 192_000,
-      bitrateMode: 'variable',
+      codec: 'pcm-s16',
     });
     videoOutput.addVideoTrack(canvasSource, {
       frameRate: project.fps,
@@ -159,7 +157,11 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     await videoOutput.start();
 
     audioBufferSource.add(
-      await audioTimeline.current.toBuffer(0, duration.value)
+      await audioTimeline.current.toBuffer(
+        project.audioSampleRate,
+        0,
+        duration.value
+      )
     );
 
     for (

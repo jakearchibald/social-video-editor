@@ -4,6 +4,7 @@ export interface Project {
   appCommit?: string;
   width: integer;
   height: integer;
+  audioSampleRate: integer;
   fps: number;
   childrenTimeline: ChildrenTimelineItem[];
 }
@@ -21,6 +22,8 @@ interface VideoClip extends TimelineBase {
   type: 'video';
   /** Relative path to video file */
   source: string;
+  /** Relative path to audio file, used instead of video audio */
+  audioSource?: string;
   /** Start time within the video file. 00:00:00.000 or ms */
   videoStart?: string | number;
 }

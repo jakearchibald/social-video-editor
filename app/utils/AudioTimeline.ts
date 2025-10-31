@@ -37,7 +37,7 @@ export class AudioTimeline {
           start: parseTime(item.start),
           audioStart: parseTime(item.videoStart || 0),
           duration: parseTime(item.duration),
-          source: item.source,
+          source: item.audioSource || item.source,
         });
       }
     }
@@ -151,11 +151,11 @@ export class AudioTimeline {
     await this.#enqueue(ctx, start, duration, { signal });
   }
 
-  async toBuffer(start: number, duration: number) {
+  async toBuffer(sampleRate: number, start: number, duration: number) {
     const ctx = new OfflineAudioContext({
       numberOfChannels: 2,
-      length: Math.ceil((duration / 1000) * 44100),
-      sampleRate: 44100,
+      length: Math.ceil((duration / 1000) * sampleRate),
+      sampleRate,
     });
 
     await this.#enqueue(ctx, start, duration);
