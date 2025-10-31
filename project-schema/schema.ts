@@ -9,16 +9,19 @@ export interface Project {
   childrenTimeline: ChildrenTimelineItem[];
 }
 
-export type ChildrenTimelineItem = VideoClip;
+export type ChildrenTimelineItem = VideoClip | Container;
 
-interface TimelineBase {
-  /** Start time. 00:00:00.000 or ms */
-  start: string | number;
+interface ChildrenTimelineItemBase extends TimelineItemBase {
   /** Duration. 00:00:00.000 or ms */
   duration: string | number;
 }
 
-interface VideoClip extends TimelineBase {
+interface TimelineItemBase {
+  /** Start time. 00:00:00.000 or ms */
+  start: string | number;
+}
+
+export interface VideoClip extends ChildrenTimelineItemBase {
   type: 'video';
   /** Relative path to video file */
   source: string;
@@ -26,4 +29,31 @@ interface VideoClip extends TimelineBase {
   audioSource?: string;
   /** Start time within the video file. 00:00:00.000 or ms */
   videoStart?: string | number;
+}
+
+export type ContainerTimelineItem =
+  | ContainerTimelineSetStyles
+  | ContainerTimelineAddStyles;
+
+type SimpleCSSDeclaration = {
+  [K in keyof CSSStyleDeclaration as CSSStyleDeclaration[K] extends string
+    ? K
+    : never]?: string;
+};
+
+interface ContainerTimelineSetStyles {
+  type: 'set-styles';
+  styles: SimpleCSSDeclaration;
+}
+
+interface ContainerTimelineAddStyles {
+  type: 'add-styles';
+  styles: SimpleCSSDeclaration;
+}
+
+export interface Container extends ChildrenTimelineItemBase {
+  type: 'container';
+  childrenTimeline?: ChildrenTimelineItem[];
+  timeline?: ContainerTimelineItem[];
+  styles?: SimpleCSSDeclaration;
 }

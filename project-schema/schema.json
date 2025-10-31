@@ -1,6 +1,107 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
+        "ChildrenTimelineItem": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/VideoClip"
+                },
+                {
+                    "$ref": "#/definitions/Container"
+                }
+            ]
+        },
+        "Container": {
+            "properties": {
+                "childrenTimeline": {
+                    "items": {
+                        "$ref": "#/definitions/ChildrenTimelineItem"
+                    },
+                    "type": "array"
+                },
+                "duration": {
+                    "description": "Duration. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "styles": {
+                    "$ref": "#/definitions/SimpleCSSDeclaration_1"
+                },
+                "timeline": {
+                    "items": {
+                        "$ref": "#/definitions/ContainerTimelineItem"
+                    },
+                    "type": "array"
+                },
+                "type": {
+                    "const": "container",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "duration",
+                "start",
+                "type"
+            ],
+            "type": "object"
+        },
+        "ContainerTimelineAddStyles": {
+            "properties": {
+                "styles": {
+                    "$ref": "#/definitions/SimpleCSSDeclaration"
+                },
+                "type": {
+                    "const": "add-styles",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "styles",
+                "type"
+            ],
+            "type": "object"
+        },
+        "ContainerTimelineItem": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/ContainerTimelineSetStyles"
+                },
+                {
+                    "$ref": "#/definitions/ContainerTimelineAddStyles"
+                }
+            ]
+        },
+        "ContainerTimelineSetStyles": {
+            "properties": {
+                "styles": {
+                    "$ref": "#/definitions/SimpleCSSDeclaration"
+                },
+                "type": {
+                    "const": "set-styles",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "styles",
+                "type"
+            ],
+            "type": "object"
+        },
+        "SimpleCSSDeclaration": {
+            "$ref": "#/definitions/__type"
+        },
+        "SimpleCSSDeclaration_1": {
+            "$ref": "#/definitions/SimpleCSSDeclaration"
+        },
         "VideoClip": {
             "properties": {
                 "audioSource": {
@@ -44,6 +145,1511 @@
                 "type"
             ],
             "type": "object"
+        },
+        "__type": {
+            "additionalProperties": false,
+            "patternProperties": {
+                "^[0-9]+$": {
+                    "type": "string"
+                }
+            },
+            "properties": {
+                "accentColor": {
+                    "type": "string"
+                },
+                "alignContent": {
+                    "type": "string"
+                },
+                "alignItems": {
+                    "type": "string"
+                },
+                "alignSelf": {
+                    "type": "string"
+                },
+                "alignmentBaseline": {
+                    "type": "string"
+                },
+                "all": {
+                    "type": "string"
+                },
+                "animation": {
+                    "type": "string"
+                },
+                "animationComposition": {
+                    "type": "string"
+                },
+                "animationDelay": {
+                    "type": "string"
+                },
+                "animationDirection": {
+                    "type": "string"
+                },
+                "animationDuration": {
+                    "type": "string"
+                },
+                "animationFillMode": {
+                    "type": "string"
+                },
+                "animationIterationCount": {
+                    "type": "string"
+                },
+                "animationName": {
+                    "type": "string"
+                },
+                "animationPlayState": {
+                    "type": "string"
+                },
+                "animationTimingFunction": {
+                    "type": "string"
+                },
+                "appearance": {
+                    "type": "string"
+                },
+                "aspectRatio": {
+                    "type": "string"
+                },
+                "backdropFilter": {
+                    "type": "string"
+                },
+                "backfaceVisibility": {
+                    "type": "string"
+                },
+                "background": {
+                    "type": "string"
+                },
+                "backgroundAttachment": {
+                    "type": "string"
+                },
+                "backgroundBlendMode": {
+                    "type": "string"
+                },
+                "backgroundClip": {
+                    "type": "string"
+                },
+                "backgroundColor": {
+                    "type": "string"
+                },
+                "backgroundImage": {
+                    "type": "string"
+                },
+                "backgroundOrigin": {
+                    "type": "string"
+                },
+                "backgroundPosition": {
+                    "type": "string"
+                },
+                "backgroundPositionX": {
+                    "type": "string"
+                },
+                "backgroundPositionY": {
+                    "type": "string"
+                },
+                "backgroundRepeat": {
+                    "type": "string"
+                },
+                "backgroundSize": {
+                    "type": "string"
+                },
+                "baselineShift": {
+                    "type": "string"
+                },
+                "baselineSource": {
+                    "type": "string"
+                },
+                "blockSize": {
+                    "type": "string"
+                },
+                "border": {
+                    "type": "string"
+                },
+                "borderBlock": {
+                    "type": "string"
+                },
+                "borderBlockColor": {
+                    "type": "string"
+                },
+                "borderBlockEnd": {
+                    "type": "string"
+                },
+                "borderBlockEndColor": {
+                    "type": "string"
+                },
+                "borderBlockEndStyle": {
+                    "type": "string"
+                },
+                "borderBlockEndWidth": {
+                    "type": "string"
+                },
+                "borderBlockStart": {
+                    "type": "string"
+                },
+                "borderBlockStartColor": {
+                    "type": "string"
+                },
+                "borderBlockStartStyle": {
+                    "type": "string"
+                },
+                "borderBlockStartWidth": {
+                    "type": "string"
+                },
+                "borderBlockStyle": {
+                    "type": "string"
+                },
+                "borderBlockWidth": {
+                    "type": "string"
+                },
+                "borderBottom": {
+                    "type": "string"
+                },
+                "borderBottomColor": {
+                    "type": "string"
+                },
+                "borderBottomLeftRadius": {
+                    "type": "string"
+                },
+                "borderBottomRightRadius": {
+                    "type": "string"
+                },
+                "borderBottomStyle": {
+                    "type": "string"
+                },
+                "borderBottomWidth": {
+                    "type": "string"
+                },
+                "borderCollapse": {
+                    "type": "string"
+                },
+                "borderColor": {
+                    "type": "string"
+                },
+                "borderEndEndRadius": {
+                    "type": "string"
+                },
+                "borderEndStartRadius": {
+                    "type": "string"
+                },
+                "borderImage": {
+                    "type": "string"
+                },
+                "borderImageOutset": {
+                    "type": "string"
+                },
+                "borderImageRepeat": {
+                    "type": "string"
+                },
+                "borderImageSlice": {
+                    "type": "string"
+                },
+                "borderImageSource": {
+                    "type": "string"
+                },
+                "borderImageWidth": {
+                    "type": "string"
+                },
+                "borderInline": {
+                    "type": "string"
+                },
+                "borderInlineColor": {
+                    "type": "string"
+                },
+                "borderInlineEnd": {
+                    "type": "string"
+                },
+                "borderInlineEndColor": {
+                    "type": "string"
+                },
+                "borderInlineEndStyle": {
+                    "type": "string"
+                },
+                "borderInlineEndWidth": {
+                    "type": "string"
+                },
+                "borderInlineStart": {
+                    "type": "string"
+                },
+                "borderInlineStartColor": {
+                    "type": "string"
+                },
+                "borderInlineStartStyle": {
+                    "type": "string"
+                },
+                "borderInlineStartWidth": {
+                    "type": "string"
+                },
+                "borderInlineStyle": {
+                    "type": "string"
+                },
+                "borderInlineWidth": {
+                    "type": "string"
+                },
+                "borderLeft": {
+                    "type": "string"
+                },
+                "borderLeftColor": {
+                    "type": "string"
+                },
+                "borderLeftStyle": {
+                    "type": "string"
+                },
+                "borderLeftWidth": {
+                    "type": "string"
+                },
+                "borderRadius": {
+                    "type": "string"
+                },
+                "borderRight": {
+                    "type": "string"
+                },
+                "borderRightColor": {
+                    "type": "string"
+                },
+                "borderRightStyle": {
+                    "type": "string"
+                },
+                "borderRightWidth": {
+                    "type": "string"
+                },
+                "borderSpacing": {
+                    "type": "string"
+                },
+                "borderStartEndRadius": {
+                    "type": "string"
+                },
+                "borderStartStartRadius": {
+                    "type": "string"
+                },
+                "borderStyle": {
+                    "type": "string"
+                },
+                "borderTop": {
+                    "type": "string"
+                },
+                "borderTopColor": {
+                    "type": "string"
+                },
+                "borderTopLeftRadius": {
+                    "type": "string"
+                },
+                "borderTopRightRadius": {
+                    "type": "string"
+                },
+                "borderTopStyle": {
+                    "type": "string"
+                },
+                "borderTopWidth": {
+                    "type": "string"
+                },
+                "borderWidth": {
+                    "type": "string"
+                },
+                "bottom": {
+                    "type": "string"
+                },
+                "boxShadow": {
+                    "type": "string"
+                },
+                "boxSizing": {
+                    "type": "string"
+                },
+                "breakAfter": {
+                    "type": "string"
+                },
+                "breakBefore": {
+                    "type": "string"
+                },
+                "breakInside": {
+                    "type": "string"
+                },
+                "captionSide": {
+                    "type": "string"
+                },
+                "caretColor": {
+                    "type": "string"
+                },
+                "clear": {
+                    "type": "string"
+                },
+                "clip": {
+                    "type": "string"
+                },
+                "clipPath": {
+                    "type": "string"
+                },
+                "clipRule": {
+                    "type": "string"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "colorInterpolation": {
+                    "type": "string"
+                },
+                "colorInterpolationFilters": {
+                    "type": "string"
+                },
+                "colorScheme": {
+                    "type": "string"
+                },
+                "columnCount": {
+                    "type": "string"
+                },
+                "columnFill": {
+                    "type": "string"
+                },
+                "columnGap": {
+                    "type": "string"
+                },
+                "columnRule": {
+                    "type": "string"
+                },
+                "columnRuleColor": {
+                    "type": "string"
+                },
+                "columnRuleStyle": {
+                    "type": "string"
+                },
+                "columnRuleWidth": {
+                    "type": "string"
+                },
+                "columnSpan": {
+                    "type": "string"
+                },
+                "columnWidth": {
+                    "type": "string"
+                },
+                "columns": {
+                    "type": "string"
+                },
+                "contain": {
+                    "type": "string"
+                },
+                "containIntrinsicBlockSize": {
+                    "type": "string"
+                },
+                "containIntrinsicHeight": {
+                    "type": "string"
+                },
+                "containIntrinsicInlineSize": {
+                    "type": "string"
+                },
+                "containIntrinsicSize": {
+                    "type": "string"
+                },
+                "containIntrinsicWidth": {
+                    "type": "string"
+                },
+                "container": {
+                    "type": "string"
+                },
+                "containerName": {
+                    "type": "string"
+                },
+                "containerType": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "contentVisibility": {
+                    "type": "string"
+                },
+                "counterIncrement": {
+                    "type": "string"
+                },
+                "counterReset": {
+                    "type": "string"
+                },
+                "counterSet": {
+                    "type": "string"
+                },
+                "cssFloat": {
+                    "type": "string"
+                },
+                "cssText": {
+                    "type": "string"
+                },
+                "cursor": {
+                    "type": "string"
+                },
+                "cx": {
+                    "type": "string"
+                },
+                "cy": {
+                    "type": "string"
+                },
+                "d": {
+                    "type": "string"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "display": {
+                    "type": "string"
+                },
+                "dominantBaseline": {
+                    "type": "string"
+                },
+                "emptyCells": {
+                    "type": "string"
+                },
+                "fill": {
+                    "type": "string"
+                },
+                "fillOpacity": {
+                    "type": "string"
+                },
+                "fillRule": {
+                    "type": "string"
+                },
+                "filter": {
+                    "type": "string"
+                },
+                "flex": {
+                    "type": "string"
+                },
+                "flexBasis": {
+                    "type": "string"
+                },
+                "flexDirection": {
+                    "type": "string"
+                },
+                "flexFlow": {
+                    "type": "string"
+                },
+                "flexGrow": {
+                    "type": "string"
+                },
+                "flexShrink": {
+                    "type": "string"
+                },
+                "flexWrap": {
+                    "type": "string"
+                },
+                "float": {
+                    "type": "string"
+                },
+                "floodColor": {
+                    "type": "string"
+                },
+                "floodOpacity": {
+                    "type": "string"
+                },
+                "font": {
+                    "type": "string"
+                },
+                "fontFamily": {
+                    "type": "string"
+                },
+                "fontFeatureSettings": {
+                    "type": "string"
+                },
+                "fontKerning": {
+                    "type": "string"
+                },
+                "fontOpticalSizing": {
+                    "type": "string"
+                },
+                "fontPalette": {
+                    "type": "string"
+                },
+                "fontSize": {
+                    "type": "string"
+                },
+                "fontSizeAdjust": {
+                    "type": "string"
+                },
+                "fontStretch": {
+                    "type": "string"
+                },
+                "fontStyle": {
+                    "type": "string"
+                },
+                "fontSynthesis": {
+                    "type": "string"
+                },
+                "fontSynthesisSmallCaps": {
+                    "type": "string"
+                },
+                "fontSynthesisStyle": {
+                    "type": "string"
+                },
+                "fontSynthesisWeight": {
+                    "type": "string"
+                },
+                "fontVariant": {
+                    "type": "string"
+                },
+                "fontVariantAlternates": {
+                    "type": "string"
+                },
+                "fontVariantCaps": {
+                    "type": "string"
+                },
+                "fontVariantEastAsian": {
+                    "type": "string"
+                },
+                "fontVariantLigatures": {
+                    "type": "string"
+                },
+                "fontVariantNumeric": {
+                    "type": "string"
+                },
+                "fontVariantPosition": {
+                    "type": "string"
+                },
+                "fontVariationSettings": {
+                    "type": "string"
+                },
+                "fontWeight": {
+                    "type": "string"
+                },
+                "forcedColorAdjust": {
+                    "type": "string"
+                },
+                "gap": {
+                    "type": "string"
+                },
+                "grid": {
+                    "type": "string"
+                },
+                "gridArea": {
+                    "type": "string"
+                },
+                "gridAutoColumns": {
+                    "type": "string"
+                },
+                "gridAutoFlow": {
+                    "type": "string"
+                },
+                "gridAutoRows": {
+                    "type": "string"
+                },
+                "gridColumn": {
+                    "type": "string"
+                },
+                "gridColumnEnd": {
+                    "type": "string"
+                },
+                "gridColumnGap": {
+                    "type": "string"
+                },
+                "gridColumnStart": {
+                    "type": "string"
+                },
+                "gridGap": {
+                    "type": "string"
+                },
+                "gridRow": {
+                    "type": "string"
+                },
+                "gridRowEnd": {
+                    "type": "string"
+                },
+                "gridRowGap": {
+                    "type": "string"
+                },
+                "gridRowStart": {
+                    "type": "string"
+                },
+                "gridTemplate": {
+                    "type": "string"
+                },
+                "gridTemplateAreas": {
+                    "type": "string"
+                },
+                "gridTemplateColumns": {
+                    "type": "string"
+                },
+                "gridTemplateRows": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "string"
+                },
+                "hyphenateCharacter": {
+                    "type": "string"
+                },
+                "hyphens": {
+                    "type": "string"
+                },
+                "imageOrientation": {
+                    "type": "string"
+                },
+                "imageRendering": {
+                    "type": "string"
+                },
+                "inlineSize": {
+                    "type": "string"
+                },
+                "inset": {
+                    "type": "string"
+                },
+                "insetBlock": {
+                    "type": "string"
+                },
+                "insetBlockEnd": {
+                    "type": "string"
+                },
+                "insetBlockStart": {
+                    "type": "string"
+                },
+                "insetInline": {
+                    "type": "string"
+                },
+                "insetInlineEnd": {
+                    "type": "string"
+                },
+                "insetInlineStart": {
+                    "type": "string"
+                },
+                "isolation": {
+                    "type": "string"
+                },
+                "justifyContent": {
+                    "type": "string"
+                },
+                "justifyItems": {
+                    "type": "string"
+                },
+                "justifySelf": {
+                    "type": "string"
+                },
+                "left": {
+                    "type": "string"
+                },
+                "letterSpacing": {
+                    "type": "string"
+                },
+                "lightingColor": {
+                    "type": "string"
+                },
+                "lineBreak": {
+                    "type": "string"
+                },
+                "lineHeight": {
+                    "type": "string"
+                },
+                "listStyle": {
+                    "type": "string"
+                },
+                "listStyleImage": {
+                    "type": "string"
+                },
+                "listStylePosition": {
+                    "type": "string"
+                },
+                "listStyleType": {
+                    "type": "string"
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "marginBlock": {
+                    "type": "string"
+                },
+                "marginBlockEnd": {
+                    "type": "string"
+                },
+                "marginBlockStart": {
+                    "type": "string"
+                },
+                "marginBottom": {
+                    "type": "string"
+                },
+                "marginInline": {
+                    "type": "string"
+                },
+                "marginInlineEnd": {
+                    "type": "string"
+                },
+                "marginInlineStart": {
+                    "type": "string"
+                },
+                "marginLeft": {
+                    "type": "string"
+                },
+                "marginRight": {
+                    "type": "string"
+                },
+                "marginTop": {
+                    "type": "string"
+                },
+                "marker": {
+                    "type": "string"
+                },
+                "markerEnd": {
+                    "type": "string"
+                },
+                "markerMid": {
+                    "type": "string"
+                },
+                "markerStart": {
+                    "type": "string"
+                },
+                "mask": {
+                    "type": "string"
+                },
+                "maskClip": {
+                    "type": "string"
+                },
+                "maskComposite": {
+                    "type": "string"
+                },
+                "maskImage": {
+                    "type": "string"
+                },
+                "maskMode": {
+                    "type": "string"
+                },
+                "maskOrigin": {
+                    "type": "string"
+                },
+                "maskPosition": {
+                    "type": "string"
+                },
+                "maskRepeat": {
+                    "type": "string"
+                },
+                "maskSize": {
+                    "type": "string"
+                },
+                "maskType": {
+                    "type": "string"
+                },
+                "mathDepth": {
+                    "type": "string"
+                },
+                "mathStyle": {
+                    "type": "string"
+                },
+                "maxBlockSize": {
+                    "type": "string"
+                },
+                "maxHeight": {
+                    "type": "string"
+                },
+                "maxInlineSize": {
+                    "type": "string"
+                },
+                "maxWidth": {
+                    "type": "string"
+                },
+                "minBlockSize": {
+                    "type": "string"
+                },
+                "minHeight": {
+                    "type": "string"
+                },
+                "minInlineSize": {
+                    "type": "string"
+                },
+                "minWidth": {
+                    "type": "string"
+                },
+                "mixBlendMode": {
+                    "type": "string"
+                },
+                "objectFit": {
+                    "type": "string"
+                },
+                "objectPosition": {
+                    "type": "string"
+                },
+                "offset": {
+                    "type": "string"
+                },
+                "offsetAnchor": {
+                    "type": "string"
+                },
+                "offsetDistance": {
+                    "type": "string"
+                },
+                "offsetPath": {
+                    "type": "string"
+                },
+                "offsetPosition": {
+                    "type": "string"
+                },
+                "offsetRotate": {
+                    "type": "string"
+                },
+                "opacity": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "string"
+                },
+                "orphans": {
+                    "type": "string"
+                },
+                "outline": {
+                    "type": "string"
+                },
+                "outlineColor": {
+                    "type": "string"
+                },
+                "outlineOffset": {
+                    "type": "string"
+                },
+                "outlineStyle": {
+                    "type": "string"
+                },
+                "outlineWidth": {
+                    "type": "string"
+                },
+                "overflow": {
+                    "type": "string"
+                },
+                "overflowAnchor": {
+                    "type": "string"
+                },
+                "overflowClipMargin": {
+                    "type": "string"
+                },
+                "overflowWrap": {
+                    "type": "string"
+                },
+                "overflowX": {
+                    "type": "string"
+                },
+                "overflowY": {
+                    "type": "string"
+                },
+                "overscrollBehavior": {
+                    "type": "string"
+                },
+                "overscrollBehaviorBlock": {
+                    "type": "string"
+                },
+                "overscrollBehaviorInline": {
+                    "type": "string"
+                },
+                "overscrollBehaviorX": {
+                    "type": "string"
+                },
+                "overscrollBehaviorY": {
+                    "type": "string"
+                },
+                "padding": {
+                    "type": "string"
+                },
+                "paddingBlock": {
+                    "type": "string"
+                },
+                "paddingBlockEnd": {
+                    "type": "string"
+                },
+                "paddingBlockStart": {
+                    "type": "string"
+                },
+                "paddingBottom": {
+                    "type": "string"
+                },
+                "paddingInline": {
+                    "type": "string"
+                },
+                "paddingInlineEnd": {
+                    "type": "string"
+                },
+                "paddingInlineStart": {
+                    "type": "string"
+                },
+                "paddingLeft": {
+                    "type": "string"
+                },
+                "paddingRight": {
+                    "type": "string"
+                },
+                "paddingTop": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "string"
+                },
+                "pageBreakAfter": {
+                    "type": "string"
+                },
+                "pageBreakBefore": {
+                    "type": "string"
+                },
+                "pageBreakInside": {
+                    "type": "string"
+                },
+                "paintOrder": {
+                    "type": "string"
+                },
+                "perspective": {
+                    "type": "string"
+                },
+                "perspectiveOrigin": {
+                    "type": "string"
+                },
+                "placeContent": {
+                    "type": "string"
+                },
+                "placeItems": {
+                    "type": "string"
+                },
+                "placeSelf": {
+                    "type": "string"
+                },
+                "pointerEvents": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "printColorAdjust": {
+                    "type": "string"
+                },
+                "quotes": {
+                    "type": "string"
+                },
+                "r": {
+                    "type": "string"
+                },
+                "resize": {
+                    "type": "string"
+                },
+                "right": {
+                    "type": "string"
+                },
+                "rotate": {
+                    "type": "string"
+                },
+                "rowGap": {
+                    "type": "string"
+                },
+                "rubyPosition": {
+                    "type": "string"
+                },
+                "rx": {
+                    "type": "string"
+                },
+                "ry": {
+                    "type": "string"
+                },
+                "scale": {
+                    "type": "string"
+                },
+                "scrollBehavior": {
+                    "type": "string"
+                },
+                "scrollMargin": {
+                    "type": "string"
+                },
+                "scrollMarginBlock": {
+                    "type": "string"
+                },
+                "scrollMarginBlockEnd": {
+                    "type": "string"
+                },
+                "scrollMarginBlockStart": {
+                    "type": "string"
+                },
+                "scrollMarginBottom": {
+                    "type": "string"
+                },
+                "scrollMarginInline": {
+                    "type": "string"
+                },
+                "scrollMarginInlineEnd": {
+                    "type": "string"
+                },
+                "scrollMarginInlineStart": {
+                    "type": "string"
+                },
+                "scrollMarginLeft": {
+                    "type": "string"
+                },
+                "scrollMarginRight": {
+                    "type": "string"
+                },
+                "scrollMarginTop": {
+                    "type": "string"
+                },
+                "scrollPadding": {
+                    "type": "string"
+                },
+                "scrollPaddingBlock": {
+                    "type": "string"
+                },
+                "scrollPaddingBlockEnd": {
+                    "type": "string"
+                },
+                "scrollPaddingBlockStart": {
+                    "type": "string"
+                },
+                "scrollPaddingBottom": {
+                    "type": "string"
+                },
+                "scrollPaddingInline": {
+                    "type": "string"
+                },
+                "scrollPaddingInlineEnd": {
+                    "type": "string"
+                },
+                "scrollPaddingInlineStart": {
+                    "type": "string"
+                },
+                "scrollPaddingLeft": {
+                    "type": "string"
+                },
+                "scrollPaddingRight": {
+                    "type": "string"
+                },
+                "scrollPaddingTop": {
+                    "type": "string"
+                },
+                "scrollSnapAlign": {
+                    "type": "string"
+                },
+                "scrollSnapStop": {
+                    "type": "string"
+                },
+                "scrollSnapType": {
+                    "type": "string"
+                },
+                "scrollbarColor": {
+                    "type": "string"
+                },
+                "scrollbarGutter": {
+                    "type": "string"
+                },
+                "scrollbarWidth": {
+                    "type": "string"
+                },
+                "shapeImageThreshold": {
+                    "type": "string"
+                },
+                "shapeMargin": {
+                    "type": "string"
+                },
+                "shapeOutside": {
+                    "type": "string"
+                },
+                "shapeRendering": {
+                    "type": "string"
+                },
+                "stopColor": {
+                    "type": "string"
+                },
+                "stopOpacity": {
+                    "type": "string"
+                },
+                "stroke": {
+                    "type": "string"
+                },
+                "strokeDasharray": {
+                    "type": "string"
+                },
+                "strokeDashoffset": {
+                    "type": "string"
+                },
+                "strokeLinecap": {
+                    "type": "string"
+                },
+                "strokeLinejoin": {
+                    "type": "string"
+                },
+                "strokeMiterlimit": {
+                    "type": "string"
+                },
+                "strokeOpacity": {
+                    "type": "string"
+                },
+                "strokeWidth": {
+                    "type": "string"
+                },
+                "tabSize": {
+                    "type": "string"
+                },
+                "tableLayout": {
+                    "type": "string"
+                },
+                "textAlign": {
+                    "type": "string"
+                },
+                "textAlignLast": {
+                    "type": "string"
+                },
+                "textAnchor": {
+                    "type": "string"
+                },
+                "textCombineUpright": {
+                    "type": "string"
+                },
+                "textDecoration": {
+                    "type": "string"
+                },
+                "textDecorationColor": {
+                    "type": "string"
+                },
+                "textDecorationLine": {
+                    "type": "string"
+                },
+                "textDecorationSkipInk": {
+                    "type": "string"
+                },
+                "textDecorationStyle": {
+                    "type": "string"
+                },
+                "textDecorationThickness": {
+                    "type": "string"
+                },
+                "textEmphasis": {
+                    "type": "string"
+                },
+                "textEmphasisColor": {
+                    "type": "string"
+                },
+                "textEmphasisPosition": {
+                    "type": "string"
+                },
+                "textEmphasisStyle": {
+                    "type": "string"
+                },
+                "textIndent": {
+                    "type": "string"
+                },
+                "textOrientation": {
+                    "type": "string"
+                },
+                "textOverflow": {
+                    "type": "string"
+                },
+                "textRendering": {
+                    "type": "string"
+                },
+                "textShadow": {
+                    "type": "string"
+                },
+                "textTransform": {
+                    "type": "string"
+                },
+                "textUnderlineOffset": {
+                    "type": "string"
+                },
+                "textUnderlinePosition": {
+                    "type": "string"
+                },
+                "textWrap": {
+                    "type": "string"
+                },
+                "textWrapMode": {
+                    "type": "string"
+                },
+                "textWrapStyle": {
+                    "type": "string"
+                },
+                "top": {
+                    "type": "string"
+                },
+                "touchAction": {
+                    "type": "string"
+                },
+                "transform": {
+                    "type": "string"
+                },
+                "transformBox": {
+                    "type": "string"
+                },
+                "transformOrigin": {
+                    "type": "string"
+                },
+                "transformStyle": {
+                    "type": "string"
+                },
+                "transition": {
+                    "type": "string"
+                },
+                "transitionBehavior": {
+                    "type": "string"
+                },
+                "transitionDelay": {
+                    "type": "string"
+                },
+                "transitionDuration": {
+                    "type": "string"
+                },
+                "transitionProperty": {
+                    "type": "string"
+                },
+                "transitionTimingFunction": {
+                    "type": "string"
+                },
+                "translate": {
+                    "type": "string"
+                },
+                "unicodeBidi": {
+                    "type": "string"
+                },
+                "userSelect": {
+                    "type": "string"
+                },
+                "vectorEffect": {
+                    "type": "string"
+                },
+                "verticalAlign": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "webkitAlignContent": {
+                    "type": "string"
+                },
+                "webkitAlignItems": {
+                    "type": "string"
+                },
+                "webkitAlignSelf": {
+                    "type": "string"
+                },
+                "webkitAnimation": {
+                    "type": "string"
+                },
+                "webkitAnimationDelay": {
+                    "type": "string"
+                },
+                "webkitAnimationDirection": {
+                    "type": "string"
+                },
+                "webkitAnimationDuration": {
+                    "type": "string"
+                },
+                "webkitAnimationFillMode": {
+                    "type": "string"
+                },
+                "webkitAnimationIterationCount": {
+                    "type": "string"
+                },
+                "webkitAnimationName": {
+                    "type": "string"
+                },
+                "webkitAnimationPlayState": {
+                    "type": "string"
+                },
+                "webkitAnimationTimingFunction": {
+                    "type": "string"
+                },
+                "webkitAppearance": {
+                    "type": "string"
+                },
+                "webkitBackfaceVisibility": {
+                    "type": "string"
+                },
+                "webkitBackgroundClip": {
+                    "type": "string"
+                },
+                "webkitBackgroundOrigin": {
+                    "type": "string"
+                },
+                "webkitBackgroundSize": {
+                    "type": "string"
+                },
+                "webkitBorderBottomLeftRadius": {
+                    "type": "string"
+                },
+                "webkitBorderBottomRightRadius": {
+                    "type": "string"
+                },
+                "webkitBorderRadius": {
+                    "type": "string"
+                },
+                "webkitBorderTopLeftRadius": {
+                    "type": "string"
+                },
+                "webkitBorderTopRightRadius": {
+                    "type": "string"
+                },
+                "webkitBoxAlign": {
+                    "type": "string"
+                },
+                "webkitBoxFlex": {
+                    "type": "string"
+                },
+                "webkitBoxOrdinalGroup": {
+                    "type": "string"
+                },
+                "webkitBoxOrient": {
+                    "type": "string"
+                },
+                "webkitBoxPack": {
+                    "type": "string"
+                },
+                "webkitBoxShadow": {
+                    "type": "string"
+                },
+                "webkitBoxSizing": {
+                    "type": "string"
+                },
+                "webkitFilter": {
+                    "type": "string"
+                },
+                "webkitFlex": {
+                    "type": "string"
+                },
+                "webkitFlexBasis": {
+                    "type": "string"
+                },
+                "webkitFlexDirection": {
+                    "type": "string"
+                },
+                "webkitFlexFlow": {
+                    "type": "string"
+                },
+                "webkitFlexGrow": {
+                    "type": "string"
+                },
+                "webkitFlexShrink": {
+                    "type": "string"
+                },
+                "webkitFlexWrap": {
+                    "type": "string"
+                },
+                "webkitJustifyContent": {
+                    "type": "string"
+                },
+                "webkitLineClamp": {
+                    "type": "string"
+                },
+                "webkitMask": {
+                    "type": "string"
+                },
+                "webkitMaskBoxImage": {
+                    "type": "string"
+                },
+                "webkitMaskBoxImageOutset": {
+                    "type": "string"
+                },
+                "webkitMaskBoxImageRepeat": {
+                    "type": "string"
+                },
+                "webkitMaskBoxImageSlice": {
+                    "type": "string"
+                },
+                "webkitMaskBoxImageSource": {
+                    "type": "string"
+                },
+                "webkitMaskBoxImageWidth": {
+                    "type": "string"
+                },
+                "webkitMaskClip": {
+                    "type": "string"
+                },
+                "webkitMaskComposite": {
+                    "type": "string"
+                },
+                "webkitMaskImage": {
+                    "type": "string"
+                },
+                "webkitMaskOrigin": {
+                    "type": "string"
+                },
+                "webkitMaskPosition": {
+                    "type": "string"
+                },
+                "webkitMaskRepeat": {
+                    "type": "string"
+                },
+                "webkitMaskSize": {
+                    "type": "string"
+                },
+                "webkitOrder": {
+                    "type": "string"
+                },
+                "webkitPerspective": {
+                    "type": "string"
+                },
+                "webkitPerspectiveOrigin": {
+                    "type": "string"
+                },
+                "webkitTextFillColor": {
+                    "type": "string"
+                },
+                "webkitTextSizeAdjust": {
+                    "type": "string"
+                },
+                "webkitTextStroke": {
+                    "type": "string"
+                },
+                "webkitTextStrokeColor": {
+                    "type": "string"
+                },
+                "webkitTextStrokeWidth": {
+                    "type": "string"
+                },
+                "webkitTransform": {
+                    "type": "string"
+                },
+                "webkitTransformOrigin": {
+                    "type": "string"
+                },
+                "webkitTransformStyle": {
+                    "type": "string"
+                },
+                "webkitTransition": {
+                    "type": "string"
+                },
+                "webkitTransitionDelay": {
+                    "type": "string"
+                },
+                "webkitTransitionDuration": {
+                    "type": "string"
+                },
+                "webkitTransitionProperty": {
+                    "type": "string"
+                },
+                "webkitTransitionTimingFunction": {
+                    "type": "string"
+                },
+                "webkitUserSelect": {
+                    "type": "string"
+                },
+                "whiteSpace": {
+                    "type": "string"
+                },
+                "whiteSpaceCollapse": {
+                    "type": "string"
+                },
+                "widows": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "string"
+                },
+                "willChange": {
+                    "type": "string"
+                },
+                "wordBreak": {
+                    "type": "string"
+                },
+                "wordSpacing": {
+                    "type": "string"
+                },
+                "wordWrap": {
+                    "type": "string"
+                },
+                "writingMode": {
+                    "type": "string"
+                },
+                "x": {
+                    "type": "string"
+                },
+                "y": {
+                    "type": "string"
+                },
+                "zIndex": {
+                    "type": "string"
+                },
+                "zoom": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "integer": {
+            "type": "integer"
         }
     },
     "properties": {
@@ -51,11 +1657,11 @@
             "type": "string"
         },
         "audioSampleRate": {
-            "type": "integer"
+            "$ref": "#/definitions/integer"
         },
         "childrenTimeline": {
             "items": {
-                "$ref": "#/definitions/VideoClip"
+                "$ref": "#/definitions/ChildrenTimelineItem"
             },
             "type": "array"
         },
@@ -63,10 +1669,10 @@
             "type": "number"
         },
         "height": {
-            "type": "integer"
+            "$ref": "#/definitions/integer"
         },
         "width": {
-            "type": "integer"
+            "$ref": "#/definitions/integer"
         }
     },
     "required": [

@@ -6,7 +6,6 @@ import {
   Mp4OutputFormat,
   StreamTarget,
   CanvasSource,
-  BufferSource,
   AudioBufferSource,
 } from 'mediabunny';
 
@@ -20,9 +19,9 @@ import Container from './timeline-items/Container';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
 import { AudioTimeline } from '../../utils/AudioTimeline';
+import TimelineChildren from './TimelineChildren';
 
 import styles from './styles.module.css';
-
 interface Props {
   project: DeepSignal<ProjectSchema>;
   projectDir: FileSystemDirectoryHandle;
@@ -194,10 +193,10 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
         >
           <div class={styles.output} ref={outputRef}>
             <IframeContent width={width} height={height}>
-              <Container
+              <TimelineChildren
                 projectDir={projectDir}
-                childrenTimeline={project.$childrenTimeline!}
-                time={activeTime}
+                time={time}
+                childrenTimeline={project.childrenTimeline}
               />
             </IframeContent>
           </div>

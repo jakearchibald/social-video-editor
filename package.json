@@ -9,7 +9,7 @@
     "preview": "npm run build && vite preview",
     "deploy": "npm run build && wrangler deploy",
     "cf-typegen": "wrangler types",
-    "schema:generate": "typescript-json-schema project-schema/schema.ts Project --out project-schema/schema.json --required --strictNullChecks"
+    "schema:generate": "typescript-json-schema project-schema/schema.ts Project --out project-schema/schema.json --required --strictNullChecks --aliasRefs"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.13.10",

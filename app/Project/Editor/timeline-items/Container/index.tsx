@@ -1,61 +1,34 @@
 import type { FunctionComponent } from 'preact';
-import type { DeepSignal } from 'deepsignal';
+import { type DeepSignal, peek } from 'deepsignal';
 import { Signal } from '@preact/signals';
-import type { ChildrenTimelineItem } from '../../../../../project-schema/schema';
-import { parseTime } from '../../../../utils/time';
-import useOptimComputed from '../../../../utils/useOptimComputed';
-import Video from '../Video';
+import type { Container as ContainerConfig } from '../../../../../project-schema/schema';
 
 import styles from './styles.module.css';
-
-const keyMap = new WeakMap<object, string>();
+import TimelineChildren from '../../TimelineChildren';
+import useOptimComputed from '../../../../utils/useOptimComputed';
 
 interface Props {
   time: Signal<number>;
-  childrenTimeline: Signal<DeepSignal<ChildrenTimelineItem[]>>;
   projectDir: FileSystemDirectoryHandle;
+  config: DeepSignal<ContainerConfig>;
 }
 
-const Container: FunctionComponent<Props> = ({
-  childrenTimeline,
-  time,
-  projectDir,
-}) => {
-  const activeTimelineItems = useOptimComputed(() => {
-    return childrenTimeline.value.filter((item) => {
-      const start = parseTime(item.start);
-      const duration = parseTime(item.duration);
-      const end = start + duration;
-      return time.value >= start && time.value < end;
-    });
+const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
+  const style = useOptimComputed(() => {
+    config.styles;
+    return peek(config, 'styles');
   });
 
-  const timelineChildren = useOptimComputed(() =>
-    activeTimelineItems.value.map((item) => {
-      if (!keyMap.has(item)) {
-        keyMap.set(item, String(Math.random()));
-      }
-
-      const key = keyMap.get(item)!;
-
-      if (item.type === 'video') {
-        return (
-          <Video
-            key={key}
-            projectDir={projectDir}
-            source={item.source}
-            time={time}
-            start={item.$start!}
-            videoStart={item.$videoStart || new Signal(0)}
-          />
-        );
-      }
-      throw new Error(`Unknown timeline item type: ${(item as any).type}`);
-    })
-  );
-
   console.log('container render');
-  return <div class={styles.container}>{timelineChildren}</div>;
+  return (
+    <div class={styles.container} style={style}>
+      <TimelineChildren
+        projectDir={projectDir}
+        time={time}
+        childrenTimeline={config.childrenTimeline}
+      />
+    </div>
+  );
 };
 
 export default Container;

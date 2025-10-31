@@ -1,0 +1,71 @@
+import type { FunctionComponent } from 'preact';
+import type { DeepSignal } from 'deepsignal';
+import { Signal } from '@preact/signals';
+import type { ChildrenTimelineItem } from '../../../../project-schema/schema';
+import { parseTime } from '../../../utils/time';
+import useOptimComputed from '../../../utils/useOptimComputed';
+import Video from '../timeline-items/Video';
+import Container from '../timeline-items/Container';
+
+const keyMap = new WeakMap<object, string>();
+
+interface Props {
+  time: Signal<number>;
+  childrenTimeline?: DeepSignal<ChildrenTimelineItem[]>;
+  projectDir: FileSystemDirectoryHandle;
+}
+
+const TimelineChildren: FunctionComponent<Props> = ({
+  childrenTimeline,
+  time,
+  projectDir,
+}) => {
+  const activeTimelineItems = useOptimComputed(() => {
+    if (!childrenTimeline) return [];
+
+    return childrenTimeline.filter((item) => {
+      const start = parseTime(item.start);
+      const duration = parseTime(item.duration);
+      const end = start + duration;
+      return time.value >= start && time.value < end;
+    });
+  });
+
+  const timelineChildren = useOptimComputed(() =>
+    activeTimelineItems.value.map((item) => {
+      if (!keyMap.has(item)) {
+        keyMap.set(item, String(Math.random()));
+      }
+
+      const key = keyMap.get(item)!;
+
+      if (item.type === 'video') {
+        return (
+          <Video
+            key={key}
+            projectDir={projectDir}
+            source={item.source}
+            time={time}
+            start={item.$start!}
+            videoStart={item.$videoStart || new Signal(0)}
+          />
+        );
+      }
+      if (item.type === 'container') {
+        return (
+          <Container
+            key={key}
+            projectDir={projectDir}
+            time={time}
+            config={item}
+          />
+        );
+      }
+      throw new Error(`Unknown timeline item type: ${(item as any).type}`);
+    })
+  );
+
+  return timelineChildren;
+};
+
+export default TimelineChildren;
