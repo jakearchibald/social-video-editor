@@ -38,9 +38,12 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const width = useOptimComputed(() => project.width);
   const height = useOptimComputed(() => project.height);
   const time = useSignal(0);
-  const throttledTime = useThrottledSignal(time, 50);
+  const clampedTime = useOptimComputed(
+    () => Math.floor(time.value / (1000 / project.fps)) * (1000 / project.fps)
+  );
+  const throttledTime = useThrottledSignal(clampedTime, 50);
   const activeTime = useOptimComputed(() =>
-    outputting.value ? time.value : throttledTime.value
+    outputting.value ? clampedTime.value : throttledTime.value
   );
 
   const stageSize = useSignal<{ width: number; height: number }>({
