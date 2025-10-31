@@ -10,6 +10,8 @@ function App() {
 
   if (projectDir.value) return <Project projectDir={projectDir.value} />;
 
+  console.log('rendering app');
+
   return (
     <ProjectSelect onProjectDirSelect={(dir) => (projectDir.value = dir)} />
   );

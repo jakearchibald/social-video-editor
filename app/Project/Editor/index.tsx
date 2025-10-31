@@ -130,7 +130,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
 
   useSignalLayoutEffect(() => {
     if (!outputting.value) {
-      audioTimeline.current.play(activeTime.value, 150).catch((err) => {
+      audioTimeline.current.play(activeTime.value, 100).catch((err) => {
         if (err instanceof Error && err.name === 'AbortError') return;
         throw err;
       });
@@ -201,7 +201,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
               <IframeContent width={width} height={height}>
                 <TimelineChildren
                   projectDir={projectDir}
-                  time={time}
+                  time={activeTime}
                   childrenTimeline={project.childrenTimeline}
                 />
               </IframeContent>
@@ -212,7 +212,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             <IframeContent width={width} height={height}>
               <TimelineChildren
                 projectDir={projectDir}
-                time={time}
+                time={activeTime}
                 childrenTimeline={project.childrenTimeline}
               />
             </IframeContent>

@@ -1,7 +1,7 @@
-import { type FunctionComponent, render } from 'preact';
+import { type FunctionComponent } from 'preact';
 import { type Signal } from '@preact/signals';
 
-import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
+import { useLayoutEffect, useRef } from 'preact/hooks';
 import useOptimComputed from '../../../utils/useOptimComputed';
 import styles from './styles.module.css';
 
@@ -19,6 +19,7 @@ const IframeContent: FunctionComponent<Props> = ({
     () => `width: ${width.value}px; height: ${height.value}px;`
   );
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const targetRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     if (!iframeRef.current) return;
@@ -46,33 +47,23 @@ const IframeContent: FunctionComponent<Props> = ({
 
     updateStyles();
 
+    iframeDoc.body.append(targetRef.current!);
+
     return () => {
       observer.disconnect();
     };
   }, []);
 
-  useLayoutEffect(() => {
-    if (!iframeRef.current) return;
-    const iframeDoc = iframeRef.current.contentDocument!;
-    render(children, iframeDoc.body);
-  }, [children]);
-
-  useEffect(() => {
-    return () => {
-      if (!iframeRef.current) return;
-      const iframeDoc = iframeRef.current.contentDocument!;
-      console.log('nulling the render');
-      render(<div></div>, iframeDoc.body);
-    };
-  }, []);
-
   return (
-    <iframe
-      class={styles.iframe}
-      src="about:blank"
-      style={iframeStyle}
-      ref={iframeRef}
-    />
+    <div>
+      <iframe
+        class={styles.iframe}
+        src="about:blank"
+        style={iframeStyle}
+        ref={iframeRef}
+      />
+      <div ref={targetRef}>{children}</div>
+    </div>
   );
 };
 
