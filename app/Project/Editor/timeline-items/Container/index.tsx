@@ -1,5 +1,5 @@
 import type { FunctionComponent } from 'preact';
-import { type DeepSignal, type RevertDeepSignal, peek } from 'deepsignal';
+import { type DeepSignal, type RevertDeepSignal } from 'deepsignal';
 import { Signal } from '@preact/signals';
 import type { Container as ContainerConfig } from '../../../../../project-schema/schema';
 
@@ -7,6 +7,7 @@ import styles from './styles.module.css';
 import TimelineChildren from '../../TimelineChildren';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 import { parseTime } from '../../../../utils/time';
+import { useLayoutEffect, useRef } from 'preact/hooks';
 
 const div = document.createElement('div');
 
@@ -16,15 +17,37 @@ interface Props {
   config: DeepSignal<ContainerConfig>;
 }
 
+// Can't use 'offset' style in keyframes, as it means something else
+function objWithoutOffset<T extends Record<string, any>>(
+  obj: T
+): Omit<T, 'offset'> {
+  const { offset, ...rest } = obj;
+  return rest;
+}
+
 const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const activeAnimations = useRef<Map<object, Animation>>(new Map());
+
+  const unmounted = useRef(false);
+
+  useLayoutEffect(() => {
+    return () => {
+      unmounted.current = true;
+    };
+  }, []);
+
   const style = useOptimComputed(() => {
     let styles = {
       ...(config.styles as RevertDeepSignal<typeof config.styles>),
     };
 
+    const currentAnimations = new Set<Animation>();
+
     if (config.timeline) {
       for (const timelineItem of config.timeline) {
-        if (parseTime(timelineItem.start) > time.value) {
+        const start = parseTime(timelineItem.start);
+        if (start > time.value) {
           break;
         }
 
@@ -33,11 +56,49 @@ const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
             typeof timelineItem.styles
           >;
         } else if (timelineItem.type === 'add-styles') {
+          if (
+            timelineItem.transition &&
+            time.value < start + timelineItem.transition.duration
+          ) {
+            const oldStyles = Object.fromEntries(
+              Object.keys(timelineItem.styles).map((key) => [
+                key,
+                styles[key as keyof typeof styles] || '',
+              ])
+            ) as typeof styles;
+
+            if (!activeAnimations.current.has(timelineItem)) {
+              const animation = containerRef.current!.animate(
+                [
+                  objWithoutOffset(oldStyles),
+                  objWithoutOffset(timelineItem.styles),
+                ],
+                {
+                  duration: timelineItem.transition.duration,
+                  easing: timelineItem.transition.easing,
+                }
+              );
+              animation.pause();
+              activeAnimations.current.set(timelineItem, animation);
+            }
+
+            const animation = activeAnimations.current.get(timelineItem)!;
+            animation.currentTime = time.value - start;
+            currentAnimations.add(animation);
+          }
+
           Object.assign(
             styles,
             timelineItem.styles as RevertDeepSignal<typeof timelineItem.styles>
           );
         }
+      }
+    }
+
+    for (const [key, anim] of activeAnimations.current) {
+      if (!currentAnimations.has(anim)) {
+        anim.cancel();
+        activeAnimations.current.delete(key);
       }
     }
 
@@ -53,7 +114,7 @@ const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   console.log('container render');
 
   return (
-    <div class={styles.container} style={styleString}>
+    <div class={styles.container} style={styleString} ref={containerRef}>
       <TimelineChildren
         projectDir={projectDir}
         time={time}

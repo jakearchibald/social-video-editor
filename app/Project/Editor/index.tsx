@@ -1,5 +1,6 @@
 import type { FunctionComponent } from 'preact';
 import { useSignal } from '@preact/signals';
+import { useSignalRef } from '@preact/signals/utils';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'preact/hooks';
 import {
   Output,
@@ -15,7 +16,6 @@ import { parseTime } from '../../utils/time';
 import useThrottledSignal from '../../utils/useThrottledSignal';
 import type { DeepSignal } from 'deepsignal';
 import useOptimComputed from '../../utils/useOptimComputed';
-import Container from './timeline-items/Container';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
 import { AudioTimeline } from '../../utils/AudioTimeline';
@@ -29,8 +29,9 @@ interface Props {
 
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const outputting = useSignal(false);
+  const framePreviewSetting = useSignal(true);
   const stageRef = useRef<HTMLDivElement>(null);
-  const outputRef = useRef<HTMLDivElement>(null);
+  const outputRef = useSignalRef<HTMLDivElement | null>(null);
   const audioTimeline = useRef<AudioTimeline>(
     useMemo(() => new AudioTimeline(projectDir), [projectDir])
   );
@@ -96,13 +97,15 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     return Math.max(0, previousFrame);
   });
 
-  const outputCanvasRef = useRef<HTMLCanvasElement>(null);
+  const outputCanvasRef = useSignalRef<HTMLCanvasElement | null>(null);
   const outputCanvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
   useSignalLayoutEffect(() => {
     activeTime.valueOf();
 
-    const outputCanvas = outputCanvasRef.current!;
+    const outputCanvas = outputCanvasRef.current;
+
+    if (!outputCanvas) return;
 
     if (!outputCanvasContextRef.current) {
       outputCanvasContextRef.current = outputCanvas.getContext('2d')!;
@@ -112,13 +115,6 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     const outputDiv = outputRef.current!;
 
     let aborted = false;
-
-    if (!outputting.value) {
-      audioTimeline.current.play(activeTime.value, 150).catch((err) => {
-        if (err instanceof Error && err.name === 'AbortError') return;
-        throw err;
-      });
-    }
 
     (async () => {
       await wait();
@@ -130,6 +126,15 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     return () => {
       aborted = true;
     };
+  });
+
+  useSignalLayoutEffect(() => {
+    if (!outputting.value) {
+      audioTimeline.current.play(activeTime.value, 150).catch((err) => {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        throw err;
+      });
+    }
   });
 
   const output = useCallback(async () => {
@@ -185,13 +190,25 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   return (
     <div class={styles.editor}>
       <div class={styles.stage} ref={stageRef} style={stageStyle}>
-        <canvas
-          layoutsubtree
-          ref={outputCanvasRef}
-          width={width}
-          height={height}
-        >
-          <div class={styles.output} ref={outputRef}>
+        {framePreviewSetting.value || outputting.value ? (
+          <canvas
+            layoutsubtree
+            ref={outputCanvasRef}
+            width={width}
+            height={height}
+          >
+            <div class={styles.output} ref={outputRef}>
+              <IframeContent width={width} height={height}>
+                <TimelineChildren
+                  projectDir={projectDir}
+                  time={time}
+                  childrenTimeline={project.childrenTimeline}
+                />
+              </IframeContent>
+            </div>
+          </canvas>
+        ) : (
+          <div class={styles.output}>
             <IframeContent width={width} height={height}>
               <TimelineChildren
                 projectDir={projectDir}
@@ -200,7 +217,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
               />
             </IframeContent>
           </div>
-        </canvas>
+        )}
       </div>
       <input
         type="range"
@@ -214,7 +231,19 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
         }}
       />
       <div>
-        <button onClick={output}>Output video</button>
+        <button onClick={output}>Output video</button>{' '}
+        <label>
+          <input
+            type="checkbox"
+            checked={framePreviewSetting}
+            onChange={(e) =>
+              (framePreviewSetting.value = (
+                e.target as HTMLInputElement
+              ).checked)
+            }
+          />{' '}
+          Frame preview
+        </label>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { type FunctionComponent, render } from 'preact';
 import { type Signal } from '@preact/signals';
 
-import { useLayoutEffect, useRef } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
 import useOptimComputed from '../../../utils/useOptimComputed';
 import styles from './styles.module.css';
 
@@ -56,6 +56,15 @@ const IframeContent: FunctionComponent<Props> = ({
     const iframeDoc = iframeRef.current.contentDocument!;
     render(children, iframeDoc.body);
   }, [children]);
+
+  useEffect(() => {
+    return () => {
+      if (!iframeRef.current) return;
+      const iframeDoc = iframeRef.current.contentDocument!;
+      console.log('nulling the render');
+      render(<div></div>, iframeDoc.body);
+    };
+  }, []);
 
   return (
     <iframe

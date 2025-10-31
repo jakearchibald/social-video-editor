@@ -37,7 +37,9 @@ export type ContainerTimelineItem =
 
 type SimpleCSSDeclaration = {
   [K in keyof CSSStyleDeclaration as CSSStyleDeclaration[K] extends string
-    ? K
+    ? K extends string
+      ? K
+      : never
     : never]?: string;
 };
 
@@ -49,6 +51,10 @@ interface ContainerTimelineSetStyles extends TimelineItemBase {
 interface ContainerTimelineAddStyles extends TimelineItemBase {
   type: 'add-styles';
   styles: SimpleCSSDeclaration;
+  transition?: {
+    duration: number;
+    easing: string;
+  };
 }
 
 export interface Container extends ChildrenTimelineItemBase {

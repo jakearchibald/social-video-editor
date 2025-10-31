@@ -66,6 +66,21 @@
                 "styles": {
                     "$ref": "#/definitions/SimpleCSSDeclaration"
                 },
+                "transition": {
+                    "properties": {
+                        "duration": {
+                            "type": "number"
+                        },
+                        "easing": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "duration",
+                        "easing"
+                    ],
+                    "type": "object"
+                },
                 "type": {
                     "const": "add-styles",
                     "type": "string"
@@ -163,12 +178,6 @@
             "type": "object"
         },
         "__type": {
-            "additionalProperties": false,
-            "patternProperties": {
-                "^[0-9]+$": {
-                    "type": "string"
-                }
-            },
             "properties": {
                 "accentColor": {
                     "type": "string"
