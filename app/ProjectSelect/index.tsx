@@ -27,6 +27,7 @@ const ProjectSelect: FunctionComponent<Props> = ({ onProjectDirSelect }) => {
   const loadProject = async (dir: FileSystemDirectoryHandle) => {
     // Check if index.json exists in the directory
     try {
+      await dir.requestPermission({ mode: 'readwrite' });
       await dir.getFileHandle('index.json');
     } catch (err) {
       error.value = `Cannot find or open index.json in selected directory: ${err}`;

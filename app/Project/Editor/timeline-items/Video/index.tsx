@@ -7,6 +7,7 @@ import useOptimComputed from '../../../../utils/useOptimComputed';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 import styles from './styles.module.css';
 import { waitUntil } from '../../../../utils/waitUntil';
+import { getFile } from '../../../../utils/file';
 
 interface Props {
   projectDir: FileSystemDirectoryHandle;
@@ -24,38 +25,30 @@ const Video: FunctionComponent<Props> = ({
   start,
 }) => {
   const localTime = useOptimComputed(() => time.value - parseTime(start.value));
+
   const videoTime = useOptimComputed(
     () => localTime.value + parseTime(videoStart.value || 0)
   );
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const videoDecoder = useSignal<VideoFrameDecoder | null>(null);
+  const videoFileDecoder = useSignal<VideoFrameDecoder | null>(null);
+
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
   useLayoutEffect(() => {
     const p = (async () => {
-      const path = new URL(source, 'https://example.com/').pathname.slice(1);
-      const splitPath = path.split('/');
-      const dirPaths = splitPath.slice(0, -1);
-      const fileName = splitPath.at(-1)!;
+      const file = await getFile(projectDir, source);
 
-      let dirHandle = projectDir;
-      for (const dirPath of dirPaths) {
-        dirHandle = await dirHandle.getDirectoryHandle(dirPath);
-      }
-      const fileHandle = await dirHandle.getFileHandle(fileName);
-      const file = await fileHandle.getFile();
-
-      const decoder = new VideoFrameDecoder(file);
-      await decoder.ready;
-      videoDecoder.value = decoder;
+      const videoDecoder = new VideoFrameDecoder(file);
+      await videoDecoder.ready;
+      videoFileDecoder.value = videoDecoder;
     })();
 
     waitUntil(p);
   }, [projectDir, source]);
 
   useSignalLayoutEffect(() => {
-    const decoder = videoDecoder.value;
-    if (!decoder) return;
+    const videoDecoder = videoFileDecoder.value;
+    if (!videoDecoder) return;
 
     const frameTime = videoTime.value;
     const canvas = canvasRef.current!;
@@ -63,8 +56,8 @@ const Video: FunctionComponent<Props> = ({
     if (!canvasContextRef.current) {
       const ctx = canvas.getContext('2d')!;
       canvasContextRef.current = ctx;
-      canvas.width = decoder.videoData!.width;
-      canvas.height = decoder.videoData!.height;
+      canvas.width = videoDecoder.videoData!.width;
+      canvas.height = videoDecoder.videoData!.height;
     }
 
     const ctx = canvasContextRef.current!;
@@ -72,7 +65,8 @@ const Video: FunctionComponent<Props> = ({
 
     const p = (async () => {
       try {
-        const frame = await decoder.getFrameAt(frameTime);
+        const frame = await videoDecoder.getFrameAt(frameTime);
+
         if (!frame || aborted) return;
         ctx.drawImage(frame.canvas, 0, 0);
       } catch (err) {

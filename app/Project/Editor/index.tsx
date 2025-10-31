@@ -1,11 +1,13 @@
 import type { FunctionComponent } from 'preact';
 import { useSignal } from '@preact/signals';
-import { useCallback, useLayoutEffect, useRef } from 'preact/hooks';
+import { useCallback, useLayoutEffect, useMemo, useRef } from 'preact/hooks';
 import {
   Output,
   Mp4OutputFormat,
   StreamTarget,
   CanvasSource,
+  BufferSource,
+  AudioBufferSource,
 } from 'mediabunny';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
@@ -17,6 +19,7 @@ import useOptimComputed from '../../utils/useOptimComputed';
 import Container from './timeline-items/Container';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
+import { AudioTimeline } from '../../utils/AudioTimeline';
 
 import styles from './styles.module.css';
 
@@ -29,6 +32,9 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const outputting = useSignal(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
+  const audioTimeline = useRef<AudioTimeline>(
+    useMemo(() => new AudioTimeline(projectDir), [projectDir])
+  );
   const width = useOptimComputed(() => project.width);
   const height = useOptimComputed(() => project.height);
   const time = useSignal(0);
@@ -36,6 +42,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const activeTime = useOptimComputed(() =>
     outputting.value ? time.value : throttledTime.value
   );
+
   const stageSize = useSignal<{ width: number; height: number }>({
     width: 0,
     height: 0,
@@ -68,9 +75,13 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     };
   }, []);
 
+  useSignalLayoutEffect(() => {
+    audioTimeline.current.buildTimeline(project);
+  });
+
   const duration = useOptimComputed(() => {
     const lastEndTime = Math.max(
-      ...project.timeline.map((item) => {
+      ...project.childrenTimeline.map((item) => {
         const start = parseTime(item.start);
         const duration = parseTime(item.duration);
         return start + duration;
@@ -84,18 +95,33 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   });
 
   const outputCanvasRef = useRef<HTMLCanvasElement>(null);
+  const outputCanvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
   useSignalLayoutEffect(() => {
     activeTime.valueOf();
+
     const outputCanvas = outputCanvasRef.current!;
-    const context = outputCanvas.getContext('2d')!;
+
+    if (!outputCanvasContextRef.current) {
+      outputCanvasContextRef.current = outputCanvas.getContext('2d')!;
+    }
+
+    const context = outputCanvasContextRef.current!;
     const outputDiv = outputRef.current!;
 
     let aborted = false;
 
+    if (!outputting.value) {
+      audioTimeline.current.play(activeTime.value, 150).catch((err) => {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        throw err;
+      });
+    }
+
     (async () => {
       await wait();
       if (aborted) return;
+      context.clearRect(0, 0, width.value, height.value);
       context.drawElementImage(outputDiv, 0, 0, width.value, height.value);
     })();
 
@@ -120,11 +146,21 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       bitrate: 35_000_000,
       hardwareAcceleration: 'prefer-software',
     });
+    const audioBufferSource = new AudioBufferSource({
+      codec: 'aac',
+      bitrate: 192_000,
+      bitrateMode: 'variable',
+    });
     videoOutput.addVideoTrack(canvasSource, {
       frameRate: project.fps,
     });
+    videoOutput.addAudioTrack(audioBufferSource);
 
     await videoOutput.start();
+
+    audioBufferSource.add(
+      await audioTimeline.current.toBuffer(0, duration.value)
+    );
 
     for (
       let timeValue = 0;
@@ -155,7 +191,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             <IframeContent width={width} height={height}>
               <Container
                 projectDir={projectDir}
-                timeline={project.$timeline!}
+                childrenTimeline={project.$childrenTimeline!}
                 time={activeTime}
               />
             </IframeContent>

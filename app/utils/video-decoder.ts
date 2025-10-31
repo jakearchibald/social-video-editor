@@ -3,8 +3,6 @@ import {
   CanvasSink,
   Input,
   MP4,
-  VideoSample,
-  VideoSampleSink,
   type WrappedCanvas,
 } from 'mediabunny';
 
@@ -29,6 +27,7 @@ export class VideoFrameDecoder {
 
     this.ready = (async () => {
       const track = await this.#input.getPrimaryVideoTrack();
+
       this.#videoData = {
         width: track?.displayWidth || 0,
         height: track?.displayHeight || 0,

@@ -1,26 +1,28 @@
 import type { FunctionComponent } from 'preact';
 import type { DeepSignal } from 'deepsignal';
 import { Signal } from '@preact/signals';
-import type { TimelineItem } from '../../../../../project-schema/schema';
+import type { ChildrenTimelineItem } from '../../../../../project-schema/schema';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 import Video from '../Video';
 
 import styles from './styles.module.css';
 
+const keyMap = new WeakMap<object, string>();
+
 interface Props {
   time: Signal<number>;
-  timeline: Signal<DeepSignal<TimelineItem[]>>;
+  childrenTimeline: Signal<DeepSignal<ChildrenTimelineItem[]>>;
   projectDir: FileSystemDirectoryHandle;
 }
 
 const Container: FunctionComponent<Props> = ({
-  timeline,
+  childrenTimeline,
   time,
   projectDir,
 }) => {
   const activeTimelineItems = useOptimComputed(() => {
-    return timeline.value.filter((item) => {
+    return childrenTimeline.value.filter((item) => {
       const start = parseTime(item.start);
       const duration = parseTime(item.duration);
       const end = start + duration;
@@ -30,10 +32,16 @@ const Container: FunctionComponent<Props> = ({
 
   const timelineChildren = useOptimComputed(() =>
     activeTimelineItems.value.map((item) => {
-      // TODO: add keys to JSX
+      if (!keyMap.has(item)) {
+        keyMap.set(item, String(Math.random()));
+      }
+
+      const key = keyMap.get(item)!;
+
       if (item.type === 'video') {
         return (
           <Video
+            key={key}
             projectDir={projectDir}
             source={item.source}
             time={time}

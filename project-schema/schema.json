@@ -46,26 +46,26 @@
         "appCommit": {
             "type": "string"
         },
+        "childrenTimeline": {
+            "items": {
+                "$ref": "#/definitions/VideoClip"
+            },
+            "type": "array"
+        },
         "fps": {
             "type": "number"
         },
         "height": {
             "type": "integer"
         },
-        "timeline": {
-            "items": {
-                "$ref": "#/definitions/VideoClip"
-            },
-            "type": "array"
-        },
         "width": {
             "type": "integer"
         }
     },
     "required": [
+        "childrenTimeline",
         "fps",
         "height",
-        "timeline",
         "width"
     ],
     "type": "object"

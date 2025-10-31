@@ -5,10 +5,10 @@ export interface Project {
   width: integer;
   height: integer;
   fps: number;
-  timeline: TimelineItem[];
+  childrenTimeline: ChildrenTimelineItem[];
 }
 
-export type TimelineItem = VideoClip;
+export type ChildrenTimelineItem = VideoClip;
 
 interface TimelineBase {
   /** Start time. 00:00:00.000 or ms */
