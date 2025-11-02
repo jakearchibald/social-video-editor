@@ -30,6 +30,7 @@ interface Props {
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const outputting = useSignal(false);
   const framePreviewSetting = useSignal(true);
+  const throttleFramesDuringScrubbing = useSignal(true);
   const stageRef = useRef<HTMLDivElement>(null);
   const outputRef = useSignalRef<HTMLDivElement | null>(null);
   const audioTimeline = useRef<AudioTimeline>(
@@ -43,7 +44,9 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   );
   const throttledTime = useThrottledSignal(clampedTime, 50);
   const activeTime = useOptimComputed(() =>
-    outputting.value ? clampedTime.value : throttledTime.value
+    outputting.value || !throttleFramesDuringScrubbing.value
+      ? clampedTime.value
+      : throttledTime.value
   );
 
   const stageSize = useSignal<{ width: number; height: number }>({
@@ -243,6 +246,18 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             }
           />{' '}
           Frame preview
+        </label>{' '}
+        <label>
+          <input
+            type="checkbox"
+            checked={throttleFramesDuringScrubbing}
+            onChange={(e) =>
+              (throttleFramesDuringScrubbing.value = (
+                e.target as HTMLInputElement
+              ).checked)
+            }
+          />{' '}
+          Throttle frames during scrubbing
         </label>
       </div>
     </div>
