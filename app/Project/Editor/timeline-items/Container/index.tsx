@@ -6,6 +6,7 @@ import TimelineChildren from '../../TimelineChildren';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 import { parseTime } from '../../../../utils/time';
 import { useRef } from 'preact/hooks';
+import { useSignalRef } from '@preact/signals/utils';
 
 const div = document.createElement('div');
 
@@ -24,10 +25,12 @@ function objWithoutOffset<T extends Record<string, any>>(
 }
 
 const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useSignalRef<HTMLDivElement | null>(null);
   const activeAnimations = useRef<Map<object, Animation>>(new Map());
 
   const style = useOptimComputed(() => {
+    if (!containerRef.current) return {};
+
     let styles = {
       ...(config.styles as RevertDeepSignal<typeof config.styles>),
     };
