@@ -2,11 +2,11 @@ import type {
   ChildrenTimelineItem,
   Project,
 } from '../../project-schema/schema';
+import { getAudioTimelineItems as getVideoAudioTimelineItems } from '../Project/Editor/timeline-items/Video';
 import { AudioFileDecoder } from './audio-decoder';
 import { getFile } from './file';
-import { parseTime } from './time';
 
-interface AudioTimelineItem {
+export interface AudioTimelineItem {
   start: number;
   audioStart: number;
   duration: number;
@@ -33,12 +33,7 @@ export class AudioTimeline {
   #scanTimeline(timeline: ChildrenTimelineItem[]) {
     for (const item of timeline) {
       if (item.type === 'video') {
-        this.#items.push({
-          start: parseTime(item.start),
-          audioStart: parseTime(item.videoStart || 0),
-          duration: parseTime(item.duration),
-          source: item.audioSource || item.source,
-        });
+        this.#items.push(...getVideoAudioTimelineItems(item));
       }
     }
   }

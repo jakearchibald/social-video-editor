@@ -8,6 +8,23 @@ import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 import styles from './styles.module.css';
 import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
+import type { AudioTimelineItem } from '../../../../utils/AudioTimeline';
+import type { VideoClip } from '../../../../../project-schema/schema';
+
+export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
+  const source = item.audioSource || item.source;
+
+  if (!source) return [];
+
+  return [
+    {
+      start: parseTime(item.start),
+      audioStart: parseTime(item.videoStart || 0),
+      duration: parseTime(item.duration),
+      source,
+    },
+  ];
+}
 
 interface Props {
   projectDir: FileSystemDirectoryHandle;
