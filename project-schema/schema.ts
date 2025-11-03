@@ -1,3 +1,7 @@
+import type { Container } from './timeline-items/container';
+import type { Demo } from './timeline-items/demo';
+import type { VideoClip } from './timeline-items/video';
+
 type integer = number;
 
 export interface Project {
@@ -9,57 +13,14 @@ export interface Project {
   childrenTimeline: ChildrenTimelineItem[];
 }
 
-export type ChildrenTimelineItem = VideoClip | Container;
+export type ChildrenTimelineItem = VideoClip | Container | Demo;
 
-interface ChildrenTimelineItemBase extends TimelineItemBase {
+export interface ChildrenTimelineItemBase extends TimelineItemBase {
   /** Duration. 00:00:00.000 or ms */
   duration: string | number;
 }
 
-interface TimelineItemBase {
+export interface TimelineItemBase {
   /** Start time. 00:00:00.000 or ms */
   start: string | number;
-}
-
-export interface VideoClip extends ChildrenTimelineItemBase {
-  type: 'video';
-  /** Relative path to video file */
-  source: string;
-  /** Relative path to audio file, used instead of video audio. Null to ignore video audio. */
-  audioSource?: string | null;
-  /** Start time within the video file. 00:00:00.000 or ms */
-  videoStart?: string | number;
-}
-
-export type ContainerTimelineItem =
-  | ContainerTimelineSetStyles
-  | ContainerTimelineAddStyles;
-
-type SimpleCSSDeclaration = {
-  [K in keyof CSSStyleDeclaration as CSSStyleDeclaration[K] extends string
-    ? K extends string
-      ? K
-      : never
-    : never]?: string;
-};
-
-interface ContainerTimelineSetStyles extends TimelineItemBase {
-  type: 'set-styles';
-  styles: SimpleCSSDeclaration;
-}
-
-interface ContainerTimelineAddStyles extends TimelineItemBase {
-  type: 'add-styles';
-  styles: SimpleCSSDeclaration;
-  transition?: {
-    duration: number;
-    easing: string;
-  };
-}
-
-export interface Container extends ChildrenTimelineItemBase {
-  type: 'container';
-  childrenTimeline?: ChildrenTimelineItem[];
-  timeline?: ContainerTimelineItem[];
-  styles?: SimpleCSSDeclaration;
 }

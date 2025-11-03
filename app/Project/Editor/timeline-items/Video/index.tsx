@@ -9,7 +9,7 @@ import styles from './styles.module.css';
 import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
 import type { AudioTimelineItem } from '../../../../utils/AudioTimeline';
-import type { VideoClip } from '../../../../../project-schema/schema';
+import type { VideoClip } from '../../../../../project-schema/timeline-items/video';
 
 export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
   const source = item.audioSource || item.source;

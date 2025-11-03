@@ -4,10 +4,13 @@
         "ChildrenTimelineItem": {
             "anyOf": [
                 {
+                    "$ref": "#/definitions/Container"
+                },
+                {
                     "$ref": "#/definitions/VideoClip"
                 },
                 {
-                    "$ref": "#/definitions/Container"
+                    "$ref": "#/definitions/Demo"
                 }
             ]
         },
@@ -123,6 +126,70 @@
             "required": [
                 "start",
                 "styles",
+                "type"
+            ],
+            "type": "object"
+        },
+        "Demo": {
+            "properties": {
+                "duration": {
+                    "description": "Duration. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "scriptSource": {
+                    "description": "Relative path to JS file",
+                    "type": "string"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "styleSource": {
+                    "description": "Relative path to CSS file",
+                    "type": "string"
+                },
+                "timeline": {
+                    "items": {
+                        "$ref": "#/definitions/DemoTimelineItemMessage"
+                    },
+                    "type": "array"
+                },
+                "type": {
+                    "const": "demo",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "duration",
+                "start",
+                "type"
+            ],
+            "type": "object"
+        },
+        "DemoTimelineItemMessage": {
+            "properties": {
+                "data": {},
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "type": {
+                    "const": "message",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "data",
+                "start",
                 "type"
             ],
             "type": "object"

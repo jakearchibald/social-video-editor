@@ -1,13 +1,11 @@
 import type { FunctionComponent } from 'preact';
 import { type DeepSignal, type RevertDeepSignal } from 'deepsignal';
 import { Signal } from '@preact/signals';
-import type { Container as ContainerConfig } from '../../../../../project-schema/schema';
-
-import styles from './styles.module.css';
+import type { Container as ContainerConfig } from '../../../../../project-schema/timeline-items/container';
 import TimelineChildren from '../../TimelineChildren';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 import { parseTime } from '../../../../utils/time';
-import { useLayoutEffect, useRef } from 'preact/hooks';
+import { useRef } from 'preact/hooks';
 
 const div = document.createElement('div');
 
@@ -28,14 +26,6 @@ function objWithoutOffset<T extends Record<string, any>>(
 const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const activeAnimations = useRef<Map<object, Animation>>(new Map());
-
-  const unmounted = useRef(false);
-
-  useLayoutEffect(() => {
-    return () => {
-      unmounted.current = true;
-    };
-  }, []);
 
   const style = useOptimComputed(() => {
     let styles = {
@@ -114,7 +104,7 @@ const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   console.log('container render');
 
   return (
-    <div class={styles.container} style={styleString} ref={containerRef}>
+    <div style={styleString} ref={containerRef}>
       <TimelineChildren
         projectDir={projectDir}
         time={time}

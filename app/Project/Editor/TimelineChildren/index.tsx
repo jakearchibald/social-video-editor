@@ -6,6 +6,7 @@ import { parseTime } from '../../../utils/time';
 import useOptimComputed from '../../../utils/useOptimComputed';
 import Video from '../timeline-items/Video';
 import Container from '../timeline-items/Container';
+import Demo from '../timeline-items/Demo';
 
 const keyMap = new WeakMap<object, string>();
 
@@ -59,6 +60,11 @@ const TimelineChildren: FunctionComponent<Props> = ({
             time={time}
             config={item}
           />
+        );
+      }
+      if (item.type === 'demo') {
+        return (
+          <Demo key={key} projectDir={projectDir} time={time} config={item} />
         );
       }
       throw new Error(`Unknown timeline item type: ${(item as any).type}`);
