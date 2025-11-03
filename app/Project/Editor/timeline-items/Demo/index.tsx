@@ -55,19 +55,13 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     const iframe = document.createElement('iframe');
     iframeRef.current = iframe;
     iframe.className = styles.iframe;
+
+    const iframeLoad = new Promise<void>((resolve) => {
+      iframe.onload = () => resolve();
+    });
     iframeContainer.current!.append(iframe);
 
-    const iframeWin = iframe.contentWindow! as typeof window & IframeAPI;
-    const iframeDoc = iframe.contentDocument!;
-
     let aborted = false;
-
-    iframeWin.socialVid = {
-      messages: iframeMessages,
-      time,
-      effect,
-      waitUntil,
-    };
 
     const p = (async () => {
       const [script, style] = await Promise.all([
@@ -75,7 +69,18 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         styleSrc && getFile(projectDir, styleSrc).then((file) => file.text()),
       ]);
 
+      await iframeLoad;
+
       if (aborted) return;
+
+      const iframeWin = iframe.contentWindow! as typeof window & IframeAPI;
+      const iframeDoc = iframe.contentDocument!;
+      iframeWin.socialVid = {
+        messages: iframeMessages,
+        time,
+        effect,
+        waitUntil,
+      };
 
       if (style) {
         const styleEl = iframeDoc.createElement('style');
@@ -86,7 +91,7 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       if (script) {
         const scriptEl = iframeDoc.createElement('script');
         scriptEl.textContent = script;
-        iframeDoc.body.append(scriptEl);
+        iframeDoc.head.append(scriptEl);
       }
     })();
 

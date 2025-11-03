@@ -1,5 +1,5 @@
 import type { FunctionComponent } from 'preact';
-import { useSignal } from '@preact/signals';
+import { useComputed, useSignal } from '@preact/signals';
 import { useSignalRef } from '@preact/signals/utils';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'preact/hooks';
 import {
@@ -101,7 +101,9 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   });
 
   const outputCanvasRef = useSignalRef<HTMLCanvasElement | null>(null);
-  const outputCanvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
+  const outputCanvasContext = useComputed(
+    () => outputCanvasRef.value?.getContext('2d')!
+  );
 
   useSignalLayoutEffect(() => {
     activeTime.valueOf();
@@ -110,11 +112,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
 
     if (!outputCanvas) return;
 
-    if (!outputCanvasContextRef.current) {
-      outputCanvasContextRef.current = outputCanvas.getContext('2d')!;
-    }
-
-    const context = outputCanvasContextRef.current!;
+    const context = outputCanvasContext.value!;
     const outputDiv = outputRef.current!;
 
     let aborted = false;
