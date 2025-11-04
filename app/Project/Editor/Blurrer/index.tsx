@@ -27,7 +27,7 @@ const Blurrer: FunctionComponent<Props> = ({
   childrenTimeline,
 }) => {
   const timeSignals = useMemo(() => {
-    const delta = 1000 / fps / 2;
+    const delta = 1000 / fps / 2 / blurLevels.value;
 
     return Array.from({ length: blurLevels.value }).map((_, i) => {
       return useComputed(() => time.value + i * delta);
