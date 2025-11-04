@@ -1,7 +1,8 @@
 import type { FunctionComponent } from 'preact';
-import { useComputed, useSignal } from '@preact/signals';
+import { useSignal } from '@preact/signals';
 import { useSignalRef } from '@preact/signals/utils';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'preact/hooks';
+import type { DeepSignal } from 'deepsignal';
 import {
   Output,
   Mp4OutputFormat,
@@ -11,15 +12,12 @@ import {
 } from 'mediabunny';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
-import IframeContent from './IframeContent';
 import { parseTime } from '../../utils/time';
 import useThrottledSignal from '../../utils/useThrottledSignal';
-import type { DeepSignal } from 'deepsignal';
 import useOptimComputed from '../../utils/useOptimComputed';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
 import { AudioTimeline } from '../../utils/AudioTimeline';
-import TimelineChildren from './TimelineChildren';
 
 import styles from './styles.module.css';
 import Blurrer from './Blurrer';
@@ -106,7 +104,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   });
 
   const outputCanvasRef = useSignalRef<HTMLCanvasElement | null>(null);
-  const outputCanvasContext = useComputed(
+  const outputCanvasContext = useOptimComputed(
     () => outputCanvasRef.value?.getContext('2d')!
   );
 

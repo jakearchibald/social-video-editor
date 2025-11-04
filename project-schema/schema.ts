@@ -1,3 +1,4 @@
+import type { Code } from './timeline-items/code';
 import type { Container } from './timeline-items/container';
 import type { Demo } from './timeline-items/demo';
 import type { VideoClip } from './timeline-items/video';
@@ -13,7 +14,7 @@ export interface Project {
   childrenTimeline: ChildrenTimelineItem[];
 }
 
-export type ChildrenTimelineItem = VideoClip | Container | Demo;
+export type ChildrenTimelineItem = VideoClip | Container | Demo | Code;
 
 export interface ChildrenTimelineItemBase extends TimelineItemBase {
   /** Duration. 00:00:00.000 or ms */

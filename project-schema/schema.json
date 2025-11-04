@@ -4,6 +4,9 @@
         "ChildrenTimelineItem": {
             "anyOf": [
                 {
+                    "$ref": "#/definitions/Code"
+                },
+                {
                     "$ref": "#/definitions/Container"
                 },
                 {
@@ -13,6 +16,143 @@
                     "$ref": "#/definitions/Demo"
                 }
             ]
+        },
+        "Code": {
+            "properties": {
+                "duration": {
+                    "description": "Duration. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "slice": {
+                    "properties": {
+                        "endBefore": {
+                            "type": "string"
+                        },
+                        "startAfter": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "endBefore",
+                        "startAfter"
+                    ],
+                    "type": "object"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "timeline": {
+                    "items": {
+                        "$ref": "#/definitions/CodeTimelineItem"
+                    },
+                    "type": "array"
+                },
+                "type": {
+                    "const": "code",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "duration",
+                "start",
+                "type"
+            ],
+            "type": "object"
+        },
+        "CodeTimelineItem": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/CodeTimelineItemUpdate"
+                },
+                {
+                    "$ref": "#/definitions/CodeTimelineItemHighlight"
+                }
+            ]
+        },
+        "CodeTimelineItemHighlight": {
+            "properties": {
+                "end": {
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "type": {
+                    "const": "highlight",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "end",
+                "start",
+                "text",
+                "type"
+            ],
+            "type": "object"
+        },
+        "CodeTimelineItemUpdate": {
+            "properties": {
+                "lang": {
+                    "type": "string"
+                },
+                "slice": {
+                    "properties": {
+                        "endBefore": {
+                            "type": "string"
+                        },
+                        "startAfter": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "endBefore",
+                        "startAfter"
+                    ],
+                    "type": "object"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "type": {
+                    "const": "update",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "start",
+                "type"
+            ],
+            "type": "object"
         },
         "Container": {
             "properties": {

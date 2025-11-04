@@ -7,6 +7,7 @@ import useOptimComputed from '../../../utils/useOptimComputed';
 import Video from '../timeline-items/Video';
 import Container from '../timeline-items/Container';
 import Demo from '../timeline-items/Demo';
+import Code from '../timeline-items/Code';
 
 const keyMap = new WeakMap<object, string>();
 
@@ -57,7 +58,12 @@ const TimelineChildren: FunctionComponent<Props> = ({
       }
       if (item.type === 'demo') {
         return (
-          <Demo key={key} projectDir={projectDir} time={time} config={item} />
+          <Demo key={key} config={item} projectDir={projectDir} time={time} />
+        );
+      }
+      if (item.type === 'code') {
+        return (
+          <Code key={key} config={item} projectDir={projectDir} time={time} />
         );
       }
       throw new Error(`Unknown timeline item type: ${(item as any).type}`);

@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'preact';
-import { useSignal, type Signal } from '@preact/signals';
-import { useLayoutEffect, useRef } from 'preact/hooks';
+import { type Signal } from '@preact/signals';
+import { useRef } from 'preact/hooks';
 import { VideoFrameDecoder } from '../../../../utils/video-decoder';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';

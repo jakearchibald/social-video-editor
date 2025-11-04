@@ -5,7 +5,10 @@ export function waitUntil(promise: Promise<unknown>) {
     .then(() => promise)
     .then(
       () => {},
-      () => {}
+      (err) => {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        console.error('Error in waitUntil:', err);
+      }
     );
 }
 

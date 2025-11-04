@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'preact';
 import { type DeepSignal } from 'deepsignal';
-import { Signal, effect, useComputed } from '@preact/signals';
+import { Signal, effect } from '@preact/signals';
 import { useRef } from 'preact/hooks';
 import type { Demo as DemoConfig } from '../../../../../project-schema/timeline-items/demo';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
@@ -8,6 +8,7 @@ import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
 import { parseTime } from '../../../../utils/time';
+import useOptimComputed from '../../../../utils/useOptimComputed';
 
 interface IframeMessage {
   start: number;
@@ -32,7 +33,7 @@ interface Props {
 const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   const iframeContainer = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const iframeMessages = useComputed(() => {
+  const iframeMessages = useOptimComputed(() => {
     if (!config.timeline) return [];
     return config.timeline
       .filter(

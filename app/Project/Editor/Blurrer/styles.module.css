@@ -1,6 +1,5 @@
 .container {
   display: grid;
-  isolation: isolate;
 
   & > * {
     mix-blend-mode: plus-lighter;
