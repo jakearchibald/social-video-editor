@@ -10,6 +10,7 @@ import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
 import type { AudioTimelineItem } from '../../../../utils/AudioTimeline';
 import type { VideoClip } from '../../../../../project-schema/timeline-items/video';
+import type { DeepSignal } from 'deepsignal';
 
 export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
   const source = item.audioSource || item.source;
@@ -28,59 +29,48 @@ export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
 
 interface Props {
   projectDir: FileSystemDirectoryHandle;
-  source: string;
-  start: Signal<number | string>;
-  videoStart: Signal<number | string | undefined>;
   time: Signal<number>;
+  config: DeepSignal<VideoClip>;
 }
 
-const Video: FunctionComponent<Props> = ({
-  projectDir,
-  source,
-  time,
-  videoStart,
-  start,
-}) => {
-  const localTime = useOptimComputed(() => time.value - parseTime(start.value));
+const Video: FunctionComponent<Props> = ({ projectDir, time, config }) => {
+  const localTime = useOptimComputed(
+    () => time.value - parseTime(config.start)
+  );
 
   const videoTime = useOptimComputed(
-    () => localTime.value + parseTime(videoStart.value || 0)
+    () => localTime.value + parseTime(config.videoStart || 0)
   );
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const videoFileDecoder = useSignal<VideoFrameDecoder | null>(null);
-
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
-
-  useLayoutEffect(() => {
-    const p = (async () => {
-      const file = await getFile(projectDir, source);
-
-      const videoDecoder = new VideoFrameDecoder(file);
-      await videoDecoder.ready;
-      videoFileDecoder.value = videoDecoder;
-    })();
-
-    waitUntil(p);
-  }, [projectDir, source]);
+  const decoder = useRef<Promise<VideoFrameDecoder> | null>(null);
 
   useSignalLayoutEffect(() => {
-    const videoDecoder = videoFileDecoder.value;
-    if (!videoDecoder) return;
-
     const frameTime = videoTime.value;
     const canvas = canvasRef.current!;
-
-    if (!canvasContextRef.current) {
-      const ctx = canvas.getContext('2d')!;
-      canvasContextRef.current = ctx;
-      canvas.width = videoDecoder.videoData!.width;
-      canvas.height = videoDecoder.videoData!.height;
-    }
-
-    const ctx = canvasContextRef.current!;
     let aborted = false;
 
     const p = (async () => {
+      if (!decoder.current) {
+        const p = (async () => {
+          const file = await getFile(projectDir, config.source);
+          const videoDecoder = new VideoFrameDecoder(file);
+          await videoDecoder.ready;
+          return videoDecoder;
+        })();
+        decoder.current = p;
+      }
+
+      const videoDecoder = (await decoder.current)!;
+
+      if (!canvasContextRef.current) {
+        const ctx = canvas.getContext('2d')!;
+        canvasContextRef.current = ctx;
+        canvas.width = videoDecoder.videoData!.width;
+        canvas.height = videoDecoder.videoData!.height;
+      }
+
+      const ctx = canvasContextRef.current!;
       try {
         const frame = await videoDecoder.getFrameAt(frameTime);
 

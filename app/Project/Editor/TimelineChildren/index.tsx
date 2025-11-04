@@ -42,14 +42,7 @@ const TimelineChildren: FunctionComponent<Props> = ({
 
       if (item.type === 'video') {
         return (
-          <Video
-            key={key}
-            projectDir={projectDir}
-            source={item.source}
-            time={time}
-            start={item.$start!}
-            videoStart={item.$videoStart || new Signal(0)}
-          />
+          <Video key={key} projectDir={projectDir} time={time} config={item} />
         );
       }
       if (item.type === 'container') {

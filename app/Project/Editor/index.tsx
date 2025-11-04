@@ -22,6 +22,7 @@ import { AudioTimeline } from '../../utils/AudioTimeline';
 import TimelineChildren from './TimelineChildren';
 
 import styles from './styles.module.css';
+import Blurrer from './Blurrer';
 interface Props {
   project: DeepSignal<ProjectSchema>;
   projectDir: FileSystemDirectoryHandle;
@@ -29,6 +30,10 @@ interface Props {
 
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const outputting = useSignal(false);
+  const blurLevelsValue = useSignal('1');
+  const blurLevels = useOptimComputed(() =>
+    Math.max(1, Number(blurLevelsValue.value))
+  );
   const framePreviewSetting = useSignal(true);
   const throttleFramesDuringScrubbing = useSignal(true);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -199,24 +204,28 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             height={height}
           >
             <div class={styles.output} ref={outputRef}>
-              <IframeContent width={width} height={height}>
-                <TimelineChildren
-                  projectDir={projectDir}
-                  time={activeTime}
-                  childrenTimeline={project.childrenTimeline}
-                />
-              </IframeContent>
-            </div>
-          </canvas>
-        ) : (
-          <div class={styles.output}>
-            <IframeContent width={width} height={height}>
-              <TimelineChildren
+              <Blurrer
+                blurLevels={blurLevels}
+                fps={project.fps}
+                width={width}
+                height={height}
                 projectDir={projectDir}
                 time={activeTime}
                 childrenTimeline={project.childrenTimeline}
               />
-            </IframeContent>
+            </div>
+          </canvas>
+        ) : (
+          <div class={styles.output}>
+            <Blurrer
+              blurLevels={blurLevels}
+              fps={project.fps}
+              width={width}
+              height={height}
+              projectDir={projectDir}
+              time={activeTime}
+              childrenTimeline={project.childrenTimeline}
+            />
           </div>
         )}
       </div>
@@ -256,6 +265,17 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             }
           />{' '}
           Throttle frames during scrubbing
+        </label>{' '}
+        <label>
+          Blur levels{' '}
+          <input
+            type="number"
+            min="1"
+            value={blurLevelsValue.value}
+            onInput={(e) =>
+              (blurLevelsValue.value = (e.target as HTMLInputElement).value)
+            }
+          />
         </label>
       </div>
     </div>
