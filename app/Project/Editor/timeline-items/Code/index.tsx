@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'preact';
 import { type DeepSignal } from 'deepsignal';
-import { Signal, useComputed, useSignal } from '@preact/signals';
+import { Signal } from '@preact/signals';
 import { useRef } from 'preact/hooks';
 import { createHighlighter } from 'shiki';
 
@@ -10,6 +10,7 @@ import { waitUntil } from '../../../../utils/waitUntil';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 import { getFile } from '../../../../utils/file';
+import styles from './styles.module.css';
 
 // TODO: optimise highlighter
 const highlighterP = createHighlighter({
@@ -117,7 +118,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   // But first, assume no animations
   console.log('code render');
 
-  return <div ref={containerRef} />;
+  return <div class={styles.container} ref={containerRef} />;
 };
 
 export default Code;

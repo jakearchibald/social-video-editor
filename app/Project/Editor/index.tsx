@@ -34,7 +34,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const blurLevels = useOptimComputed(() =>
     Math.max(1, Number(blurLevelsValue.value))
   );
-  const framePreviewSetting = useSignal(true);
+  const framePreviewSetting = useSignal(false);
   const throttleFramesDuringScrubbing = useSignal(true);
   const stageRef = useRef<HTMLDivElement>(null);
   const outputRef = useSignalRef<HTMLDivElement | null>(null);

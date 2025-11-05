@@ -1,0 +1,9 @@
+.container {
+  overflow: clip;
+
+  :global(.shiki) {
+    background-color: transparent !important;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
