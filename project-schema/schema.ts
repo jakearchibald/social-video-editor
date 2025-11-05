@@ -19,6 +19,8 @@ export type ChildrenTimelineItem = VideoClip | Container | Demo | Code;
 export interface ChildrenTimelineItemBase extends TimelineItemBase {
   /** Duration. 00:00:00.000 or ms */
   duration: string | number;
+  /** Ignore this entry (for debugging) */
+  disabled?: boolean;
 }
 
 export interface TimelineItemBase {

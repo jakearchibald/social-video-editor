@@ -25,3 +25,9 @@
   top: 0;
   left: 0;
 }
+
+.rangeContainer {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  font-variant-numeric: tabular-nums;
+}

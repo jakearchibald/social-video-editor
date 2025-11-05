@@ -9,6 +9,18 @@ import Container from '../timeline-items/Container';
 import Demo from '../timeline-items/Demo';
 import Code from '../timeline-items/Code';
 
+export function getTimelineDuration(timeline: ChildrenTimelineItem[]): number {
+  return Math.max(
+    ...timeline
+      .filter((item) => !item.disabled)
+      .map((item) => {
+        const start = parseTime(item.start);
+        const duration = parseTime(item.duration);
+        return start + duration;
+      })
+  );
+}
+
 const keyMap = new WeakMap<object, string>();
 
 interface Props {
@@ -26,6 +38,7 @@ const TimelineChildren: FunctionComponent<Props> = ({
     if (!childrenTimeline) return [];
 
     return childrenTimeline.filter((item) => {
+      if (item.disabled) return false;
       const start = parseTime(item.start);
       const duration = parseTime(item.duration);
       const end = start + duration;

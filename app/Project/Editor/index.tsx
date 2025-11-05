@@ -12,15 +12,17 @@ import {
 } from 'mediabunny';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
-import { parseTime } from '../../utils/time';
+import { formatTime } from '../../utils/time';
 import useThrottledSignal from '../../utils/useThrottledSignal';
 import useOptimComputed from '../../utils/useOptimComputed';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
 import { AudioTimeline } from '../../utils/AudioTimeline';
+import Blurrer from './Blurrer';
+import { getTimelineDuration } from './TimelineChildren';
 
 import styles from './styles.module.css';
-import Blurrer from './Blurrer';
+
 interface Props {
   project: DeepSignal<ProjectSchema>;
   projectDir: FileSystemDirectoryHandle;
@@ -51,6 +53,13 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       ? clampedTime.value
       : throttledTime.value
   );
+  const timeStr = useOptimComputed(() => {
+    return formatTime(activeTime.value, {
+      forceMinutes: true,
+      forceSeconds: true,
+      milliDecimalPlaces: 3,
+    });
+  });
 
   const stageSize = useSignal<{ width: number; height: number }>({
     width: 0,
@@ -89,13 +98,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   });
 
   const duration = useOptimComputed(() => {
-    const lastEndTime = Math.max(
-      ...project.childrenTimeline.map((item) => {
-        const start = parseTime(item.start);
-        const duration = parseTime(item.duration);
-        return start + duration;
-      })
-    );
+    const lastEndTime = getTimelineDuration(project.childrenTimeline);
 
     // The very last time will always be blank, so step back one frame
     const previousFrame = lastEndTime - 1000 / project.fps;
@@ -227,17 +230,20 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
           </div>
         )}
       </div>
-      <input
-        type="range"
-        min="0"
-        max={duration}
-        step="any"
-        value={time.value}
-        disabled={outputting}
-        onInput={(e) => {
-          time.value = (e.target as HTMLInputElement).valueAsNumber;
-        }}
-      />
+      <div class={styles.rangeContainer}>
+        <input
+          type="range"
+          min="0"
+          max={duration}
+          step="any"
+          value={time.value}
+          disabled={outputting}
+          onInput={(e) => {
+            time.value = (e.target as HTMLInputElement).valueAsNumber;
+          }}
+        />
+        <div>{timeStr}</div>
+      </div>
       <div>
         <button onClick={output}>Output video</button>{' '}
         <label>

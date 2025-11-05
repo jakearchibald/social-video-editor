@@ -12,7 +12,16 @@ export function parseTime(timeStr: string | number): number {
   return ms;
 }
 
-export function formatTime(ms: number): string {
+interface FormatTimeOptions {
+  forceMinutes?: boolean;
+  forceSeconds?: boolean;
+  milliDecimalPlaces?: number;
+}
+
+export function formatTime(
+  ms: number,
+  options: FormatTimeOptions = {}
+): string {
   const frac = (ms % 1000) / 1000;
   const seconds = Math.floor((ms / 1000) % 60);
   const minutes = Math.floor((ms / (1000 * 60)) % 60);
@@ -24,14 +33,26 @@ export function formatTime(ms: number): string {
     result += `${hours}:`;
   }
 
-  if (minutes > 0 || result) {
-    result += `${result ? String(minutes).padStart(2, '0') : minutes}:`;
+  if (minutes > 0 || result || options.forceMinutes) {
+    result += `${
+      result || options.forceMinutes
+        ? String(minutes).padStart(2, '0')
+        : minutes
+    }:`;
   }
 
-  result += result ? String(seconds).padStart(2, '0') : String(seconds);
+  result +=
+    result || options.forceSeconds
+      ? String(seconds).padStart(2, '0')
+      : String(seconds);
 
-  if (frac > 0) {
-    result += `.${String(frac).slice(2)}`;
+  if (frac > 0 || options.milliDecimalPlaces !== undefined) {
+    let fracStr = String(frac).slice(2);
+    if (options.milliDecimalPlaces !== undefined) {
+      fracStr = fracStr.slice(0, options.milliDecimalPlaces);
+      fracStr = fracStr.padEnd(options.milliDecimalPlaces, '0');
+    }
+    result += `.${fracStr}`;
   }
 
   return result;
