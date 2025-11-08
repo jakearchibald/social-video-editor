@@ -18,7 +18,7 @@ import styles from './styles.module.css';
 import { shallowEqual } from '../../../../utils/shallowEqual';
 import { mulberry32 } from '../../../../utils/mulberry32';
 
-const theme = 'one-dark-pro';
+const theme = 'dark-plus';
 
 // TODO: optimise highlighter
 const syntaxHighlighterP = createHighlighter({
@@ -163,7 +163,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       if (prevText === null) {
         containerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(text, {
           lang: getLang(currentLang, currentFile),
-          theme: 'one-dark-pro',
+          theme,
         });
         return;
       }
@@ -172,8 +172,6 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         currentCodeItem.animMode === 'lines'
           ? diffLines(prevText, text)
           : diffChars(prevText, text);
-
-      console.log('diff', diff);
 
       containerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(prevText, {
         lang: getLang(currentLang, currentFile),

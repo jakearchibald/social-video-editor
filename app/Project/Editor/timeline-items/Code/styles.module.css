@@ -5,5 +5,9 @@
     background-color: transparent !important;
     line-height: 1.5;
     margin: 0;
+
+    code {
+      font-family: Menlo, Monaco, 'Courier New', monospace;
+    }
   }
 }
