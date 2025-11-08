@@ -185,6 +185,36 @@
                         "number"
                     ]
                 },
+                "enter": {
+                    "properties": {
+                        "duration": {
+                            "type": "number"
+                        },
+                        "type": {
+                            "const": "fade",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ],
+                    "type": "object"
+                },
+                "exit": {
+                    "properties": {
+                        "duration": {
+                            "type": "number"
+                        },
+                        "type": {
+                            "const": "fade",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ],
+                    "type": "object"
+                },
                 "start": {
                     "description": "Start time. 00:00:00.000 or ms",
                     "type": [

@@ -7,6 +7,7 @@ import useOptimComputed from '../../../../utils/useOptimComputed';
 import { parseTime } from '../../../../utils/time';
 import { useRef } from 'preact/hooks';
 import { useSignalRef } from '@preact/signals/utils';
+import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 
 const div = document.createElement('div');
 
@@ -102,6 +103,54 @@ const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     div.style.cssText = '';
     Object.assign(div.style, style.value);
     return div.style.cssText;
+  });
+
+  const enterAnim = useRef<Animation | null>(null);
+  const exitAnim = useRef<Animation | null>(null);
+
+  useSignalLayoutEffect(() => {
+    if (config.enter) {
+      enterAnim.current = containerRef.current!.animate(
+        { offset: 0, opacity: '0' },
+        {
+          duration: config.enter.duration ?? 250,
+          easing: 'ease',
+        }
+      );
+      enterAnim.current.pause();
+    }
+
+    if (config.exit) {
+      const duration = config.exit.duration ?? 250;
+
+      exitAnim.current = containerRef.current!.animate(
+        { opacity: '0' },
+        {
+          duration,
+          delay: parseTime(config.start) - duration,
+          easing: 'ease',
+        }
+      );
+      exitAnim.current.pause();
+    }
+
+    return () => {
+      enterAnim.current?.cancel();
+      enterAnim.current = null;
+      exitAnim.current?.cancel();
+      exitAnim.current = null;
+    };
+  });
+
+  useSignalLayoutEffect(() => {
+    const start = parseTime(config.start);
+
+    if (enterAnim.current) {
+      enterAnim.current.currentTime = time.value - start;
+    }
+    if (exitAnim.current) {
+      exitAnim.current.currentTime = time.value - start;
+    }
   });
 
   console.log('container render');

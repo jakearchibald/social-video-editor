@@ -13,6 +13,8 @@ export interface Container extends ChildrenTimelineItemBase {
   childrenTimeline?: ChildrenTimelineItem[];
   timeline?: ContainerTimelineItem[];
   styles?: SimpleCSSDeclaration;
+  enter?: { type: 'fade'; duration?: number };
+  exit?: { type: 'fade'; duration?: number };
 }
 
 type SimpleCSSDeclaration = {
