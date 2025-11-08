@@ -235,7 +235,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
           type="range"
           min="0"
           max={duration}
-          step="any"
+          step={1000 / project.fps}
           value={time.value}
           disabled={outputting}
           onInput={(e) => {

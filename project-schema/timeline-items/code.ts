@@ -11,10 +11,13 @@ export interface Code extends ChildrenTimelineItemBase {
   timeline?: CodeTimelineItem[];
 }
 
-type CodeTimelineItem = CodeTimelineItemUpdate | CodeTimelineItemHighlight;
+export type CodeTimelineItem =
+  | CodeTimelineItemUpdate
+  | CodeTimelineItemHighlight;
 
-interface CodeTimelineItemUpdate extends TimelineItemBase {
+export interface CodeTimelineItemUpdate extends TimelineItemBase {
   type: 'update';
+  animMode: 'lines' | 'chars';
   source?: string;
   lang?: string;
   slice?: {

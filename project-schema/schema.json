@@ -119,6 +119,13 @@
         },
         "CodeTimelineItemUpdate": {
             "properties": {
+                "animMode": {
+                    "enum": [
+                        "chars",
+                        "lines"
+                    ],
+                    "type": "string"
+                },
                 "lang": {
                     "type": "string"
                 },
@@ -153,6 +160,7 @@
                 }
             },
             "required": [
+                "animMode",
                 "start",
                 "type"
             ],
