@@ -16,6 +16,7 @@ import useOptimComputed from '../../../../utils/useOptimComputed';
 import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
 import { shallowEqual } from '../../../../utils/shallowEqual';
+import { mulberry32 } from '../../../../utils/mulberry32';
 
 const theme = 'one-dark-pro';
 
@@ -172,6 +173,8 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
           ? diffLines(prevText, text)
           : diffChars(prevText, text);
 
+      console.log('diff', diff);
+
       containerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(prevText, {
         lang: getLang(currentLang, currentFile),
         theme,
@@ -198,7 +201,151 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
       const currentStartNum = parseTime(currentStart);
 
-      if (animMode === 'lines') {
+      if (animMode === 'chars') {
+        containerRef.current?.prepend(oldContent);
+
+        let delStart = 0;
+        let addStart = 0;
+
+        for (const diffEntry of diff) {
+          if (!diffEntry.removed && !diffEntry.added) {
+            delStart += diffEntry.count;
+            addStart += diffEntry.count;
+            continue;
+          }
+
+          if (diffEntry.added) {
+            const addEnd = addStart + diffEntry.count;
+            const walker = document.createTreeWalker(
+              oldContent.nextElementSibling!,
+              NodeFilter.SHOW_TEXT
+            );
+            let charIndex = 0;
+            let node: Text | null;
+
+            while ((node = walker.nextNode() as Text)) {
+              if (node.data.length === 0) continue;
+              if (addStart < charIndex + node.data.length) {
+                const range = document.createRange();
+                range.setStart(node, Math.max(0, addStart - charIndex));
+                range.setEnd(node, range.startOffset + 1);
+                const wrapper = document.createElement('span');
+                wrapper.className = 'add-wrapper';
+                range.surroundContents(wrapper);
+                // Move forward one to account for the new text node we just made
+                walker.nextNode();
+                charIndex += node.data.length + 1;
+              } else {
+                charIndex += node.data.length;
+              }
+              if (charIndex >= addEnd) break;
+            }
+
+            addStart += diffEntry.count;
+            continue;
+          }
+
+          const delEnd = delStart + diffEntry.count;
+          const walker = document.createTreeWalker(
+            oldContent,
+            NodeFilter.SHOW_TEXT
+          );
+          let charIndex = 0;
+          let node: Text | null;
+
+          while ((node = walker.nextNode() as Text)) {
+            if (node.data.length === 0) continue;
+            if (delStart < charIndex + node.data.length) {
+              const range = document.createRange();
+              range.setStart(node, Math.max(0, delStart - charIndex));
+              range.setEnd(node, range.startOffset + 1);
+              const wrapper = document.createElement('span');
+              wrapper.className = 'del-wrapper';
+              range.surroundContents(wrapper);
+              // Move forward one to account for the new text node we just made
+              walker.nextNode();
+              charIndex += node.data.length + 1;
+            } else {
+              charIndex += node.data.length;
+            }
+            if (charIndex >= delEnd) break;
+          }
+
+          delStart += diffEntry.count;
+        }
+
+        // Animate
+        const delEls = containerRef.current!.querySelectorAll('.del-wrapper');
+        let delDuration = 0;
+
+        for (const [i, el] of [...delEls].reverse().entries()) {
+          delDuration = 70 * i;
+
+          const anim = el.animate(
+            [{ display: 'inline' }, { display: 'none' }],
+            {
+              duration: delDuration,
+              easing: 'step-end',
+              fill: 'forwards',
+            }
+          );
+          anim.pause();
+          anim.currentTime = time.value - currentStartNum;
+          currentAnimations.current.push(anim);
+        }
+
+        const addStartAnimTime = delDuration ? delDuration + 100 : 0;
+
+        // Make the swap
+        {
+          const anim = oldContent.animate(
+            [{ display: 'block' }, { display: 'none' }],
+            {
+              duration: addStartAnimTime,
+              easing: 'step-end',
+              fill: 'forwards',
+            }
+          );
+          anim.pause();
+          anim.currentTime = time.value - currentStartNum;
+          currentAnimations.current.push(anim);
+        }
+        {
+          const anim = oldContent.nextElementSibling!.animate(
+            [{ display: 'none' }, { display: 'block' }],
+            {
+              duration: addStartAnimTime,
+              easing: 'step-end',
+              fill: 'forwards',
+            }
+          );
+          anim.pause();
+          anim.currentTime = time.value - currentStartNum;
+          currentAnimations.current.push(anim);
+        }
+
+        const addEls = containerRef.current!.querySelectorAll('.add-wrapper');
+
+        let typeDelay = addStartAnimTime;
+        const rand = mulberry32(currentStartNum);
+
+        for (const el of addEls) {
+          typeDelay += Math.pow(rand(), 2) * 150 + 20;
+
+          const anim = el.animate(
+            [{ display: 'none' }, { display: 'inline' }],
+            {
+              duration: typeDelay,
+              easing: 'step-end',
+            }
+          );
+          anim.pause();
+          anim.currentTime = time.value - currentStartNum;
+          currentAnimations.current.push(anim);
+        }
+
+        // Use mullbery32 seeded on start time for typing 'randomness'
+      } else if (animMode === 'lines') {
         const lines = containerRef.current!.querySelectorAll('.line');
         const oldLines = oldContent.querySelectorAll('.line');
 
@@ -230,7 +377,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
             const anim = wrapper.animate(
               [{ height: 'auto' }, { height: '0' }],
               {
-                duration: 250,
+                duration: 300,
                 easing: 'ease',
                 fill: 'forwards',
               }
