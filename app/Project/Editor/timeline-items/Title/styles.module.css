@@ -1,0 +1,66 @@
+.clipper {
+  display: grid;
+  overflow: clip;
+}
+
+.container {
+  display: grid;
+  grid-template-rows: 1.8fr var(--middle-height) 1fr;
+  container-type: inline-size;
+  --title-y-padding: 50px;
+  --text-scale: 0.7;
+  --smaller-translate-y: calc(var(--bottom-height) - 82px);
+  --middle-height: 30px;
+}
+
+.top {
+  background: linear-gradient(in oklab to bottom, #ffa537, #960f18);
+  display: grid;
+  place-items: end start;
+  color: white;
+  font-family: metropolis;
+  font-size: 11.5cqw;
+  white-space: pre-wrap;
+  font-weight: bold;
+  padding: var(--title-y-padding) 61px;
+  text-box-trim: trim-both;
+}
+
+.middle {
+  background: white;
+}
+
+.bottom {
+  background: linear-gradient(in oklab to bottom, #0290ee, #0a214d);
+}
+
+.smaller,
+.away {
+  translate: 0 var(--smaller-translate-y);
+
+  .top {
+    clip-path: inset(
+      calc(
+          100% -
+            (
+              var(--text-height) * var(--text-scale) +
+                (var(--title-y-padding) * 2)
+            )
+        )
+        0 0 0
+    );
+  }
+
+  .textInner {
+    transform-origin: bottom left;
+    scale: var(--text-scale);
+  }
+}
+
+.away {
+  translate: 0
+    calc(
+      var(--bottom-height) + var(--middle-height) +
+        (var(--text-height) * var(--text-scale) + (var(--title-y-padding) * 2))
+    );
+}

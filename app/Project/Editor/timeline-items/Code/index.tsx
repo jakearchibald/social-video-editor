@@ -180,18 +180,6 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
       const oldContent = containerRef.current!.firstElementChild!;
 
-      // Only if any of (prevText, text, animMode, start, lang) are different from last time:
-      //   Wrap and extract the lines / spans that are to be removed
-      //   Perform syntax highlighting of text
-      //   Wrap the lines / spans that are to be added
-      //   Insert the old content into the new content in the correct places
-      //   Create animations
-      //   Cancel old animations (using set)
-      //   Store new animations in set (actually just a ref?? Only one set of anims at a time) associated with currentCodeItem
-      // Then:
-      //   Get animations from set
-      //   Update position of animations (may need fill-backwards)
-
       containerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(text, {
         lang: getLang(currentLang, currentFile),
         theme,
