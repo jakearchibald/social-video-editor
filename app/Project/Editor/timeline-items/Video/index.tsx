@@ -1,16 +1,14 @@
 import type { FunctionComponent } from 'preact';
-import { type Signal } from '@preact/signals';
-import { useRef } from 'preact/hooks';
-import { VideoFrameDecoder } from '../../../../utils/video-decoder';
+import { useSignal, type Signal } from '@preact/signals';
+import { useLayoutEffect } from 'preact/hooks';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';
-import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
-import styles from './styles.module.css';
 import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
 import type { AudioTimelineItem } from '../../../../utils/AudioTimeline';
 import type { VideoClip } from '../../../../../project-schema/timeline-items/video';
 import type { DeepSignal } from 'deepsignal';
+import BaseVideo from '../../BaseVideo';
 
 export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
   const source = item.audioSource || item.source;
@@ -34,64 +32,29 @@ interface Props {
 }
 
 const Video: FunctionComponent<Props> = ({ projectDir, time, config }) => {
-  const localTime = useOptimComputed(
-    () => time.value - parseTime(config.start)
+  const file = useSignal<File | null>(null);
+  const startValue = useOptimComputed(() => parseTime(config.start));
+  const videoStartValue = useOptimComputed(() =>
+    parseTime(config.videoStart || 0)
   );
 
-  const videoTime = useOptimComputed(
-    () => localTime.value + parseTime(config.videoStart || 0)
-  );
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
-  const decoder = useRef<Promise<VideoFrameDecoder> | null>(null);
-
-  useSignalLayoutEffect(() => {
-    const frameTime = videoTime.value;
-    const canvas = canvasRef.current!;
-    let aborted = false;
-
+  useLayoutEffect(() => {
     const p = (async () => {
-      if (!decoder.current) {
-        const p = (async () => {
-          const file = await getFile(projectDir, config.source);
-          const videoDecoder = new VideoFrameDecoder(file);
-          await videoDecoder.ready;
-          return videoDecoder;
-        })();
-        decoder.current = p;
-      }
-
-      const videoDecoder = (await decoder.current)!;
-
-      if (!canvasContextRef.current) {
-        const ctx = canvas.getContext('2d')!;
-        canvasContextRef.current = ctx;
-        canvas.width = videoDecoder.videoData!.width;
-        canvas.height = videoDecoder.videoData!.height;
-      }
-
-      const ctx = canvasContextRef.current!;
-      try {
-        const frame = await videoDecoder.getFrameAt(frameTime);
-
-        if (!frame || aborted) return;
-        ctx.drawImage(frame.canvas, 0, 0);
-      } catch (err) {
-        if (err instanceof Error && err.name === 'AbortError') return;
-        throw err;
-      }
+      file.value = await getFile(projectDir, config.source);
     })();
-
     waitUntil(p);
+  }, []);
 
-    return () => {
-      aborted = true;
-    };
-  });
+  if (!file.value) return null;
 
-  console.log('render');
-
-  return <canvas ref={canvasRef} class={styles.canvas} />;
+  return (
+    <BaseVideo
+      file={file.value}
+      start={startValue}
+      time={time}
+      videoStart={videoStartValue}
+    />
+  );
 };
 
 export default Video;
