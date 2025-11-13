@@ -8,7 +8,7 @@ import type {
 } from '../../../../../project-schema/timeline-items/demo';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 import { waitUntil } from '../../../../utils/waitUntil';
-import { getDirectory, getFile } from '../../../../utils/file';
+import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';
