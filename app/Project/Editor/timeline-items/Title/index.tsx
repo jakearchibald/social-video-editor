@@ -8,7 +8,7 @@ import { useSignalRef } from '@preact/signals/utils';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 import { parseTime } from '../../../../utils/time';
-//import kitURL from './kit.webm?url';
+import kitURL from './kit.webm?url';
 import { waitUntil } from '../../../../utils/waitUntil';
 import BaseVideo from '../../BaseVideo';
 
@@ -34,6 +34,10 @@ const Title: FunctionComponent<Props> = ({ config, time }) => {
   const bottomHeight = useSignal(0);
   const textHeight = useSignal(0);
   const topHeight = useSignal(0);
+  const topStyle = useOptimComputed(() => {
+    if (!config.fontSize) return '';
+    return `font-size: ${config.fontSize};`;
+  });
   const activeTimelineItems = useOptimComputed(() => {
     if (!config.timeline) return [];
     return config.timeline.filter(
@@ -208,7 +212,7 @@ const Title: FunctionComponent<Props> = ({ config, time }) => {
   return (
     <div class={styles.clipper}>
       <div ref={containerRef} class={containerClass} style={containerStyle}>
-        <div ref={topRef} class={styles.top}>
+        <div ref={topRef} class={styles.top} style={topStyle}>
           <div ref={textRef}>
             <div ref={textInnerRef} className={styles.textInner}>
               {config.text}
