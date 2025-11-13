@@ -1,4 +1,4 @@
-export function shallowEqual<T extends Record<string, any>>(
+export function shallowEqual<T extends Record<string, any> | any[]>(
   objA: T | null,
   objB: T | null
 ): boolean {
@@ -10,6 +10,24 @@ export function shallowEqual<T extends Record<string, any>>(
     return false;
   }
 
+  if (Array.isArray(objA) && Array.isArray(objB)) {
+    if (objA.length !== objB.length) {
+      return false;
+    }
+
+    for (let i = 0; i < objA.length; i++) {
+      if (objA[i] !== objB[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  if (Array.isArray(objA) !== Array.isArray(objB)) {
+    return false;
+  }
+
   const keysA = Object.keys(objA);
   const keysB = Object.keys(objB);
 
@@ -18,7 +36,9 @@ export function shallowEqual<T extends Record<string, any>>(
   }
 
   for (const key of keysA) {
-    if (objA[key] !== objB[key]) {
+    if (
+      (objA as Record<string, any>)[key] !== (objB as Record<string, any>)[key]
+    ) {
       return false;
     }
   }

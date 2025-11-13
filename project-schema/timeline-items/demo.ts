@@ -11,7 +11,7 @@ export interface Demo extends ChildrenTimelineItemBase {
   timeline?: DemoTimelineItem[];
 }
 
-type DemoTimelineItem = DemoTimelineItemMessage;
+export type DemoTimelineItem = DemoTimelineItemMessage;
 
 interface DemoTimelineItemMessage extends TimelineItemBase {
   type: 'message';

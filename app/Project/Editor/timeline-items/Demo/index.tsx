@@ -2,7 +2,10 @@ import type { FunctionComponent } from 'preact';
 import { type DeepSignal } from 'deepsignal';
 import { Signal, effect } from '@preact/signals';
 import { useRef } from 'preact/hooks';
-import type { Demo as DemoConfig } from '../../../../../project-schema/timeline-items/demo';
+import type {
+  Demo as DemoConfig,
+  DemoTimelineItem,
+} from '../../../../../project-schema/timeline-items/demo';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 import { waitUntil } from '../../../../utils/waitUntil';
 import { getDirectory, getFile } from '../../../../utils/file';
@@ -10,6 +13,7 @@ import styles from './styles.module.css';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 import { getAssets } from './getAssets';
+import { shallowEqual } from '../../../../utils/shallowEqual';
 
 interface IframeMessage {
   start: number;
@@ -35,18 +39,26 @@ interface Props {
 const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   const iframeContainer = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const lastActiveTimeline = useRef<DemoTimelineItem[]>([]);
+  const activeTimelineItems = useOptimComputed(() => {
+    const timeline: DemoTimelineItem[] = (config.timeline || []).filter(
+      (item) => item.type === 'message' && time.value >= parseTime(item.start)
+    );
+
+    if (shallowEqual(lastActiveTimeline.current, timeline)) {
+      return lastActiveTimeline.current!;
+    }
+    lastActiveTimeline.current = timeline;
+    return timeline;
+  });
+
   const iframeMessages = useOptimComputed(() => {
-    if (!config.timeline) return [];
-    return config.timeline
-      .filter(
-        (item) => item.type === 'message' && time.value >= parseTime(item.start)
-      )
-      .map((item) => {
-        return {
-          start: parseTime(item.start),
-          data: item.data,
-        };
-      });
+    return activeTimelineItems.value.map((item) => {
+      return {
+        start: parseTime(item.start),
+        data: item.data,
+      };
+    });
   });
 
   useSignalLayoutEffect(() => {
