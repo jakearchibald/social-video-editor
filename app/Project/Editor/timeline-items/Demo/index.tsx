@@ -5,10 +5,11 @@ import { useRef } from 'preact/hooks';
 import type { Demo as DemoConfig } from '../../../../../project-schema/timeline-items/demo';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 import { waitUntil } from '../../../../utils/waitUntil';
-import { getFile } from '../../../../utils/file';
+import { getDirectory, getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
 import { parseTime } from '../../../../utils/time';
 import useOptimComputed from '../../../../utils/useOptimComputed';
+import { getAssets } from './getAssets';
 
 interface IframeMessage {
   start: number;
@@ -21,6 +22,7 @@ interface IframeAPI {
     time: Signal<number>;
     effect: typeof effect;
     waitUntil: typeof waitUntil;
+    assets: Record<string, string>;
   };
 }
 
@@ -63,12 +65,16 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     iframeContainer.current!.append(iframe);
 
     let aborted = false;
+    let assets: Record<string, string> = {};
 
     const p = (async () => {
-      const [script, style] = await Promise.all([
+      const [script, style, collectedAssets] = await Promise.all([
         scriptSrc && getFile(projectDir, scriptSrc).then((file) => file.text()),
         styleSrc && getFile(projectDir, styleSrc).then((file) => file.text()),
+        config.assetsDir && getAssets(projectDir, config.assetsDir),
       ]);
+
+      assets = collectedAssets || {};
 
       await iframeLoad;
 
@@ -81,6 +87,7 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         time,
         effect,
         waitUntil,
+        assets,
       };
 
       if (style) {
@@ -100,6 +107,9 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
     return () => {
       aborted = true;
+      for (const url of Object.values(assets)) {
+        URL.revokeObjectURL(url);
+      }
     };
   });
 

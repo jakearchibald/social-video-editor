@@ -6,6 +6,8 @@ export interface Demo extends ChildrenTimelineItemBase {
   scriptSource?: string;
   /** Relative path to CSS file */
   styleSource?: string;
+  /** A directory to expose as static asset object URLs */
+  assetsDir?: string;
   timeline?: DemoTimelineItem[];
 }
 

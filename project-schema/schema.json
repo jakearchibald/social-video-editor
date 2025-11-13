@@ -321,6 +321,10 @@
         },
         "Demo": {
             "properties": {
+                "assetsDir": {
+                    "description": "A directory to expose as static asset object URLs",
+                    "type": "string"
+                },
                 "disabled": {
                     "description": "Ignore this entry (for debugging)",
                     "type": "boolean"
@@ -405,6 +409,9 @@
                         "string",
                         "number"
                     ]
+                },
+                "fontSize": {
+                    "type": "string"
                 },
                 "start": {
                     "description": "Start time. 00:00:00.000 or ms",
