@@ -2,7 +2,7 @@ import {
   BlobSource,
   CanvasSink,
   Input,
-  MP4,
+  ALL_FORMATS,
   type WrappedCanvas,
 } from 'mediabunny';
 
@@ -19,10 +19,10 @@ export class VideoFrameDecoder {
   #iterator?: AsyncGenerator<WrappedCanvas, void, unknown>;
   #nowNext: [WrappedCanvas | null, WrappedCanvas | null] = [null, null];
 
-  constructor(file: File) {
+  constructor(file: Blob) {
     this.#input = new Input({
       source: new BlobSource(file),
-      formats: [MP4],
+      formats: ALL_FORMATS,
     });
 
     this.ready = (async () => {
@@ -32,7 +32,7 @@ export class VideoFrameDecoder {
         width: track?.displayWidth || 0,
         height: track?.displayHeight || 0,
       };
-      this.#canvasSink = new CanvasSink(track!, { poolSize: 2 });
+      this.#canvasSink = new CanvasSink(track!, { poolSize: 2, alpha: true });
     })();
   }
 

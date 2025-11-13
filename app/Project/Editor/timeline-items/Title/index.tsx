@@ -1,13 +1,16 @@
 import type { FunctionComponent } from 'preact';
 import { useSignal, type Signal } from '@preact/signals';
+import { useLayoutEffect, useRef } from 'preact/hooks';
 import styles from './styles.module.css';
 import type { DeepSignal } from 'deepsignal';
-import type { Title } from '../../../../../project-schema/timeline-items/title';
+import type { Title as TitleConfig } from '../../../../../project-schema/timeline-items/title';
 import { useSignalRef } from '@preact/signals/utils';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 import { parseTime } from '../../../../utils/time';
-import { useRef } from 'preact/hooks';
+//import kitURL from './kit.webm?url';
+import { waitUntil } from '../../../../utils/waitUntil';
+import BaseVideo from '../../BaseVideo';
 
 interface ActiveAnimation {
   anim: Animation;
@@ -16,10 +19,12 @@ interface ActiveAnimation {
 
 interface Props {
   time: Signal<number>;
-  config: DeepSignal<Title>;
+  config: DeepSignal<TitleConfig>;
 }
 
 const Title: FunctionComponent<Props> = ({ config, time }) => {
+  const kitFile = useSignal<Blob | null>(null);
+  const startNumber = useOptimComputed(() => parseTime(config.start));
   const activeAnimations = useRef<ActiveAnimation[]>([]);
   const bottomRef = useSignalRef<HTMLDivElement | null>(null);
   const topRef = useSignalRef<HTMLDivElement | null>(null);
@@ -35,6 +40,16 @@ const Title: FunctionComponent<Props> = ({ config, time }) => {
       (item) => time.value >= parseTime(item.start)
     );
   });
+
+  // useLayoutEffect(() => {
+  //   const p = (async () => {
+  //     const resp = await fetch(kitURL);
+  //     const blob = await resp.blob();
+  //     kitFile.value = blob;
+  //   })();
+
+  //   waitUntil(p);
+  // }, []);
 
   const state = useOptimComputed(() => {
     if (activeTimelineItems.value.length === 0) {
@@ -201,7 +216,11 @@ const Title: FunctionComponent<Props> = ({ config, time }) => {
           </div>
         </div>
         <div class={styles.middle}></div>
-        <div ref={bottomRef} class={styles.bottom}></div>
+        <div ref={bottomRef} class={styles.bottom}>
+          {kitFile.value && (
+            <BaseVideo file={kitFile.value} start={startNumber} time={time} />
+          )}
+        </div>
       </div>
     </div>
   );

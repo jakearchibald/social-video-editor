@@ -23,7 +23,6 @@
   white-space: pre-wrap;
   font-weight: bold;
   padding: var(--title-y-padding) 61px;
-  text-box-trim: trim-both;
 }
 
 .middle {
@@ -32,6 +31,8 @@
 
 .bottom {
   background: linear-gradient(in oklab to bottom, #0290ee, #0a214d);
+  display: grid;
+  place-items: end stretch;
 }
 
 .smaller,

@@ -8,10 +8,10 @@ import styles from './styles.module.css';
 import { waitUntil } from '../../../utils/waitUntil';
 
 interface Props {
-  file: File;
+  file: Blob;
   start: Signal<number>;
   time: Signal<number>;
-  videoStart: Signal<number | undefined>;
+  videoStart?: Signal<number | undefined>;
 }
 
 const BaseVideo: FunctionComponent<Props> = ({
@@ -23,7 +23,7 @@ const BaseVideo: FunctionComponent<Props> = ({
   const localTime = useOptimComputed(() => time.value - start.value);
 
   const videoTime = useOptimComputed(
-    () => localTime.value + (videoStart.value || 0)
+    () => localTime.value + (videoStart?.value || 0)
   );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -58,6 +58,7 @@ const BaseVideo: FunctionComponent<Props> = ({
         const frame = await videoDecoder.getFrameAt(frameTime);
 
         if (!frame || aborted) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(frame.canvas, 0, 0);
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
