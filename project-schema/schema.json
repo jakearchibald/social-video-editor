@@ -17,6 +17,9 @@
                 },
                 {
                     "$ref": "#/definitions/Title"
+                },
+                {
+                    "$ref": "#/definitions/Image"
                 }
             ]
         },
@@ -386,6 +389,43 @@
             },
             "required": [
                 "data",
+                "start",
+                "type"
+            ],
+            "type": "object"
+        },
+        "Image": {
+            "properties": {
+                "disabled": {
+                    "description": "Ignore this entry (for debugging)",
+                    "type": "boolean"
+                },
+                "duration": {
+                    "description": "Duration. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "source": {
+                    "description": "Relative path to image file",
+                    "type": "string"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "type": {
+                    "const": "image",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "duration",
+                "source",
                 "start",
                 "type"
             ],
