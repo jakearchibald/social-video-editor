@@ -127,7 +127,7 @@ const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         { opacity: '0' },
         {
           duration,
-          delay: parseTime(config.start) - duration,
+          delay: parseTime(config.duration) - duration,
           easing: 'ease',
         }
       );
