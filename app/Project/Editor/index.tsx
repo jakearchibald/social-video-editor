@@ -1,5 +1,5 @@
 import type { FunctionComponent } from 'preact';
-import { useSignal } from '@preact/signals';
+import { useSignal, useSignalEffect } from '@preact/signals';
 import { useSignalRef } from '@preact/signals/utils';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'preact/hooks';
 import type { DeepSignal } from 'deepsignal';
@@ -23,6 +23,8 @@ import { getTimelineDuration } from './TimelineChildren';
 
 import styles from './styles.module.css';
 
+const initialTime = Number(sessionStorage.getItem('time') || 0);
+
 interface Props {
   project: DeepSignal<ProjectSchema>;
   projectDir: FileSystemDirectoryHandle;
@@ -43,7 +45,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   );
   const width = useOptimComputed(() => project.width);
   const height = useOptimComputed(() => project.height);
-  const time = useSignal(0);
+  const time = useSignal(initialTime);
   const clampedTime = useOptimComputed(
     () => Math.floor(time.value / (1000 / project.fps)) * (1000 / project.fps)
   );
@@ -65,6 +67,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     width: 0,
     height: 0,
   });
+
   const stageStyle = useOptimComputed(() => {
     const projectWidth = project.width;
     const projectHeight = project.height;
@@ -95,6 +98,10 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
 
   useSignalLayoutEffect(() => {
     audioTimeline.current.buildTimeline(project);
+  });
+
+  useSignalEffect(() => {
+    sessionStorage.setItem('time', time.value.toString());
   });
 
   const duration = useOptimComputed(() => {
