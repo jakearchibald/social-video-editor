@@ -116,28 +116,45 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
       if (currentCodeItem.slice) {
         const startIndex =
-          text.indexOf(currentCodeItem.slice.startAfter) +
-          currentCodeItem.slice.startAfter.length;
+          currentCodeItem.slice.startAfter !== undefined
+            ? text.indexOf(currentCodeItem.slice.startAfter) +
+              currentCodeItem.slice.startAfter.length
+            : 0;
 
-        const endIndex = text.indexOf(
-          currentCodeItem.slice.endBefore,
-          startIndex
-        );
+        const endIndex =
+          currentCodeItem.slice.endBefore !== undefined
+            ? text.indexOf(currentCodeItem.slice.endBefore, startIndex)
+            : text.length;
 
         text = text.slice(startIndex, endIndex);
       }
 
       if (prevCodeItem && prevCodeItem.slice) {
         const startIndex =
-          prevText!.indexOf(prevCodeItem.slice.startAfter) +
-          prevCodeItem.slice.startAfter.length;
+          prevCodeItem.slice.startAfter !== undefined
+            ? prevText!.indexOf(prevCodeItem.slice.startAfter) +
+              prevCodeItem.slice.startAfter.length
+            : 0;
 
-        const endIndex = prevText!.indexOf(
-          prevCodeItem.slice.endBefore,
-          startIndex
-        );
+        const endIndex =
+          prevCodeItem.slice.endBefore !== undefined
+            ? prevText!.indexOf(prevCodeItem.slice.endBefore, startIndex)
+            : prevText!.length;
 
         prevText = prevText!.slice(startIndex, endIndex);
+      }
+
+      // Remove lines that contain only "// prettier-ignore" when trimmed
+      text = text
+        .split('\n')
+        .filter((line) => line.trim() !== '// prettier-ignore')
+        .join('\n');
+
+      if (prevText !== null) {
+        prevText = prevText
+          .split('\n')
+          .filter((line) => line.trim() !== '// prettier-ignore')
+          .join('\n');
       }
 
       const changeData = {

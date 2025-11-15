@@ -21,8 +21,8 @@ export interface CodeTimelineItemUpdate extends TimelineItemBase {
   source?: string;
   lang?: string;
   slice?: {
-    startAfter: string;
-    endBefore: string;
+    startAfter?: string;
+    endBefore?: string;
   };
 }
 

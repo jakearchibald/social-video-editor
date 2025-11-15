@@ -144,10 +144,6 @@
                             "type": "string"
                         }
                     },
-                    "required": [
-                        "endBefore",
-                        "startAfter"
-                    ],
                     "type": "object"
                 },
                 "source": {
