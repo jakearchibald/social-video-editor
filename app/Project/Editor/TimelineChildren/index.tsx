@@ -10,6 +10,7 @@ import Demo from '../timeline-items/Demo';
 import Code from '../timeline-items/Code';
 import Title from '../timeline-items/Title';
 import Image from '../timeline-items/Image';
+import { getDuration, getEndTime } from '../../../utils/timeline-item';
 
 export function getTimelineDuration(timeline: ChildrenTimelineItem[]): number {
   return Math.max(
@@ -17,7 +18,7 @@ export function getTimelineDuration(timeline: ChildrenTimelineItem[]): number {
       .filter((item) => !item.disabled)
       .map((item) => {
         const start = parseTime(item.start);
-        const duration = parseTime(item.duration);
+        const duration = getDuration(item);
         return start + duration;
       })
   );
@@ -42,8 +43,7 @@ const TimelineChildren: FunctionComponent<Props> = ({
     return childrenTimeline.filter((item) => {
       if (item.disabled) return false;
       const start = parseTime(item.start);
-      const duration = parseTime(item.duration);
-      const end = start + duration;
+      const end = getEndTime(item);
       return time.value >= start && time.value < end;
     });
   });

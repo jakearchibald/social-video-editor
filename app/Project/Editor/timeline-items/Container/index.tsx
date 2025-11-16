@@ -8,6 +8,7 @@ import { parseTime } from '../../../../utils/time';
 import { useRef } from 'preact/hooks';
 import { useSignalRef } from '@preact/signals/utils';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
+import { getDuration } from '../../../../utils/timeline-item';
 
 const div = document.createElement('div');
 
@@ -127,7 +128,7 @@ const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         { opacity: '0' },
         {
           duration,
-          delay: parseTime(config.duration) - duration,
+          delay: getDuration(config) - duration,
           easing: 'ease',
         }
       );

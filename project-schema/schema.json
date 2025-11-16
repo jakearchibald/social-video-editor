@@ -4,71 +4,752 @@
         "ChildrenTimelineItem": {
             "anyOf": [
                 {
-                    "$ref": "#/definitions/Code"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "duration": {
+                                    "description": "Duration. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "duration"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "lang": {
+                                    "type": "string"
+                                },
+                                "slice": {
+                                    "$ref": "#/definitions/Slice"
+                                },
+                                "source": {
+                                    "type": "string"
+                                },
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/CodeTimelineItem"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "code",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
                 },
                 {
-                    "$ref": "#/definitions/Container"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "end": {
+                                    "description": "End time. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "end"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "lang": {
+                                    "type": "string"
+                                },
+                                "slice": {
+                                    "$ref": "#/definitions/Slice"
+                                },
+                                "source": {
+                                    "type": "string"
+                                },
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/CodeTimelineItem"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "code",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
                 },
                 {
-                    "$ref": "#/definitions/VideoClip"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "duration": {
+                                    "description": "Duration. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "duration"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "audioSource": {
+                                    "description": "Relative path to audio file, used instead of video audio. Null to ignore video audio.",
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                },
+                                "source": {
+                                    "description": "Relative path to video file",
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "const": "video",
+                                    "type": "string"
+                                },
+                                "videoStart": {
+                                    "description": "Start time within the video file. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "source",
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
                 },
                 {
-                    "$ref": "#/definitions/Demo"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "end": {
+                                    "description": "End time. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "end"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "audioSource": {
+                                    "description": "Relative path to audio file, used instead of video audio. Null to ignore video audio.",
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                },
+                                "source": {
+                                    "description": "Relative path to video file",
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "const": "video",
+                                    "type": "string"
+                                },
+                                "videoStart": {
+                                    "description": "Start time within the video file. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "source",
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
                 },
                 {
-                    "$ref": "#/definitions/Title"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "duration": {
+                                    "description": "Duration. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "duration"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "childrenTimeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/ChildrenTimelineItem"
+                                    },
+                                    "type": "array"
+                                },
+                                "enter": {
+                                    "properties": {
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "type": {
+                                            "const": "fade",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "type": "object"
+                                },
+                                "exit": {
+                                    "properties": {
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "type": {
+                                            "const": "fade",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "type": "object"
+                                },
+                                "styles": {
+                                    "$ref": "#/definitions/SimpleCSSDeclaration_1"
+                                },
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/ContainerTimelineItem"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "container",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
                 },
                 {
-                    "$ref": "#/definitions/Image"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "end": {
+                                    "description": "End time. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "end"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "childrenTimeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/ChildrenTimelineItem"
+                                    },
+                                    "type": "array"
+                                },
+                                "enter": {
+                                    "properties": {
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "type": {
+                                            "const": "fade",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "type": "object"
+                                },
+                                "exit": {
+                                    "properties": {
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "type": {
+                                            "const": "fade",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "type": "object"
+                                },
+                                "styles": {
+                                    "$ref": "#/definitions/SimpleCSSDeclaration_1"
+                                },
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/ContainerTimelineItem"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "container",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "duration": {
+                                    "description": "Duration. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "duration"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "assetsDir": {
+                                    "description": "A directory to expose as static asset object URLs",
+                                    "type": "string"
+                                },
+                                "scriptSource": {
+                                    "description": "Relative path to JS file",
+                                    "type": "string"
+                                },
+                                "styleSource": {
+                                    "description": "Relative path to CSS file",
+                                    "type": "string"
+                                },
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/DemoTimelineItemMessage"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "demo",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "end": {
+                                    "description": "End time. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "end"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "assetsDir": {
+                                    "description": "A directory to expose as static asset object URLs",
+                                    "type": "string"
+                                },
+                                "scriptSource": {
+                                    "description": "Relative path to JS file",
+                                    "type": "string"
+                                },
+                                "styleSource": {
+                                    "description": "Relative path to CSS file",
+                                    "type": "string"
+                                },
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/DemoTimelineItemMessage"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "demo",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "duration": {
+                                    "description": "Duration. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "duration"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "fontSize": {
+                                    "type": "string"
+                                },
+                                "text": {
+                                    "type": "string"
+                                },
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/TitleTimelineItem"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "title",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "text",
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "end": {
+                                    "description": "End time. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "end"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "fontSize": {
+                                    "type": "string"
+                                },
+                                "text": {
+                                    "type": "string"
+                                },
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/TitleTimelineItem"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "title",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "text",
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "duration": {
+                                    "description": "Duration. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "duration"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "source": {
+                                    "description": "Relative path to image file",
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "const": "image",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "source",
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "end": {
+                                    "description": "End time. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "end"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "source": {
+                                    "description": "Relative path to image file",
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "const": "image",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "source",
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
                 }
             ]
-        },
-        "Code": {
-            "properties": {
-                "disabled": {
-                    "description": "Ignore this entry (for debugging)",
-                    "type": "boolean"
-                },
-                "duration": {
-                    "description": "Duration. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "lang": {
-                    "type": "string"
-                },
-                "slice": {
-                    "$ref": "#/definitions/Slice"
-                },
-                "source": {
-                    "type": "string"
-                },
-                "start": {
-                    "description": "Start time. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "timeline": {
-                    "items": {
-                        "$ref": "#/definitions/CodeTimelineItem"
-                    },
-                    "type": "array"
-                },
-                "type": {
-                    "const": "code",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "duration",
-                "start",
-                "type"
-            ],
-            "type": "object"
         },
         "CodeTimelineItem": {
             "anyOf": [
@@ -147,83 +828,6 @@
             ],
             "type": "object"
         },
-        "Container": {
-            "properties": {
-                "childrenTimeline": {
-                    "items": {
-                        "$ref": "#/definitions/ChildrenTimelineItem"
-                    },
-                    "type": "array"
-                },
-                "disabled": {
-                    "description": "Ignore this entry (for debugging)",
-                    "type": "boolean"
-                },
-                "duration": {
-                    "description": "Duration. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "enter": {
-                    "properties": {
-                        "duration": {
-                            "type": "number"
-                        },
-                        "type": {
-                            "const": "fade",
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "type"
-                    ],
-                    "type": "object"
-                },
-                "exit": {
-                    "properties": {
-                        "duration": {
-                            "type": "number"
-                        },
-                        "type": {
-                            "const": "fade",
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "type"
-                    ],
-                    "type": "object"
-                },
-                "start": {
-                    "description": "Start time. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "styles": {
-                    "$ref": "#/definitions/SimpleCSSDeclaration_1"
-                },
-                "timeline": {
-                    "items": {
-                        "$ref": "#/definitions/ContainerTimelineItem"
-                    },
-                    "type": "array"
-                },
-                "type": {
-                    "const": "container",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "duration",
-                "start",
-                "type"
-            ],
-            "type": "object"
-        },
         "ContainerTimelineAddStyles": {
             "properties": {
                 "start": {
@@ -297,56 +901,6 @@
             ],
             "type": "object"
         },
-        "Demo": {
-            "properties": {
-                "assetsDir": {
-                    "description": "A directory to expose as static asset object URLs",
-                    "type": "string"
-                },
-                "disabled": {
-                    "description": "Ignore this entry (for debugging)",
-                    "type": "boolean"
-                },
-                "duration": {
-                    "description": "Duration. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "scriptSource": {
-                    "description": "Relative path to JS file",
-                    "type": "string"
-                },
-                "start": {
-                    "description": "Start time. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "styleSource": {
-                    "description": "Relative path to CSS file",
-                    "type": "string"
-                },
-                "timeline": {
-                    "items": {
-                        "$ref": "#/definitions/DemoTimelineItemMessage"
-                    },
-                    "type": "array"
-                },
-                "type": {
-                    "const": "demo",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "duration",
-                "start",
-                "type"
-            ],
-            "type": "object"
-        },
         "DemoTimelineItemMessage": {
             "properties": {
                 "data": {},
@@ -369,43 +923,6 @@
             ],
             "type": "object"
         },
-        "Image": {
-            "properties": {
-                "disabled": {
-                    "description": "Ignore this entry (for debugging)",
-                    "type": "boolean"
-                },
-                "duration": {
-                    "description": "Duration. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "source": {
-                    "description": "Relative path to image file",
-                    "type": "string"
-                },
-                "start": {
-                    "description": "Start time. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "type": {
-                    "const": "image",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "duration",
-                "source",
-                "start",
-                "type"
-            ],
-            "type": "object"
-        },
         "SimpleCSSDeclaration": {
             "$ref": "#/definitions/__type_1"
         },
@@ -418,48 +935,18 @@
         "Slice_1": {
             "$ref": "#/definitions/__type"
         },
-        "Title": {
+        "TimelineItemBase": {
             "properties": {
-                "disabled": {
-                    "description": "Ignore this entry (for debugging)",
-                    "type": "boolean"
-                },
-                "duration": {
-                    "description": "Duration. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "fontSize": {
-                    "type": "string"
-                },
                 "start": {
                     "description": "Start time. 00:00:00.000 or ms",
                     "type": [
                         "string",
                         "number"
                     ]
-                },
-                "text": {
-                    "type": "string"
-                },
-                "timeline": {
-                    "items": {
-                        "$ref": "#/definitions/TitleTimelineItem"
-                    },
-                    "type": "array"
-                },
-                "type": {
-                    "const": "title",
-                    "type": "string"
                 }
             },
             "required": [
-                "duration",
-                "start",
-                "text",
-                "type"
+                "start"
             ],
             "type": "object"
         },
@@ -512,57 +999,6 @@
                     "$ref": "#/definitions/TitleAway"
                 }
             ]
-        },
-        "VideoClip": {
-            "properties": {
-                "audioSource": {
-                    "description": "Relative path to audio file, used instead of video audio. Null to ignore video audio.",
-                    "type": [
-                        "null",
-                        "string"
-                    ]
-                },
-                "disabled": {
-                    "description": "Ignore this entry (for debugging)",
-                    "type": "boolean"
-                },
-                "duration": {
-                    "description": "Duration. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "source": {
-                    "description": "Relative path to video file",
-                    "type": "string"
-                },
-                "start": {
-                    "description": "Start time. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "type": {
-                    "const": "video",
-                    "type": "string"
-                },
-                "videoStart": {
-                    "description": "Start time within the video file. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                }
-            },
-            "required": [
-                "duration",
-                "source",
-                "start",
-                "type"
-            ],
-            "type": "object"
         },
         "__type": {
             "properties": {

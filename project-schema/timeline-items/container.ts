@@ -8,14 +8,14 @@ type ContainerTimelineItem =
   | ContainerTimelineSetStyles
   | ContainerTimelineAddStyles;
 
-export interface Container extends ChildrenTimelineItemBase {
+export type Container = ChildrenTimelineItemBase & {
   type: 'container';
   childrenTimeline?: ChildrenTimelineItem[];
   timeline?: ContainerTimelineItem[];
   styles?: SimpleCSSDeclaration;
   enter?: { type: 'fade'; duration?: number };
   exit?: { type: 'fade'; duration?: number };
-}
+};
 
 type SimpleCSSDeclaration = {
   [K in keyof CSSStyleDeclaration as CSSStyleDeclaration[K] extends string

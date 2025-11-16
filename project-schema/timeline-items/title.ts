@@ -1,11 +1,11 @@
 import type { ChildrenTimelineItemBase, TimelineItemBase } from '../schema';
 
-export interface Title extends ChildrenTimelineItemBase {
+export type Title = ChildrenTimelineItemBase & {
   type: 'title';
   text: string;
   fontSize?: string;
   timeline?: TitleTimelineItem[];
-}
+};
 
 export type TitleTimelineItem = TitleSmaller | TitleAway;
 

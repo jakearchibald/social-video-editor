@@ -1,6 +1,6 @@
 import type { ChildrenTimelineItemBase, TimelineItemBase } from '../schema';
 
-export interface Demo extends ChildrenTimelineItemBase {
+export type Demo = ChildrenTimelineItemBase & {
   type: 'demo';
   /** Relative path to JS file */
   scriptSource?: string;
@@ -9,7 +9,7 @@ export interface Demo extends ChildrenTimelineItemBase {
   /** A directory to expose as static asset object URLs */
   assetsDir?: string;
   timeline?: DemoTimelineItem[];
-}
+};
 
 export type DemoTimelineItem = DemoTimelineItemMessage;
 

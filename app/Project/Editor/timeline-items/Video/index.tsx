@@ -9,6 +9,7 @@ import type { AudioTimelineItem } from '../../../../utils/AudioTimeline';
 import type { VideoClip } from '../../../../../project-schema/timeline-items/video';
 import type { DeepSignal } from 'deepsignal';
 import BaseVideo from '../../BaseVideo';
+import { getDuration } from '../../../../utils/timeline-item';
 
 export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
   const source = item.audioSource || item.source;
@@ -19,7 +20,7 @@ export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
     {
       start: parseTime(item.start),
       audioStart: parseTime(item.videoStart || 0),
-      duration: parseTime(item.duration),
+      duration: getDuration(item),
       source,
     },
   ];
