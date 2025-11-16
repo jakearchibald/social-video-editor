@@ -1,13 +1,15 @@
 import type { ChildrenTimelineItemBase, TimelineItemBase } from '../schema';
 
+type Slice = {
+  startAfter?: string;
+  endBefore?: string;
+};
+
 export interface Code extends ChildrenTimelineItemBase {
   type: 'code';
   source?: string;
   lang?: string;
-  slice?: {
-    startAfter: string;
-    endBefore: string;
-  };
+  slice?: Slice;
   timeline?: CodeTimelineItem[];
 }
 
@@ -17,13 +19,10 @@ export type CodeTimelineItem =
 
 export interface CodeTimelineItemUpdate extends TimelineItemBase {
   type: 'update';
-  animMode: 'lines' | 'chars';
+  animMode?: 'lines' | 'chars';
   source?: string;
   lang?: string;
-  slice?: {
-    startAfter?: string;
-    endBefore?: string;
-  };
+  slice?: Slice;
 }
 
 interface CodeTimelineItemHighlight extends TimelineItemBase {

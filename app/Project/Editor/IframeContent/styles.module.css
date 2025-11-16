@@ -2,3 +2,9 @@ iframe {
   display: block;
   border: none;
 }
+
+.container {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+}

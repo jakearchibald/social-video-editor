@@ -35,6 +35,9 @@ export class AudioTimeline {
       if (item.type === 'video') {
         this.#items.push(...getVideoAudioTimelineItems(item));
       }
+      if ('childrenTimeline' in item && item.childrenTimeline) {
+        this.#scanTimeline(item.childrenTimeline);
+      }
     }
   }
 

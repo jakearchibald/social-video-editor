@@ -40,19 +40,7 @@
                     "type": "string"
                 },
                 "slice": {
-                    "properties": {
-                        "endBefore": {
-                            "type": "string"
-                        },
-                        "startAfter": {
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "endBefore",
-                        "startAfter"
-                    ],
-                    "type": "object"
+                    "$ref": "#/definitions/Slice"
                 },
                 "source": {
                     "type": "string"
@@ -136,15 +124,7 @@
                     "type": "string"
                 },
                 "slice": {
-                    "properties": {
-                        "endBefore": {
-                            "type": "string"
-                        },
-                        "startAfter": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
+                    "$ref": "#/definitions/Slice"
                 },
                 "source": {
                     "type": "string"
@@ -162,7 +142,6 @@
                 }
             },
             "required": [
-                "animMode",
                 "start",
                 "type"
             ],
@@ -428,10 +407,16 @@
             "type": "object"
         },
         "SimpleCSSDeclaration": {
-            "$ref": "#/definitions/__type"
+            "$ref": "#/definitions/__type_1"
         },
         "SimpleCSSDeclaration_1": {
             "$ref": "#/definitions/SimpleCSSDeclaration"
+        },
+        "Slice": {
+            "$ref": "#/definitions/Slice_1"
+        },
+        "Slice_1": {
+            "$ref": "#/definitions/__type"
         },
         "Title": {
             "properties": {
@@ -580,6 +565,17 @@
             "type": "object"
         },
         "__type": {
+            "properties": {
+                "endBefore": {
+                    "type": "string"
+                },
+                "startAfter": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "__type_1": {
             "properties": {
                 "accentColor": {
                     "type": "string"

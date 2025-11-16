@@ -62,7 +62,9 @@ const IframeContent: FunctionComponent<Props> = ({
         style={iframeStyle}
         ref={iframeRef}
       />
-      <div ref={targetRef}>{children}</div>
+      <div class={styles.container} ref={targetRef}>
+        {children}
+      </div>
     </div>
   );
 };

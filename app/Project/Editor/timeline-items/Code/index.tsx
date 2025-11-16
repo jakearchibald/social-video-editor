@@ -144,16 +144,21 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         prevText = prevText!.slice(startIndex, endIndex);
       }
 
-      // Remove lines that contain only "// prettier-ignore" when trimmed
+      // Remove lines that contain only "prettier-ignore" lines when trimmed
+      const ignoredLines = new Set([
+        '// prettier-ignore',
+        '<!-- prettier-ignore -->',
+      ]);
+
       text = text
         .split('\n')
-        .filter((line) => line.trim() !== '// prettier-ignore')
+        .filter((line) => !ignoredLines.has(line.trim()))
         .join('\n');
 
       if (prevText !== null) {
         prevText = prevText
           .split('\n')
-          .filter((line) => line.trim() !== '// prettier-ignore')
+          .filter((line) => !ignoredLines.has(line.trim()))
           .join('\n');
       }
 
@@ -188,7 +193,9 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       const diff =
         currentCodeItem.animMode === 'lines'
           ? diffLines(prevText, text)
-          : diffChars(prevText, text);
+          : currentCodeItem.animMode === 'chars'
+          ? diffChars(prevText, text)
+          : undefined;
 
       containerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(prevText, {
         lang: getLang(currentLang, currentFile),
@@ -210,7 +217,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         let delStart = 0;
         let addStart = 0;
 
-        for (const diffEntry of diff) {
+        for (const diffEntry of diff!) {
           if (!diffEntry.removed && !diffEntry.added) {
             delStart += diffEntry.count;
             addStart += diffEntry.count;
@@ -355,7 +362,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         let lineDiff = 0;
         let oldLineDiff = 0;
 
-        for (const diffEntry of diff) {
+        for (const diffEntry of diff!) {
           if (diffEntry.removed === true) {
             const wrapper = document.createElement('div');
             wrapper.style.overflow = 'clip';
