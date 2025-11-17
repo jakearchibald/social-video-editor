@@ -1,0 +1,13 @@
+.container {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 15% 1fr 40%;
+}
+.middle {
+  display: grid;
+  grid-template-columns: 11% 1fr 11%;
+}
+.unsafe {
+  background: rgb(255 0 0 / 0.4);
+}

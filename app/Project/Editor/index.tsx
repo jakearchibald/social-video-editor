@@ -19,9 +19,10 @@ import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
 import { AudioTimeline } from '../../utils/AudioTimeline';
 import TimelineChildren, { getTimelineDuration } from './TimelineChildren';
+import IframeContent from './IframeContent';
+import SafeArea from './SafeArea';
 
 import styles from './styles.module.css';
-import IframeContent from './IframeContent';
 
 const initialTime = Number(sessionStorage.getItem('time') || 0);
 
@@ -34,6 +35,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const outputting = useSignal(false);
   const framePreviewSetting = useSignal(false);
   const throttleFramesDuringScrubbing = useSignal(true);
+  const showSafeArea = useSignal(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const outputRef = useSignalRef<HTMLDivElement | null>(null);
   const audioTimeline = useRef<AudioTimeline>(
@@ -228,6 +230,9 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             </IframeContent>
           </div>
         )}
+        {showSafeArea.value && (
+          <SafeArea width={width.value} height={height.value} />
+        )}
       </div>
       <div class={styles.rangeContainer}>
         <input
@@ -268,6 +273,16 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             }
           />{' '}
           Throttle frames during scrubbing
+        </label>{' '}
+        <label>
+          <input
+            type="checkbox"
+            checked={showSafeArea}
+            onChange={(e) =>
+              (showSafeArea.value = (e.target as HTMLInputElement).checked)
+            }
+          />{' '}
+          Show safe area
         </label>{' '}
       </div>
     </div>
