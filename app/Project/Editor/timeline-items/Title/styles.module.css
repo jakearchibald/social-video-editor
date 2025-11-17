@@ -9,7 +9,7 @@
   container-type: inline-size;
   --title-y-padding: 50px;
   --text-scale: 0.7;
-  --smaller-translate-y: calc(var(--bottom-height) - 82px);
+  --smaller-translate-y: calc(var(--bottom-height) - 652px);
   --middle-height: 30px;
 }
 

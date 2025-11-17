@@ -170,7 +170,7 @@ const Title: FunctionComponent<Props> = ({ config, time }) => {
         });
       }
     } else if (state.value.type === 'away') {
-      const duration = 200;
+      const duration = 300;
       const start = parseTime(state.value.start);
 
       {

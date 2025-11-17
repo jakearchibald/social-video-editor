@@ -3,6 +3,7 @@
   inset: 0;
   display: grid;
   grid-template-rows: 15% 1fr 40%;
+  pointer-events: none;
 }
 .middle {
   display: grid;
