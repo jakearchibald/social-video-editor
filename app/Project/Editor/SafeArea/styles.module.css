@@ -2,12 +2,16 @@
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-rows: 15% 1fr 40%;
+  grid-template-rows: 8% 50% 28% 1fr;
   pointer-events: none;
 }
 .middle {
   display: grid;
-  grid-template-columns: 11% 1fr 11%;
+  grid-template-columns: 6% 1fr 6%;
+}
+.lower {
+  display: grid;
+  grid-template-columns: 6% 1fr 18%;
 }
 .unsafe {
   background: rgb(255 0 0 / 0.4);

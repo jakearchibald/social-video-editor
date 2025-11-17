@@ -18,6 +18,11 @@ const SafeArea: FunctionComponent<Props> = ({ width, height }) => {
         <div />
         <div class={styles.unsafe} />
       </div>
+      <div class={styles.lower}>
+        <div class={styles.unsafe} />
+        <div />
+        <div class={styles.unsafe} />
+      </div>
       <div class={styles.unsafe} />
     </div>
   );
