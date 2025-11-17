@@ -18,10 +18,10 @@ import useOptimComputed from '../../utils/useOptimComputed';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
 import { AudioTimeline } from '../../utils/AudioTimeline';
-import Blurrer from './Blurrer';
-import { getTimelineDuration } from './TimelineChildren';
+import TimelineChildren, { getTimelineDuration } from './TimelineChildren';
 
 import styles from './styles.module.css';
+import IframeContent from './IframeContent';
 
 const initialTime = Number(sessionStorage.getItem('time') || 0);
 
@@ -32,10 +32,6 @@ interface Props {
 
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const outputting = useSignal(false);
-  const blurLevelsValue = useSignal('1');
-  const blurLevels = useOptimComputed(() =>
-    Math.max(1, Number(blurLevelsValue.value))
-  );
   const framePreviewSetting = useSignal(false);
   const throttleFramesDuringScrubbing = useSignal(true);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -212,28 +208,24 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             height={height}
           >
             <div class={styles.output} ref={outputRef}>
-              <Blurrer
-                blurLevels={blurLevels}
-                fps={project.fps}
-                width={width}
-                height={height}
-                projectDir={projectDir}
-                time={activeTime}
-                childrenTimeline={project.childrenTimeline}
-              />
+              <IframeContent width={width} height={height}>
+                <TimelineChildren
+                  projectDir={projectDir}
+                  time={time}
+                  childrenTimeline={project.childrenTimeline}
+                />
+              </IframeContent>
             </div>
           </canvas>
         ) : (
           <div class={styles.output}>
-            <Blurrer
-              blurLevels={blurLevels}
-              fps={project.fps}
-              width={width}
-              height={height}
-              projectDir={projectDir}
-              time={activeTime}
-              childrenTimeline={project.childrenTimeline}
-            />
+            <IframeContent width={width} height={height}>
+              <TimelineChildren
+                projectDir={projectDir}
+                time={time}
+                childrenTimeline={project.childrenTimeline}
+              />
+            </IframeContent>
           </div>
         )}
       </div>
@@ -277,17 +269,6 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
           />{' '}
           Throttle frames during scrubbing
         </label>{' '}
-        <label>
-          Blur levels{' '}
-          <input
-            type="number"
-            min="1"
-            value={blurLevelsValue.value}
-            onInput={(e) =>
-              (blurLevelsValue.value = (e.target as HTMLInputElement).value)
-            }
-          />
-        </label>
       </div>
     </div>
   );
