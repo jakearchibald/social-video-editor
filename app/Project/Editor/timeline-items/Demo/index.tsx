@@ -24,6 +24,7 @@ interface IframeAPI {
   socialVid: {
     messages: Signal<IframeMessage[]>;
     time: Signal<number>;
+    start: number;
     effect: typeof effect;
     waitUntil: typeof waitUntil;
     assets: Record<string, string>;
@@ -96,8 +97,19 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       const iframeDoc = iframe.contentDocument!;
       iframeWin.socialVid = {
         messages: iframeMessages,
+        start: parseTime(config.start),
         time,
-        effect,
+        effect: (callback, options) => {
+          const dispose = effect(function () {
+            // Auto-dispose if iframe is gone
+            if (!iframeDoc.defaultView) {
+              dispose();
+              return;
+            }
+            return callback.call(this);
+          }, options);
+          return dispose;
+        },
         waitUntil,
         assets,
       };
