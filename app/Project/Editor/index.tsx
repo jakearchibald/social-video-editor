@@ -152,6 +152,8 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const output = useCallback(async () => {
     outputting.value = true;
 
+    await 0;
+
     const outputCanvas = outputCanvasRef.current!;
     const file = await projectDir.getFileHandle('output.mp4', { create: true });
     const fileStream = await file.createWritable();
