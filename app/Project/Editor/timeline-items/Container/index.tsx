@@ -130,6 +130,7 @@ const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
           duration,
           delay: getDuration(config) - duration,
           easing: 'ease',
+          fill: 'forwards',
         }
       );
       exitAnim.current.pause();
