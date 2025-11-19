@@ -19,7 +19,10 @@ export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
   return [
     {
       start: parseTime(item.start),
-      audioStart: parseTime(item.videoStart || 0),
+      audioStart:
+        'audioStart' in item
+          ? parseTime(item.audioStart || 0)
+          : parseTime(item.videoStart || 0),
       duration: getDuration(item),
       source,
     },

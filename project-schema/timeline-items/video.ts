@@ -8,4 +8,6 @@ export type VideoClip = ChildrenTimelineItemBase & {
   audioSource?: string | null;
   /** Start time within the video file. 00:00:00.000 or ms */
   videoStart?: string | number;
+  /** Start time within the audio file. 00:00:00.000 or ms */
+  audioStart?: string | number;
 };
