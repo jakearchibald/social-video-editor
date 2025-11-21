@@ -2,6 +2,7 @@ import type { Code } from './timeline-items/code';
 import type { Container } from './timeline-items/container';
 import type { Demo } from './timeline-items/demo';
 import type { Image } from './timeline-items/image';
+import type { Subtitles } from './timeline-items/subtitles';
 import type { Title } from './timeline-items/title';
 import type { VideoClip } from './timeline-items/video';
 
@@ -22,7 +23,8 @@ export type ChildrenTimelineItem =
   | Demo
   | Code
   | Title
-  | Image;
+  | Image
+  | Subtitles;
 
 export type ChildrenTimelineItemBase = TimelineItemBase &
   (

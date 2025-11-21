@@ -1,0 +1,27 @@
+.container {
+  position: relative;
+  text-transform: uppercase;
+  font-family: metropolis;
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+  -webkit-text-stroke: 0.2em #000000a8;
+  paint-order: stroke;
+  line-height: 1.2;
+}
+
+.segment {
+  position: relative;
+}
+
+.activeWordHighlight {
+  position: absolute;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -0.2em -0.3em -0.1em;
+    background: #ffa537;
+    border-radius: 0.1em;
+  }
+}

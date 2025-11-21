@@ -762,6 +762,118 @@
                             "type": "object"
                         }
                     ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "duration": {
+                                    "description": "Duration. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "duration"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "source": {
+                                    "description": "Relative path to subtitles JSON file",
+                                    "type": "string"
+                                },
+                                "subtitlesStart": {
+                                    "description": "Timestamp for subtitle start point",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                },
+                                "type": {
+                                    "const": "subtitles",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "source",
+                                "subtitlesStart",
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "end": {
+                                    "description": "End time. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "end"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "source": {
+                                    "description": "Relative path to subtitles JSON file",
+                                    "type": "string"
+                                },
+                                "subtitlesStart": {
+                                    "description": "Timestamp for subtitle start point",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                },
+                                "type": {
+                                    "const": "subtitles",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "source",
+                                "subtitlesStart",
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
                 }
             ]
         },
