@@ -107,6 +107,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       //   debugger;
       // }
 
+      // If there's a 200ms gap between words, and we're past the min, new segment
       if (
         charsInSegment >= config.segmentCharLength.min &&
         lastWord &&
