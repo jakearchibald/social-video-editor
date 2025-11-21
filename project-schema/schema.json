@@ -794,6 +794,21 @@
                         },
                         {
                             "properties": {
+                                "segmentCharLength": {
+                                    "properties": {
+                                        "max": {
+                                            "type": "number"
+                                        },
+                                        "min": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "max",
+                                        "min"
+                                    ],
+                                    "type": "object"
+                                },
                                 "source": {
                                     "description": "Relative path to subtitles JSON file",
                                     "type": "string"
@@ -811,6 +826,7 @@
                                 }
                             },
                             "required": [
+                                "segmentCharLength",
                                 "source",
                                 "subtitlesStart",
                                 "type"
@@ -850,6 +866,21 @@
                         },
                         {
                             "properties": {
+                                "segmentCharLength": {
+                                    "properties": {
+                                        "max": {
+                                            "type": "number"
+                                        },
+                                        "min": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "max",
+                                        "min"
+                                    ],
+                                    "type": "object"
+                                },
                                 "source": {
                                     "description": "Relative path to subtitles JSON file",
                                     "type": "string"
@@ -867,6 +898,7 @@
                                 }
                             },
                             "required": [
+                                "segmentCharLength",
                                 "source",
                                 "subtitlesStart",
                                 "type"

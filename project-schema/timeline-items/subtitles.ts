@@ -6,4 +6,5 @@ export type Subtitles = ChildrenTimelineItemBase & {
   source: string;
   /** Timestamp for subtitle start point */
   subtitlesStart: number | string;
+  segmentCharLength: { min: number; max: number };
 };
