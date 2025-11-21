@@ -1,20 +1,15 @@
-import type { FunctionComponent, ComponentChild } from 'preact';
-import { type DeepSignal, type RevertDeepSignal } from 'deepsignal';
+import type { FunctionComponent } from 'preact';
+import { type DeepSignal } from 'deepsignal';
 import { Signal, useSignal } from '@preact/signals';
-import type { Container as ContainerConfig } from '../../../../../project-schema/timeline-items/container';
-import TimelineChildren from '../../TimelineChildren';
 import useOptimComputed from '../../../../utils/useOptimComputed';
 import { parseTime } from '../../../../utils/time';
-import { useEffect, useRef } from 'preact/hooks';
 import { useSignalRef } from '@preact/signals/utils';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
-import { getDuration } from '../../../../utils/timeline-item';
 import type { Subtitles as SubtitlesConfig } from '../../../../../project-schema/timeline-items/subtitles';
 import type { SubtitlesData, SubtitleWord } from './subtitles-type';
 import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
-import { classes } from '../../../../utils/classes';
 
 interface Props {
   time: Signal<number>;
@@ -40,7 +35,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         parseTime(config.subtitlesStart)) /
       1000;
 
-    // TODO: optimise with binary tree
+    // TODO: optimise with binary tree - some of the offsetting may make this hard
     for (const [i, segment] of subtitlesData.value.segments.entries()) {
       // Allow segment to appear 200ms ahead of time
       if (segment.start - 0.2 > offsetSeconds) return null;
@@ -70,7 +65,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
     // TODO: optimise with binary tree
     for (const word of subtitlesData.value.words) {
-      if (word.start >= segment.end) return words;
+      if (word.start > segment.end) return words;
       if (word.start < segment.start) continue;
       words.push(word);
     }
@@ -111,10 +106,28 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   const activeWord = useOptimComputed(() => {
     if (!resolvedSegment.value) return null;
 
-    for (const item of resolvedSegment.value) {
+    for (const [i, item] of resolvedSegment.value.entries()) {
       if (typeof item === 'string') continue;
       if (item.start >= time.value) return null;
-      if (item.end < time.value) continue;
+
+      const duration = Math.max(item.end - item.start, 50);
+      const end = item.start + duration;
+
+      if (end < time.value) {
+        const nextWord = resolvedSegment.value
+          .slice(i + 1)
+          .find((item) => typeof item !== 'string');
+
+        // Allow word to hang around for 0.5s unless there's a pending other word
+        if (
+          (nextWord &&
+            !(typeof nextWord === 'string') &&
+            nextWord.start <= time.value) ||
+          end + 500 < time.value
+        ) {
+          continue;
+        }
+      }
       return item;
     }
 

@@ -24,6 +24,8 @@ import SafeArea from './SafeArea';
 
 import styles from './styles.module.css';
 
+const forceDuration = 0;
+
 const initialTime = Number(sessionStorage.getItem('time') || 0);
 
 interface Props {
@@ -103,6 +105,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   });
 
   const duration = useOptimComputed(() => {
+    if (forceDuration) return forceDuration;
     const lastEndTime = getTimelineDuration(project.childrenTimeline);
 
     // The very last time will always be blank, so step back one frame

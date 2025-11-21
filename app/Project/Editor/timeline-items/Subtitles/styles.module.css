@@ -5,7 +5,7 @@
   font-weight: 900;
   color: #fff;
   text-align: center;
-  -webkit-text-stroke: 0.2em #000000a8;
+  -webkit-text-stroke: 0.2em #000;
   paint-order: stroke;
   line-height: 1.2;
 }
