@@ -43,16 +43,10 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
     const items: ResolvedSubtitleItem[] = [];
 
-    let text = subtitlesData.value.text;
     let lastWord: null | ResolvedWord = null;
 
-    for (const word of subtitlesData.value.words) {
-      const index = text.indexOf(word.word);
-      if (index === -1) break;
-      const before = text.slice(0, index);
-      const after = text.slice(index + word.word.length);
-
-      if (before) items.push(before);
+    for (const word of subtitlesData.value.word_segments) {
+      if (lastWord) items.push(' ');
 
       const newWord: ResolvedWord = {
         text: word.word,
@@ -70,11 +64,9 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
       items.push(newWord);
 
-      text = after;
       lastWord = newWord;
     }
 
-    items.push(text);
     return items;
   });
 
@@ -111,7 +103,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       if (
         charsInSegment >= config.segmentCharLength.min &&
         lastWord &&
-        item.start - lastWord.end > 200
+        item.start - lastWord.end > 300
       ) {
         newSegment();
       }

@@ -5,13 +5,5 @@ export interface SubtitleWord {
 }
 
 export interface SubtitlesData {
-  task: 'transcribe';
-  language: string;
-  duration: number;
-  text: string;
-  usage: {
-    type: string;
-    seconds: number;
-  };
-  words: SubtitleWord[];
+  word_segments: SubtitleWord[];
 }
