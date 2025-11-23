@@ -11,7 +11,7 @@ import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
 
-const segmentIds = new WeakMap<any, string>();
+const segmentKeys = new WeakMap<any, string>();
 const minWordDisplayTime = 50;
 
 interface Props {
@@ -24,10 +24,22 @@ type ResolvedWord = { start: number; end: number; text: string };
 
 type ResolvedSubtitleItem = string | ResolvedWord;
 
-interface ResolvedSubtitleSegment {
-  start: number;
-  end: number;
-  items: ResolvedSubtitleItem[];
+class ResolvedSubtitleSegment {
+  items: ResolvedSubtitleItem[] = [];
+
+  constructor() {
+    segmentKeys.set(this, String(Math.random()));
+  }
+
+  get start() {
+    const firstWord = this.items.find((item) => typeof item !== 'string');
+    return firstWord ? firstWord.start : -1;
+  }
+
+  get end() {
+    const lastWord = this.items.findLast((item) => typeof item !== 'string');
+    return lastWord ? lastWord.end : -1;
+  }
 }
 
 const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
@@ -74,54 +86,74 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     if (!resolvedSubtitles.value) return null;
 
     const segments: ResolvedSubtitleSegment[] = [];
-    let segment!: ResolvedSubtitleSegment;
-    let charsInSegment!: number;
 
-    const newSegment = () => {
-      segment = { items: [], start: -1, end: -1 };
-      charsInSegment = 0;
+    let remainingWords = resolvedSubtitles.value.slice();
+
+    // Split by sentences
+    while (true) {
+      const sentenceEndIndex = remainingWords.findIndex((item) => {
+        if (typeof item === 'string') return false;
+        return /[?!.]$/.test(item.text);
+      });
+
+      if (sentenceEndIndex === -1) {
+        const segment = new ResolvedSubtitleSegment();
+        segment.items = remainingWords;
+        segments.push(segment);
+        break;
+      }
+
+      const segment = new ResolvedSubtitleSegment();
+      segment.items = remainingWords.slice(0, sentenceEndIndex + 1);
       segments.push(segment);
-      segmentIds.set(segment, String(Math.random()));
-    };
 
-    newSegment();
+      remainingWords = remainingWords.slice(sentenceEndIndex + 1);
 
-    let lastWord: ResolvedWord | null = null;
+      if (remainingWords.length === 0) break;
+    }
 
-    for (const item of resolvedSubtitles.value) {
-      if (typeof item === 'string') {
-        segment.items.push(item);
-        charsInSegment += item.length;
+    // Split segments
+    for (let i = 0; i < segments.length; ) {
+      const segment = segments[i];
+      const text = segment.items
+        .map((item) => (typeof item === 'string' ? item : item.text))
+        .join('');
+
+      if (text.length <= config.segmentCharLength.max) {
+        i++;
         continue;
       }
 
-      // if (item.text === 'renders' && lastWord && lastWord.text === 'server') {
-      //   debugger;
-      // }
+      // Find the biggest gap between words to split at
+      let biggestGapIndex = -1;
+      let biggestGapDuration = 0;
 
-      // If there's a 200ms gap between words, and we're past the min, new segment
-      if (
-        charsInSegment >= config.segmentCharLength.min &&
-        lastWord &&
-        item.start - lastWord.end > 300
-      ) {
-        newSegment();
+      for (const [i, item] of segment.items.entries()) {
+        if (typeof item === 'string') continue;
+
+        const nextWord = segment.items
+          .slice(i + 1)
+          .find((item) => typeof item !== 'string');
+        if (!nextWord) continue;
+
+        const gapDuration = nextWord.start - item.end;
+
+        if (gapDuration > biggestGapDuration) {
+          biggestGapDuration = gapDuration;
+          biggestGapIndex = i;
+        }
       }
 
-      if (charsInSegment + item.text.length > config.segmentCharLength.max) {
-        newSegment();
+      if (biggestGapIndex === -1) {
+        i++;
+        continue;
       }
 
-      segment.items.push(item);
-      charsInSegment += item.text.length;
+      const newSegment = new ResolvedSubtitleSegment();
+      newSegment.items = segment.items.slice(biggestGapIndex + 1);
+      segment.items = segment.items.slice(0, biggestGapIndex + 1);
 
-      segment.end = item.end;
-
-      if (segment.start === -1) {
-        segment.start = item.start;
-      }
-
-      lastWord = item;
+      segments.splice(i + 1, 0, newSegment);
     }
 
     return segments;
@@ -218,7 +250,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       <div
         class={styles.segment}
         key={
-          subtitlesSegment.value ? segmentIds.get(subtitlesSegment.value) : ''
+          subtitlesSegment.value ? segmentKeys.get(subtitlesSegment.value) : ''
         }
       >
         {subtitlesSegment.value?.items.map((item) => (
