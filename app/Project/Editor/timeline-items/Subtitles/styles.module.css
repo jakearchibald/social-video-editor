@@ -14,15 +14,3 @@
 .segment {
   position: relative;
 }
-
-.activeWordHighlight {
-  position: absolute;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0em -0.2em -0.15em;
-    background: #ffa537;
-    border-radius: 0.1em;
-  }
-}

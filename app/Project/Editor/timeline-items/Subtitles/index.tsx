@@ -45,7 +45,6 @@ class ResolvedSubtitleSegment {
 const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   const subtitlesData = useSignal<SubtitlesData | null>(null);
   const containerEl = useSignalRef<HTMLDivElement | null>(null);
-  const activeWordEl = useSignalRef<HTMLSpanElement | null>(null);
 
   const resolvedSubtitles = useOptimComputed(() => {
     if (!subtitlesData.value) return null;
@@ -186,51 +185,22 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     return null;
   });
 
-  const activeWord = useOptimComputed(() => {
+  const activeWords = useOptimComputed(() => {
     if (!subtitlesSegment.value) return null;
 
-    for (const [i, item] of subtitlesSegment.value.items.entries()) {
-      if (typeof item === 'string') continue;
-      if (item.start >= time.value) return null;
+    const firstFutureIndex = subtitlesSegment.value.items.findIndex((item) => {
+      if (typeof item === 'string') return false;
+      return item.start > time.value;
+    });
 
-      if (item.end < time.value) {
-        const nextWord = subtitlesSegment.value.items
-          .slice(i + 1)
-          .find((item) => typeof item !== 'string');
+    const activeWords: Set<ResolvedSubtitleItem> = new Set(
+      subtitlesSegment.value.items.slice(
+        0,
+        firstFutureIndex === -1 ? undefined : firstFutureIndex
+      )
+    );
 
-        // Allow word to hang around for 0.5s unless there's a pending other word
-        if (
-          (nextWord &&
-            !(typeof nextWord === 'string') &&
-            nextWord.start <= time.value) ||
-          item.end + 500 < time.value
-        ) {
-          continue;
-        }
-      }
-      return item;
-    }
-
-    return null;
-  });
-
-  const activeWordStyles = useOptimComputed<string>(() => {
-    if (!activeWord.value || !activeWordEl.value || !containerEl.value) {
-      return 'opacity: 0';
-    }
-    const containerBounds = containerEl.value.getBoundingClientRect();
-    const bounds = activeWordEl.value.getClientRects()[0];
-
-    if (!containerBounds || !bounds) {
-      return 'opacity: 0';
-    }
-
-    return `
-      top: ${bounds.top - containerBounds.top}px;
-      left: ${bounds.left - containerBounds.left}px;
-      width: ${bounds.width}px;
-      height: ${bounds.height}px;
-    `;
+    return activeWords;
   });
 
   useSignalLayoutEffect(() => {
@@ -246,7 +216,6 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
   return (
     <div class={styles.container} ref={containerEl}>
-      <div class={styles.activeWordHighlight} style={activeWordStyles} />
       <div
         class={styles.segment}
         key={
@@ -254,7 +223,14 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         }
       >
         {subtitlesSegment.value?.items.map((item) => (
-          <span ref={item === activeWord.value ? activeWordEl : undefined}>
+          <span
+            style={{
+              color:
+                activeWords.value && activeWords.value.has(item)
+                  ? '#fff'
+                  : '#c9c9c9',
+            }}
+          >
             {typeof item === 'string' ? item : item.text}
           </span>
         ))}
