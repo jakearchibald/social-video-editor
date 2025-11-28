@@ -14,12 +14,10 @@ type ContainerTimelineItem = NonNullable<ContainerConfig['timeline']>[number];
 
 interface Props {
   time: Signal<number>;
-  start: Signal<number>;
-  duration: Signal<number>;
   styles?: SimpleCSSDeclaration;
   timeline?: ContainerTimelineItem[];
-  enter?: { type: 'fade'; duration?: number };
-  exit?: { type: 'fade'; duration?: number };
+  enter?: { type: 'fade'; duration?: number; start: number };
+  exit?: { type: 'fade'; duration?: number; end: number };
   children?: ComponentChildren;
 }
 
@@ -31,10 +29,10 @@ function objWithoutOffset<T extends Record<string, any>>(
   return rest;
 }
 
+const defaultEnterExitDuration = 250;
+
 const BaseContainer: FunctionComponent<Props> = ({
   time,
-  start,
-  duration,
   styles: initialStyles,
   timeline,
   enter,
@@ -128,7 +126,7 @@ const BaseContainer: FunctionComponent<Props> = ({
       enterAnim.current = containerRef.current!.animate(
         { offset: 0, opacity: '0' },
         {
-          duration: enter.duration ?? 250,
+          duration: enter.duration ?? defaultEnterExitDuration,
           easing: 'ease',
         }
       );
@@ -136,13 +134,12 @@ const BaseContainer: FunctionComponent<Props> = ({
     }
 
     if (exit) {
-      const exitDuration = exit.duration ?? 250;
+      const exitDuration = exit.duration ?? defaultEnterExitDuration;
 
       exitAnim.current = containerRef.current!.animate(
         { opacity: '0' },
         {
           duration: exitDuration,
-          delay: duration.value - exitDuration,
           easing: 'ease',
           fill: 'forwards',
         }
@@ -160,10 +157,11 @@ const BaseContainer: FunctionComponent<Props> = ({
 
   useSignalLayoutEffect(() => {
     if (enterAnim.current) {
-      enterAnim.current.currentTime = time.value - start.value;
+      enterAnim.current.currentTime = time.value - enter!.start;
     }
     if (exitAnim.current) {
-      exitAnim.current.currentTime = time.value - start.value;
+      exitAnim.current.currentTime =
+        time.value - exit!.end + (exit!.duration ?? defaultEnterExitDuration);
     }
   });
 
