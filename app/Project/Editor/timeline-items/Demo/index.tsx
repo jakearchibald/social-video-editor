@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'preact';
 import { type DeepSignal } from 'deepsignal';
-import { Signal, effect } from '@preact/signals';
+import { Signal, effect, useComputed } from '@preact/signals';
 import { useRef } from 'preact/hooks';
 import type {
   Demo as DemoConfig,
@@ -11,7 +11,6 @@ import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
 import { parseTime } from '../../../../utils/time';
-import useOptimComputed from '../../../../utils/useOptimComputed';
 import { getAssets } from './getAssets';
 import { shallowEqual } from '../../../../utils/shallowEqual';
 
@@ -41,7 +40,7 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   const iframeContainer = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const lastActiveTimeline = useRef<DemoTimelineItem[]>([]);
-  const activeTimelineItems = useOptimComputed(() => {
+  const activeTimelineItems = useComputed(() => {
     const timeline: DemoTimelineItem[] = (config.timeline || []).filter(
       (item) => item.type === 'message' && time.value >= parseTime(item.start)
     );
@@ -53,7 +52,7 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     return timeline;
   });
 
-  const iframeMessages = useOptimComputed(() => {
+  const iframeMessages = useComputed(() => {
     return activeTimelineItems.value.map((item) => {
       return {
         start: parseTime(item.start),

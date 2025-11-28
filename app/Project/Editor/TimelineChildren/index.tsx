@@ -1,9 +1,8 @@
 import type { FunctionComponent } from 'preact';
 import type { DeepSignal } from 'deepsignal';
-import { Signal } from '@preact/signals';
+import { Signal, useComputed } from '@preact/signals';
 import type { ChildrenTimelineItem } from '../../../../project-schema/schema';
 import { parseTime } from '../../../utils/time';
-import useOptimComputed from '../../../utils/useOptimComputed';
 import Video from '../timeline-items/Video';
 import Container from '../timeline-items/Container';
 import Demo from '../timeline-items/Demo';
@@ -38,7 +37,7 @@ const TimelineChildren: FunctionComponent<Props> = ({
   time,
   projectDir,
 }) => {
-  const activeTimelineItems = useOptimComputed(() => {
+  const activeTimelineItems = useComputed(() => {
     if (!childrenTimeline) return [];
 
     return childrenTimeline.filter((item) => {
@@ -49,7 +48,7 @@ const TimelineChildren: FunctionComponent<Props> = ({
     });
   });
 
-  const timelineChildren = useOptimComputed(() =>
+  const timelineChildren = useComputed(() =>
     activeTimelineItems.value.map((item) => {
       if (!keyMap.has(item)) {
         keyMap.set(item, String(Math.random()));

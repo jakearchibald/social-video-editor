@@ -1,8 +1,7 @@
 import type { FunctionComponent } from 'preact';
-import { useSignal, type Signal } from '@preact/signals';
+import { useSignal, type Signal, useComputed } from '@preact/signals';
 import { useLayoutEffect } from 'preact/hooks';
 import { parseTime } from '../../../../utils/time';
-import useOptimComputed from '../../../../utils/useOptimComputed';
 import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
 import type { AudioTimelineItem } from '../../../../utils/AudioTimeline';
@@ -37,8 +36,8 @@ interface Props {
 
 const Video: FunctionComponent<Props> = ({ projectDir, time, config }) => {
   const file = useSignal<File | null>(null);
-  const startValue = useOptimComputed(() => parseTime(config.start));
-  const videoStartValue = useOptimComputed(() =>
+  const startValue = useComputed(() => parseTime(config.start));
+  const videoStartValue = useComputed(() =>
     parseTime(config.videoStart || 0)
   );
 

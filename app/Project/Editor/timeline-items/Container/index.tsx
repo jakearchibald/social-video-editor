@@ -1,9 +1,8 @@
 import type { FunctionComponent } from 'preact';
 import { type DeepSignal } from 'deepsignal';
-import { Signal } from '@preact/signals';
+import { Signal, useComputed } from '@preact/signals';
 import type { Container as ContainerConfig } from '../../../../../project-schema/timeline-items/container';
 import TimelineChildren from '../../TimelineChildren';
-import useOptimComputed from '../../../../utils/useOptimComputed';
 import { parseTime } from '../../../../utils/time';
 import { getDuration } from '../../../../utils/timeline-item';
 import BaseContainer from '../../BaseContainer';
@@ -15,8 +14,8 @@ interface Props {
 }
 
 const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
-  const startValue = useOptimComputed(() => parseTime(config.start));
-  const durationValue = useOptimComputed(() => getDuration(config));
+  const startValue = useComputed(() => parseTime(config.start));
+  const durationValue = useComputed(() => getDuration(config));
 
   console.log('container render');
 

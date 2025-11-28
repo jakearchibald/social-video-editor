@@ -1,8 +1,7 @@
 import type { FunctionComponent, ComponentChildren } from 'preact';
-import { Signal } from '@preact/signals';
+import { Signal, useComputed } from '@preact/signals';
 import type { RevertDeepSignal } from 'deepsignal';
 import type { Container as ContainerConfig } from '../../../../project-schema/timeline-items/container';
-import useOptimComputed from '../../../utils/useOptimComputed';
 import { parseTime } from '../../../utils/time';
 import { useRef } from 'preact/hooks';
 import { useSignalRef } from '@preact/signals/utils';
@@ -45,7 +44,7 @@ const BaseContainer: FunctionComponent<Props> = ({
   const containerRef = useSignalRef<HTMLDivElement | null>(null);
   const activeAnimations = useRef<Map<object, Animation>>(new Map());
 
-  const style = useOptimComputed(() => {
+  const style = useComputed(() => {
     if (!containerRef.current) return {};
 
     let styles = {
@@ -115,7 +114,7 @@ const BaseContainer: FunctionComponent<Props> = ({
     return styles;
   });
 
-  const styleString = useOptimComputed(() => {
+  const styleString = useComputed(() => {
     div.style.cssText = '';
     Object.assign(div.style, style.value);
     return div.style.cssText;

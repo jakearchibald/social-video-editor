@@ -1,5 +1,5 @@
 import type { FunctionComponent } from 'preact';
-import { useSignal, useSignalEffect } from '@preact/signals';
+import { useSignal, useSignalEffect, useComputed } from '@preact/signals';
 import { useSignalRef } from '@preact/signals/utils';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'preact/hooks';
 import type { DeepSignal } from 'deepsignal';
@@ -14,7 +14,6 @@ import {
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
 import { formatTime } from '../../utils/time';
 import useThrottledSignal from '../../utils/useThrottledSignal';
-import useOptimComputed from '../../utils/useOptimComputed';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
 import { AudioTimeline } from '../../utils/AudioTimeline';
@@ -43,19 +42,19 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const audioTimeline = useRef<AudioTimeline>(
     useMemo(() => new AudioTimeline(projectDir), [projectDir])
   );
-  const width = useOptimComputed(() => project.width);
-  const height = useOptimComputed(() => project.height);
+  const width = useComputed(() => project.width);
+  const height = useComputed(() => project.height);
   const time = useSignal(initialTime);
-  const clampedTime = useOptimComputed(
+  const clampedTime = useComputed(
     () => Math.floor(time.value / (1000 / project.fps)) * (1000 / project.fps)
   );
   const throttledTime = useThrottledSignal(clampedTime, 50);
-  const activeTime = useOptimComputed(() =>
+  const activeTime = useComputed(() =>
     outputting.value || !throttleFramesDuringScrubbing.value
       ? clampedTime.value
       : throttledTime.value
   );
-  const timeStr = useOptimComputed(() => {
+  const timeStr = useComputed(() => {
     return formatTime(activeTime.value, {
       forceMinutes: true,
       forceSeconds: true,
@@ -68,7 +67,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     height: 0,
   });
 
-  const stageStyle = useOptimComputed(() => {
+  const stageStyle = useComputed(() => {
     const projectWidth = project.width;
     const projectHeight = project.height;
     const scaleX = stageSize.value.width / projectWidth;
@@ -104,7 +103,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     sessionStorage.setItem('time', time.value.toString());
   });
 
-  const duration = useOptimComputed(() => {
+  const duration = useComputed(() => {
     if (forceDuration) return forceDuration;
     const lastEndTime = getTimelineDuration(project.childrenTimeline);
 
@@ -115,7 +114,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   });
 
   const outputCanvasRef = useSignalRef<HTMLCanvasElement | null>(null);
-  const outputCanvasContext = useOptimComputed(
+  const outputCanvasContext = useComputed(
     () => outputCanvasRef.value?.getContext('2d')!
   );
 

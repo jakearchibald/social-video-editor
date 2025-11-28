@@ -8,8 +8,6 @@
   grid-template-rows: 1.8fr var(--middle-height) 1fr;
   container-type: inline-size;
   --title-y-padding: 50px;
-  --text-scale: 0.7;
-  --smaller-translate-y: calc(var(--bottom-height) - 652px);
   --middle-height: 30px;
 }
 
@@ -33,35 +31,4 @@
   background: linear-gradient(in oklab to bottom, #0290ee, #0a214d);
   display: grid;
   place-items: end stretch;
-}
-
-.smaller,
-.away {
-  translate: 0 var(--smaller-translate-y);
-
-  .top {
-    clip-path: inset(
-      calc(
-          100% -
-            (
-              var(--text-height) * var(--text-scale) +
-                (var(--title-y-padding) * 2)
-            )
-        )
-        0 0 0
-    );
-  }
-
-  .textInner {
-    transform-origin: bottom left;
-    scale: var(--text-scale);
-  }
-}
-
-.away {
-  translate: 0
-    calc(
-      var(--bottom-height) + var(--middle-height) +
-        (var(--text-height) * var(--text-scale) + (var(--title-y-padding) * 2))
-    );
 }

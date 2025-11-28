@@ -1,7 +1,6 @@
 import type { FunctionComponent } from 'preact';
 import { type DeepSignal } from 'deepsignal';
-import { Signal, useSignal } from '@preact/signals';
-import useOptimComputed from '../../../../utils/useOptimComputed';
+import { Signal, useSignal, useComputed } from '@preact/signals';
 import { parseTime } from '../../../../utils/time';
 import { useSignalRef } from '@preact/signals/utils';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
@@ -46,7 +45,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   const subtitlesData = useSignal<SubtitlesData | null>(null);
   const containerEl = useSignalRef<HTMLDivElement | null>(null);
 
-  const resolvedSubtitles = useOptimComputed(() => {
+  const resolvedSubtitles = useComputed(() => {
     if (!subtitlesData.value) return null;
 
     const timeShift =
@@ -81,7 +80,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     return items;
   });
 
-  const resolvedSegments = useOptimComputed(() => {
+  const resolvedSegments = useComputed(() => {
     if (!resolvedSubtitles.value) return null;
 
     const segments: ResolvedSubtitleSegment[] = [];
@@ -158,7 +157,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     return segments;
   });
 
-  const subtitlesSegment = useOptimComputed(() => {
+  const subtitlesSegment = useComputed(() => {
     if (resolvedSegments.value === null) return null;
 
     const now = time.value;
@@ -185,7 +184,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     return null;
   });
 
-  const activeWords = useOptimComputed(() => {
+  const activeWords = useComputed(() => {
     if (!subtitlesSegment.value) return null;
 
     const firstFutureIndex = subtitlesSegment.value.items.findIndex((item) => {

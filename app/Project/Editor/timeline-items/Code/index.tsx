@@ -1,6 +1,6 @@
 import type { FunctionComponent, Ref } from 'preact';
 import { type DeepSignal } from 'deepsignal';
-import { Signal } from '@preact/signals';
+import { Signal, useComputed } from '@preact/signals';
 import { useRef } from 'preact/hooks';
 import { createHighlighter } from 'shiki';
 import { diffChars, diffLines } from 'diff';
@@ -12,7 +12,6 @@ import type {
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
 import { waitUntil } from '../../../../utils/waitUntil';
 import { parseTime } from '../../../../utils/time';
-import useOptimComputed from '../../../../utils/useOptimComputed';
 import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
 import { shallowEqual } from '../../../../utils/shallowEqual';
@@ -41,13 +40,13 @@ interface Props {
 const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const activeTimelineItems = useOptimComputed(() => {
+  const activeTimelineItems = useComputed(() => {
     if (!config.timeline) return [];
     return config.timeline.filter(
       (item) => time.value >= parseTime(item.start)
     );
   });
-  const currentPrevCodeItems = useOptimComputed(() => {
+  const currentPrevCodeItems = useComputed(() => {
     return [
       {
         type: 'update',
@@ -64,22 +63,22 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       CodeTimelineItemUpdate | undefined
     ];
   });
-  const currentFileSource = useOptimComputed(
+  const currentFileSource = useComputed(
     () => currentPrevCodeItems.value[0].source || config.source
   );
-  const prevFileSource = useOptimComputed(() =>
+  const prevFileSource = useComputed(() =>
     currentPrevCodeItems.value[1]
       ? currentPrevCodeItems.value[1].source || config.source
       : null
   );
 
-  const currentFileTextPromise = useOptimComputed(async () => {
+  const currentFileTextPromise = useComputed(async () => {
     if (!currentFileSource.value) return '';
     const file = await getFile(projectDir, currentFileSource.value);
     return file.text();
   });
 
-  const prevFileTextPromise = useOptimComputed(async () => {
+  const prevFileTextPromise = useComputed(async () => {
     if (!prevFileSource.value) return null;
     const file = await getFile(projectDir, prevFileSource.value);
     return file.text();

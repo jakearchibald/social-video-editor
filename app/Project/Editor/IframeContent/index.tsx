@@ -1,8 +1,7 @@
 import { type FunctionComponent } from 'preact';
-import { type Signal } from '@preact/signals';
+import { type Signal, useComputed } from '@preact/signals';
 
 import { useLayoutEffect, useRef } from 'preact/hooks';
-import useOptimComputed from '../../../utils/useOptimComputed';
 import styles from './styles.module.css';
 
 interface Props {
@@ -15,7 +14,7 @@ const IframeContent: FunctionComponent<Props> = ({
   height,
   children,
 }) => {
-  const iframeStyle = useOptimComputed(
+  const iframeStyle = useComputed(
     () => `width: ${width.value}px; height: ${height.value}px;`
   );
   const iframeRef = useRef<HTMLIFrameElement>(null);

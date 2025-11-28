@@ -1,8 +1,7 @@
 import type { FunctionComponent } from 'preact';
-import { type Signal } from '@preact/signals';
+import { type Signal, useComputed } from '@preact/signals';
 import { useRef } from 'preact/hooks';
 import { VideoFrameDecoder } from '../../../utils/video-decoder';
-import useOptimComputed from '../../../utils/useOptimComputed';
 import useSignalLayoutEffect from '../../../utils/useSignalLayoutEffect';
 import styles from './styles.module.css';
 import { waitUntil } from '../../../utils/waitUntil';
@@ -20,9 +19,9 @@ const BaseVideo: FunctionComponent<Props> = ({
   time,
   videoStart,
 }) => {
-  const localTime = useOptimComputed(() => time.value - start.value);
+  const localTime = useComputed(() => time.value - start.value);
 
-  const videoTime = useOptimComputed(
+  const videoTime = useComputed(
     () => localTime.value + (videoStart?.value || 0)
   );
   const canvasRef = useRef<HTMLCanvasElement>(null);

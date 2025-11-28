@@ -592,12 +592,6 @@
                                 "text": {
                                     "type": "string"
                                 },
-                                "timeline": {
-                                    "items": {
-                                        "$ref": "#/definitions/TitleTimelineItem"
-                                    },
-                                    "type": "array"
-                                },
                                 "type": {
                                     "const": "title",
                                     "type": "string"
@@ -647,12 +641,6 @@
                                 },
                                 "text": {
                                     "type": "string"
-                                },
-                                "timeline": {
-                                    "items": {
-                                        "$ref": "#/definitions/TitleTimelineItem"
-                                    },
-                                    "type": "array"
                                 },
                                 "type": {
                                     "const": "title",
@@ -1107,56 +1095,6 @@
                 "start"
             ],
             "type": "object"
-        },
-        "TitleAway": {
-            "properties": {
-                "start": {
-                    "description": "Start time. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "type": {
-                    "const": "away",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "start",
-                "type"
-            ],
-            "type": "object"
-        },
-        "TitleSmaller": {
-            "properties": {
-                "start": {
-                    "description": "Start time. 00:00:00.000 or ms",
-                    "type": [
-                        "string",
-                        "number"
-                    ]
-                },
-                "type": {
-                    "const": "smaller",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "start",
-                "type"
-            ],
-            "type": "object"
-        },
-        "TitleTimelineItem": {
-            "anyOf": [
-                {
-                    "$ref": "#/definitions/TitleSmaller"
-                },
-                {
-                    "$ref": "#/definitions/TitleAway"
-                }
-            ]
         },
         "__type": {
             "properties": {
