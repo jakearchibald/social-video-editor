@@ -1,5 +1,5 @@
 import type { FunctionComponent, ComponentChildren } from 'preact';
-import { Signal, useComputed } from '@preact/signals';
+import { Signal, useComputed, useSignal } from '@preact/signals';
 import type { RevertDeepSignal } from 'deepsignal';
 import type { Container as ContainerConfig } from '../../../../project-schema/timeline-items/container';
 import { parseTime } from '../../../utils/time';
@@ -15,6 +15,7 @@ type ContainerTimelineItem = NonNullable<ContainerConfig['timeline']>[number];
 interface Props {
   time: Signal<number>;
   styles?: SimpleCSSDeclaration;
+  class?: string;
   timeline?: ContainerTimelineItem[];
   enter?: { type: 'fade'; duration?: number; start: number };
   exit?: { type: 'fade'; duration?: number; end: number };
@@ -38,6 +39,7 @@ const BaseContainer: FunctionComponent<Props> = ({
   enter,
   exit,
   children,
+  class: className,
 }) => {
   const containerRef = useSignalRef<HTMLDivElement | null>(null);
   const activeAnimations = useRef<Map<object, Animation>>(new Map());
@@ -166,7 +168,7 @@ const BaseContainer: FunctionComponent<Props> = ({
   });
 
   return (
-    <div style={styleString} ref={containerRef}>
+    <div class={className} style={styleString} ref={containerRef}>
       {children}
     </div>
   );

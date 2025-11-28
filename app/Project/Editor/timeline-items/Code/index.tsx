@@ -1,4 +1,4 @@
-import type { FunctionComponent, Ref } from 'preact';
+import { type FunctionComponent, type Ref } from 'preact';
 import { type DeepSignal } from 'deepsignal';
 import { Signal, useComputed } from '@preact/signals';
 import { useRef } from 'preact/hooks';
@@ -16,6 +16,9 @@ import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
 import { shallowEqual } from '../../../../utils/shallowEqual';
 import { mulberry32 } from '../../../../utils/mulberry32';
+import { useComputedShallow } from '../../../../utils/useComputedShallow';
+import BaseContainer from '../../BaseContainer';
+import { findText } from '../../../../utils/findText';
 
 const theme = 'dark-plus';
 
@@ -39,13 +42,18 @@ interface Props {
 
 const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const codeContainerRef = useRef<HTMLDivElement>(null);
+  const codeReady = useRef<Promise<void>>(Promise.resolve());
 
-  const activeTimelineItems = useComputed(() => {
+  const activeTimelineItems = useComputedShallow(() => {
     if (!config.timeline) return [];
     return config.timeline.filter(
-      (item) => time.value >= parseTime(item.start)
+      (item) =>
+        time.value >= parseTime(item.start) &&
+        ('end' in item ? time.value < parseTime(item.end) : true)
     );
   });
+
   const currentPrevCodeItems = useComputed(() => {
     return [
       {
@@ -182,10 +190,13 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       currentAnimations.current = [];
 
       if (prevText === null) {
-        containerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(text, {
-          lang: getLang(currentLang, currentFile),
-          theme,
-        });
+        codeContainerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(
+          text,
+          {
+            lang: getLang(currentLang, currentFile),
+            theme,
+          }
+        );
         return;
       }
 
@@ -196,14 +207,17 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
           ? diffChars(prevText, text)
           : undefined;
 
-      containerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(prevText, {
-        lang: getLang(currentLang, currentFile),
-        theme,
-      });
+      codeContainerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(
+        prevText,
+        {
+          lang: getLang(currentLang, currentFile),
+          theme,
+        }
+      );
 
-      const oldContent = containerRef.current!.firstElementChild!;
+      const oldContent = codeContainerRef.current!.firstElementChild!;
 
-      containerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(text, {
+      codeContainerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(text, {
         lang: getLang(currentLang, currentFile),
         theme,
       });
@@ -211,7 +225,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       const currentStartNum = parseTime(currentStart);
 
       if (animMode === 'chars') {
-        containerRef.current?.prepend(oldContent);
+        codeContainerRef.current?.prepend(oldContent);
 
         let delStart = 0;
         let addStart = 0;
@@ -284,7 +298,8 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         }
 
         // Animate
-        const delEls = containerRef.current!.querySelectorAll('.del-wrapper');
+        const delEls =
+          codeContainerRef.current!.querySelectorAll('.del-wrapper');
         let delDuration = 0;
 
         for (const [i, el] of [...delEls].reverse().entries()) {
@@ -333,7 +348,8 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
           currentAnimations.current.push(anim);
         }
 
-        const addEls = containerRef.current!.querySelectorAll('.add-wrapper');
+        const addEls =
+          codeContainerRef.current!.querySelectorAll('.add-wrapper');
 
         let typeDelay = addStartAnimTime;
         const rand = mulberry32(currentStartNum);
@@ -352,10 +368,8 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
           anim.currentTime = time.value - currentStartNum;
           currentAnimations.current.push(anim);
         }
-
-        // Use mullbery32 seeded on start time for typing 'randomness'
       } else if (animMode === 'lines') {
-        const lines = containerRef.current!.querySelectorAll('.line');
+        const lines = codeContainerRef.current!.querySelectorAll('.line');
         const oldLines = oldContent.querySelectorAll('.line');
 
         let lineDiff = 0;
@@ -369,7 +383,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
             if (lines[lineDiff]) {
               lines[lineDiff].before(wrapper);
             } else {
-              containerRef
+              codeContainerRef
                 .current!.querySelector('code')!
                 .append('\n', wrapper);
             }
@@ -432,6 +446,8 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       }
     })();
 
+    codeReady.current = p;
+
     waitUntil(p);
 
     return () => {
@@ -447,9 +463,77 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     }
   });
 
+  const activeHighlights = useComputedShallow(() => {
+    if (!config.timeline) return [];
+    return activeTimelineItems.value.filter(
+      (item) => item.type === 'highlight'
+    );
+  });
+
+  useSignalLayoutEffect(() => {
+    const highlights = activeHighlights.value;
+
+    (async () => {
+      await codeReady.current;
+      const highlightEls =
+        containerRef.current!.querySelectorAll<HTMLDivElement>(
+          `.${styles.highlight}`
+        );
+
+      for (const [i, el] of highlightEls.entries()) {
+        const highlight = highlights[i];
+        const range = findText(highlight.text, {
+          root: codeContainerRef.current!,
+          index: highlight.index || 0,
+        });
+
+        if (!range) {
+          console.error(
+            `Could not find text to highlight: "${highlight.text}"`
+          );
+          continue;
+        }
+
+        const rect = range.getBoundingClientRect();
+        const containerRect = codeContainerRef.current!.getBoundingClientRect();
+
+        el.style.top = `${rect.top - containerRect.top}px`;
+        el.style.height = `${rect.height}px`;
+        el.style.left = `${rect.left - containerRect.left}px`;
+        el.style.width = `${rect.width}px`;
+      }
+    })();
+  });
+
   console.log('code render');
 
-  return <div class={styles.container} ref={containerRef} />;
+  return (
+    <div class={styles.container} ref={containerRef}>
+      <div class={styles.highlights}>
+        {activeHighlights.value.map((highlight) => (
+          <div class={styles.highlight} key={highlight.text}>
+            <BaseContainer
+              class={styles.highlightInner}
+              time={time}
+              exit={{ type: 'fade', end: parseTime(highlight.end) }}
+              styles={{
+                clipPath: 'inset(0 100% 0 0 round 0.2em)',
+              }}
+              timeline={[
+                {
+                  type: 'add-styles',
+                  styles: { clipPath: 'inset(0 round 0.2em)' },
+                  start: parseTime(highlight.start),
+                  transition: { duration: 300, easing: 'ease' },
+                },
+              ]}
+            />
+          </div>
+        ))}
+      </div>
+      <div class={styles.codeContainer} ref={codeContainerRef} />
+    </div>
+  );
 };
 
 export default Code;

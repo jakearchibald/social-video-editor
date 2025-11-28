@@ -1,5 +1,10 @@
 .container {
+  position: relative;
+}
+
+.codeContainer {
   overflow: clip;
+  position: relative;
 
   :global(.shiki) {
     background-color: transparent !important;
@@ -10,4 +15,22 @@
       font-family: Menlo, Monaco, 'Courier New', monospace;
     }
   }
+}
+
+.highlights {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+}
+
+.highlight {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.highlightInner {
+  position: absolute;
+  inset: -0.2em -0.1em;
+  background-color: #fff;
 }

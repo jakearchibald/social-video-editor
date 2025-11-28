@@ -25,8 +25,9 @@ export interface CodeTimelineItemUpdate extends TimelineItemBase {
   slice?: Slice;
 }
 
-interface CodeTimelineItemHighlight extends TimelineItemBase {
+export interface CodeTimelineItemHighlight extends TimelineItemBase {
   type: 'highlight';
   text: string;
+  index?: number;
   end: string | number;
 }
