@@ -251,6 +251,13 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
           }}
         />
         <div>{timeStr}</div>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(timeStr.value);
+          }}
+        >
+          Copy
+        </button>
       </div>
       <div>
         <button onClick={output}>Output video</button>{' '}

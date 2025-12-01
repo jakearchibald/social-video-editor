@@ -28,6 +28,8 @@
 
 .rangeContainer {
   display: grid;
-  grid-template-columns: 1fr 100px;
+  padding: 0 10px;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
   font-variant-numeric: tabular-nums;
 }
