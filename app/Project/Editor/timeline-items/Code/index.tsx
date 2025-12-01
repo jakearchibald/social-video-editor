@@ -71,6 +71,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       CodeTimelineItemUpdate | undefined
     ];
   });
+
   const currentFileSource = useComputed(
     () => currentPrevCodeItems.value[0].source || config.source
   );
@@ -457,9 +458,10 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
   useSignalLayoutEffect(() => {
     const start = parseTime(currentPrevCodeItems.value[0].start);
+    const timeVal = time.value;
 
     for (const anim of currentAnimations.current) {
-      anim.currentTime = time.value - start;
+      anim.currentTime = timeVal - start;
     }
   });
 
@@ -472,6 +474,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
 
   useSignalLayoutEffect(() => {
     const highlights = activeHighlights.value;
+    if (highlights.length === 0) return;
 
     (async () => {
       await codeReady.current;
