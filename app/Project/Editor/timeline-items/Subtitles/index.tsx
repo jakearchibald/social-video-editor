@@ -125,14 +125,30 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       // Find the biggest gap between words to split at
       let biggestGapIndex = -1;
       let biggestGapDuration = 0;
+      let charsProcessed = 0;
 
       for (const [i, item] of segment.items.entries()) {
+        const itemText = typeof item === 'string' ? item : item.text;
+        charsProcessed += itemText.length;
+
         if (typeof item === 'string') continue;
 
         const nextWord = segment.items
           .slice(i + 1)
           .find((item) => typeof item !== 'string');
+
         if (!nextWord) continue;
+
+        const beforeLength = charsProcessed;
+        const afterLength = text.length - charsProcessed;
+
+        // Skip if either segment would be below the minimum length
+        if (
+          beforeLength < config.segmentCharLength.min ||
+          afterLength < config.segmentCharLength.min
+        ) {
+          continue;
+        }
 
         const gapDuration = nextWord.start - item.end;
 
