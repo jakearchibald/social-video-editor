@@ -1,6 +1,10 @@
 export function parseTime(timeStr: string | number): number {
   if (typeof timeStr === 'number') return timeStr;
-  const parts = timeStr.split(':').map(Number);
+
+  const isNegative = timeStr.startsWith('-');
+  const absoluteTimeStr = isNegative ? timeStr.slice(1) : timeStr;
+
+  const parts = absoluteTimeStr.split(':').map(Number);
   const reversedParts = parts.slice().reverse();
 
   let ms = 0;
@@ -9,7 +13,7 @@ export function parseTime(timeStr: string | number): number {
     ms += part * Math.pow(60, index) * 1000;
   }
 
-  return ms;
+  return isNegative ? -ms : ms;
 }
 
 interface FormatTimeOptions {

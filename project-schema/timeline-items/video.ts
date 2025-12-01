@@ -10,4 +10,6 @@ export type VideoClip = ChildrenTimelineItemBase & {
   videoStart?: string | number;
   /** Start time within the audio file. 00:00:00.000 or ms */
   audioStart?: string | number;
+  /** Delay in milliseconds to apply to audio playback. Positive values delay audio, negative values play audio earlier. 00:00:00.000 or ms */
+  audioDelay?: string | number;
 };

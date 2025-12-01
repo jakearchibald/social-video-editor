@@ -150,6 +150,13 @@
                         },
                         {
                             "properties": {
+                                "audioDelay": {
+                                    "description": "Delay in milliseconds to apply to audio playback. Positive values delay audio, negative values play audio earlier. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                },
                                 "audioSource": {
                                     "description": "Relative path to audio file, used instead of video audio. Null to ignore video audio.",
                                     "type": [
@@ -219,6 +226,13 @@
                         },
                         {
                             "properties": {
+                                "audioDelay": {
+                                    "description": "Delay in milliseconds to apply to audio playback. Positive values delay audio, negative values play audio earlier. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                },
                                 "audioSource": {
                                     "description": "Relative path to audio file, used instead of video audio. Null to ignore video audio.",
                                     "type": [
@@ -914,6 +928,9 @@
                         "string",
                         "number"
                     ]
+                },
+                "index": {
+                    "type": "number"
                 },
                 "start": {
                     "description": "Start time. 00:00:00.000 or ms",

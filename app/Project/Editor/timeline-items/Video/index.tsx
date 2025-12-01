@@ -15,13 +15,15 @@ export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
 
   if (!source) return [];
 
+  const audioDelay = parseTime(item.audioDelay || 0);
+
   return [
     {
       start: parseTime(item.start),
       audioStart:
-        'audioStart' in item
+        ('audioStart' in item
           ? parseTime(item.audioStart || 0)
-          : parseTime(item.videoStart || 0),
+          : parseTime(item.videoStart || 0)) + audioDelay,
       duration: getDuration(item),
       source,
     },
@@ -37,9 +39,7 @@ interface Props {
 const Video: FunctionComponent<Props> = ({ projectDir, time, config }) => {
   const file = useSignal<File | null>(null);
   const startValue = useComputed(() => parseTime(config.start));
-  const videoStartValue = useComputed(() =>
-    parseTime(config.videoStart || 0)
-  );
+  const videoStartValue = useComputed(() => parseTime(config.videoStart || 0));
 
   useLayoutEffect(() => {
     const p = (async () => {
