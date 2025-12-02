@@ -11,7 +11,10 @@ import BaseVideo from '../../BaseVideo';
 import { getDuration } from '../../../../utils/timeline-item';
 
 export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
-  const source = item.audioSource || item.source;
+  if (item.disabled) return [];
+
+  const source =
+    item.audioSource === null ? null : item.audioSource || item.source;
 
   if (!source) return [];
 
