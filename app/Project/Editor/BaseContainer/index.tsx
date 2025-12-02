@@ -30,7 +30,7 @@ function objWithoutOffset<T extends Record<string, any>>(
   return rest;
 }
 
-const defaultEnterExitDuration = 250;
+const defaultEnterExitDuration = 350;
 
 const BaseContainer: FunctionComponent<Props> = ({
   time,
