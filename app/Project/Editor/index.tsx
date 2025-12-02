@@ -12,7 +12,7 @@ import {
 } from 'mediabunny';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
-import { formatTime } from '../../utils/time';
+import { formatTime, parseTime } from '../../utils/time';
 import useThrottledSignal from '../../utils/useThrottledSignal';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
@@ -24,6 +24,7 @@ import SafeArea from './SafeArea';
 import styles from './styles.module.css';
 
 const forceDuration = 0;
+const forceOutputStart = '02:04.583';
 
 const initialTime = Number(sessionStorage.getItem('time') || 0);
 
@@ -78,6 +79,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     return `--scale: ${scale}; --x: ${x}px; --y: ${y}px;`;
   });
 
+  // Maintain the stage size on resize
   useLayoutEffect(() => {
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
@@ -96,6 +98,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   }, []);
 
   useSignalLayoutEffect(() => {
+    console.log('building audio');
     audioTimeline.current.buildTimeline(project);
   });
 
@@ -118,6 +121,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     () => outputCanvasRef.value?.getContext('2d')!
   );
 
+  // Draw to canvas, if it's there
   useSignalLayoutEffect(() => {
     activeTime.valueOf();
 
@@ -142,6 +146,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     };
   });
 
+  // Play a clip of the audio while scrubbing
   useSignalLayoutEffect(() => {
     if (!outputting.value) {
       audioTimeline.current.play(activeTime.value, 100).catch((err) => {
@@ -179,16 +184,19 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
 
     await videoOutput.start();
 
+    const outputStart = forceOutputStart ? parseTime(forceOutputStart) : 0;
+    const durationValue = duration.value - outputStart;
+
     audioBufferSource.add(
       await audioTimeline.current.toBuffer(
         project.audioSampleRate,
-        0,
-        duration.value
+        outputStart,
+        durationValue
       )
     );
 
     for (
-      let timeValue = 0;
+      let timeValue = outputStart;
       timeValue <= duration.value;
       timeValue += 1000 / project.fps
     ) {
@@ -196,7 +204,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       await 0;
       await wait();
       await 0;
-      await canvasSource.add(timeValue / 1000, 1 / project.fps);
+      await canvasSource.add((timeValue - outputStart) / 1000, 1 / project.fps);
     }
     outputting.value = false;
 
