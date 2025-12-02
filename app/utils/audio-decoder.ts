@@ -1,4 +1,4 @@
-import { BlobSource, Input, MP3, MP4, WAVE, AudioBufferSink } from 'mediabunny';
+import { BlobSource, Input, AudioBufferSink, ALL_FORMATS } from 'mediabunny';
 
 export class AudioFileDecoder {
   #input!: Input;
@@ -8,7 +8,7 @@ export class AudioFileDecoder {
   constructor(file: File) {
     this.#input = new Input({
       source: new BlobSource(file),
-      formats: [MP4, MP3, WAVE],
+      formats: ALL_FORMATS,
     });
 
     this.#ready = (async () => {
@@ -36,8 +36,8 @@ export class AudioFileDecoder {
 
     for await (const result of this.#bufferSink.buffers(startSec)) {
       signal.throwIfAborted();
-      if (result.timestamp + result.duration >= endSec) break;
       yield result;
+      if (result.timestamp + result.duration >= endSec) break;
     }
   }
 }
