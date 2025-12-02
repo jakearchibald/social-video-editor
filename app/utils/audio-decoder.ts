@@ -21,7 +21,6 @@ export class AudioFileDecoder {
   #getSampleController: AbortController | null = null;
 
   async *getFrames(startTime: number, endTime: number) {
-    if (!this.#bufferSink) return;
     if (this.#getSampleController) {
       this.#getSampleController.abort();
     }
@@ -32,6 +31,7 @@ export class AudioFileDecoder {
     const endSec = endTime / 1000;
 
     await this.#ready;
+    if (!this.#bufferSink) return;
     signal.throwIfAborted();
 
     for await (const result of this.#bufferSink.buffers(startSec)) {
