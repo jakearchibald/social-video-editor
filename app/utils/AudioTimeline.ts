@@ -32,6 +32,8 @@ export class AudioTimeline {
 
   #scanTimeline(timeline: ChildrenTimelineItem[]) {
     for (const item of timeline) {
+      if (item.disabled) continue;
+
       if (item.type === 'video') {
         this.#items.push(...getVideoAudioTimelineItems(item));
       }
@@ -79,9 +81,10 @@ export class AudioTimeline {
           const decoder = await decoders[index];
           const schedule: ScheduleItem[] = [];
           const localAudioTime = start - item.start + item.audioStart;
+
           const iterator = decoder.getFrames(
-            localAudioTime,
-            localAudioTime + duration
+            Math.max(0, start - item.start) + item.audioStart,
+            Math.min(localAudioTime + duration, item.audioStart + item.duration)
           );
 
           while (true) {

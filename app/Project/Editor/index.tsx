@@ -24,7 +24,7 @@ import SafeArea from './SafeArea';
 import styles from './styles.module.css';
 
 const forceDuration = 0;
-const forceOutputStart = '02:04.583';
+const forceOutputStart = 0;
 
 const initialTime = Number(sessionStorage.getItem('time') || 0);
 
