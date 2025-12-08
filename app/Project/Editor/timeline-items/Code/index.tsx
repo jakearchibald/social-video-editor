@@ -156,6 +156,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       const ignoredLines = new Set([
         '// prettier-ignore',
         '<!-- prettier-ignore -->',
+        '/* prettier-ignore */',
       ]);
 
       text = text
