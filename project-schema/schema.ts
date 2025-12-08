@@ -14,6 +14,8 @@ export interface Project {
   height: integer;
   audioSampleRate: integer;
   fps: number;
+  /** End time. Defaults to end of items in childrenTimeline */
+  end?: string | number;
   childrenTimeline: ChildrenTimelineItem[];
 }
 

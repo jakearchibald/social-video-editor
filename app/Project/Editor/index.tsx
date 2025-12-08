@@ -108,6 +108,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
 
   const duration = useComputed(() => {
     if (forceDuration) return forceDuration;
+    if (project.end) return parseTime(project.end);
     const lastEndTime = getTimelineDuration(project.childrenTimeline);
 
     // The very last time will always be blank, so step back one frame

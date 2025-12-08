@@ -2637,6 +2637,13 @@
             },
             "type": "array"
         },
+        "end": {
+            "description": "End time. Defaults to end of items in childrenTimeline",
+            "type": [
+                "string",
+                "number"
+            ]
+        },
         "fps": {
             "type": "number"
         },
