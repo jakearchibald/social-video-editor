@@ -1,0 +1,36 @@
+.support {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 80px;
+}
+
+.supportItem {
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  gap: 30px;
+
+  img {
+    width: 160px;
+  }
+}
+
+.supportResult {
+  --size: 134px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background-color: #9c2828;
+  display: grid;
+  place-content: center;
+  color: white;
+  font-family: system-ui, sans-serif;
+  font-weight: bold;
+  font-size: 47px;
+  scale: 0.7;
+
+  &.active {
+    background-color: #1a8e2d;
+    scale: 1;
+  }
+}

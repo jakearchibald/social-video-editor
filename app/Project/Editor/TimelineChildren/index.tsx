@@ -11,6 +11,7 @@ import Title from '../timeline-items/Title';
 import Image from '../timeline-items/Image';
 import { getDuration, getEndTime } from '../../../utils/timeline-item';
 import Subtitles from '../timeline-items/Subtitles';
+import Support from '../timeline-items/Support';
 
 export function getTimelineDuration(timeline: ChildrenTimelineItem[]): number {
   return Math.max(
@@ -98,6 +99,9 @@ const TimelineChildren: FunctionComponent<Props> = ({
             time={time}
           />
         );
+      }
+      if (item.type === 'support') {
+        return <Support key={key} config={item} time={time} />;
       }
       throw new Error(`Unknown timeline item type: ${(item as any).type}`);
     })

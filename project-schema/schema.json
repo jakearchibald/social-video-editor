@@ -908,6 +908,104 @@
                             "type": "object"
                         }
                     ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "duration": {
+                                    "description": "Duration. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "duration"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/SupportTimelineItemBrowser"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "support",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemBase"
+                        },
+                        {
+                            "properties": {
+                                "end": {
+                                    "description": "End time. 00:00:00.000 or ms",
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "end"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "disabled": {
+                                    "description": "Ignore this entry (for debugging)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "timeline": {
+                                    "items": {
+                                        "$ref": "#/definitions/SupportTimelineItemBrowser"
+                                    },
+                                    "type": "array"
+                                },
+                                "type": {
+                                    "const": "support",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
                 }
             ]
         },
@@ -1097,6 +1195,39 @@
         },
         "Slice_1": {
             "$ref": "#/definitions/__type"
+        },
+        "SupportTimelineItemBrowser": {
+            "properties": {
+                "browser": {
+                    "enum": [
+                        "chrome",
+                        "firefox",
+                        "safari"
+                    ],
+                    "type": "string"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "type": {
+                    "const": "browser",
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "browser",
+                "start",
+                "type",
+                "version"
+            ],
+            "type": "object"
         },
         "TimelineItemBase": {
             "properties": {
