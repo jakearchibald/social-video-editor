@@ -5,13 +5,13 @@ type Slice = {
   endBefore?: string;
 };
 
-export type Code = ChildrenTimelineItemBase & {
+export interface Code extends ChildrenTimelineItemBase {
   type: 'code';
   source?: string;
   lang?: string;
   slice?: Slice;
   timeline?: CodeTimelineItem[];
-};
+}
 
 export type CodeTimelineItem =
   | CodeTimelineItemUpdate

@@ -17,7 +17,7 @@ import useThrottledSignal from '../../utils/useThrottledSignal';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
 import { AudioTimeline } from '../../utils/AudioTimeline';
-import TimelineChildren, { getTimelineDuration } from './TimelineChildren';
+import TimelineChildren from './TimelineChildren';
 import IframeContent from './IframeContent';
 import SafeArea from './SafeArea';
 
@@ -108,13 +108,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
 
   const duration = useComputed(() => {
     if (forceDuration) return forceDuration;
-    if (project.end) return parseTime(project.end);
-    const lastEndTime = getTimelineDuration(project.childrenTimeline);
-
-    // The very last time will always be blank, so step back one frame
-    const previousFrame = lastEndTime - 1000 / project.fps;
-
-    return Math.max(0, previousFrame);
+    return parseTime(project.end);
   });
 
   const outputCanvasRef = useSignalRef<HTMLCanvasElement | null>(null);
@@ -228,6 +222,8 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
                   projectDir={projectDir}
                   time={time}
                   childrenTimeline={project.childrenTimeline}
+                  parentStart={0}
+                  parentEnd={duration.value}
                 />
               </IframeContent>
             </div>
@@ -239,6 +235,8 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
                 projectDir={projectDir}
                 time={time}
                 childrenTimeline={project.childrenTimeline}
+                parentStart={0}
+                parentEnd={duration.value}
               />
             </IframeContent>
           </div>

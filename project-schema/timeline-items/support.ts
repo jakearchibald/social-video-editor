@@ -1,9 +1,9 @@
 import type { ChildrenTimelineItemBase, TimelineItemBase } from '../schema';
 
-export type Support = ChildrenTimelineItemBase & {
+export interface Support extends ChildrenTimelineItemBase {
   type: 'support';
   timeline?: SupportTimelineItem[];
-};
+}
 
 export type SupportTimelineItem = SupportTimelineItemBrowser;
 

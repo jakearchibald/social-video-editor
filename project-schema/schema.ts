@@ -15,8 +15,8 @@ export interface Project {
   height: integer;
   audioSampleRate: integer;
   fps: number;
-  /** End time. Defaults to end of items in childrenTimeline */
-  end?: string | number;
+  /** End time */
+  end: string | number;
   childrenTimeline: ChildrenTimelineItem[];
 }
 
@@ -30,22 +30,16 @@ export type ChildrenTimelineItem =
   | Subtitles
   | Support;
 
-export type ChildrenTimelineItemBase = TimelineItemBase &
-  (
-    | {
-        /** Duration. 00:00:00.000 or ms */
-        duration: string | number;
-        end?: never;
-      }
-    | {
-        /** End time. 00:00:00.000 or ms */
-        end: string | number;
-        duration?: never;
-      }
-  ) & {
-    /** Ignore this entry (for debugging) */
-    disabled?: boolean;
-  };
+export interface ChildrenTimelineItemBase {
+  /** Start time. 00:00:00.000 or ms. Defaults to the start of the parent. */
+  start?: string | number;
+  /** Duration. 00:00:00.000 or ms. Defaults to the end of the parent. */
+  duration?: string | number;
+  /** End time. 00:00:00.000 or ms. Defaults to the end of the parent. */
+  end?: string | number;
+  /** Ignore this entry (for debugging) */
+  disabled?: boolean;
+}
 
 export interface TimelineItemBase {
   /** Start time. 00:00:00.000 or ms */

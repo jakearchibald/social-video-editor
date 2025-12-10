@@ -2,28 +2,15 @@ import type { FunctionComponent } from 'preact';
 import type { DeepSignal } from 'deepsignal';
 import { Signal, useComputed } from '@preact/signals';
 import type { ChildrenTimelineItem } from '../../../../project-schema/schema';
-import { parseTime } from '../../../utils/time';
 import Video from '../timeline-items/Video';
 import Container from '../timeline-items/Container';
 import Demo from '../timeline-items/Demo';
 import Code from '../timeline-items/Code';
 import Title from '../timeline-items/Title';
 import Image from '../timeline-items/Image';
-import { getDuration, getEndTime } from '../../../utils/timeline-item';
+import { getStartTime, getDuration, getEndTime } from '../../../utils/timeline-item';
 import Subtitles from '../timeline-items/Subtitles';
 import Support from '../timeline-items/Support';
-
-export function getTimelineDuration(timeline: ChildrenTimelineItem[]): number {
-  return Math.max(
-    ...timeline
-      .filter((item) => !item.disabled)
-      .map((item) => {
-        const start = parseTime(item.start);
-        const duration = getDuration(item);
-        return start + duration;
-      })
-  );
-}
 
 const keyMap = new WeakMap<object, string>();
 
@@ -31,20 +18,24 @@ interface Props {
   time: Signal<number>;
   childrenTimeline?: DeepSignal<ChildrenTimelineItem[]>;
   projectDir: FileSystemDirectoryHandle;
+  parentStart: number;
+  parentEnd: number;
 }
 
 const TimelineChildren: FunctionComponent<Props> = ({
   childrenTimeline,
   time,
   projectDir,
+  parentStart,
+  parentEnd,
 }) => {
   const activeTimelineItems = useComputed(() => {
     if (!childrenTimeline) return [];
 
     return childrenTimeline.filter((item) => {
       if (item.disabled) return false;
-      const start = parseTime(item.start);
-      const end = getEndTime(item);
+      const start = getStartTime(item, parentStart);
+      const end = getEndTime(item, parentStart, parentEnd);
       return time.value >= start && time.value < end;
     });
   });
@@ -69,6 +60,8 @@ const TimelineChildren: FunctionComponent<Props> = ({
             projectDir={projectDir}
             time={time}
             config={item}
+            parentStart={parentStart}
+            parentEnd={parentEnd}
           />
         );
       }

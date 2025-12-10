@@ -1,6 +1,6 @@
 import type { ChildrenTimelineItemBase } from '../schema';
 
-export type VideoClip = ChildrenTimelineItemBase & {
+export interface VideoClip extends ChildrenTimelineItemBase {
   type: 'video';
   /** Relative path to video file */
   source: string;
@@ -12,4 +12,4 @@ export type VideoClip = ChildrenTimelineItemBase & {
   audioStart?: string | number;
   /** Delay in milliseconds to apply to audio playback. Positive values delay audio, negative values play audio earlier. 00:00:00.000 or ms */
   audioDelay?: string | number;
-};
+}

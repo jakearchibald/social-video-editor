@@ -3,20 +3,20 @@ import { type DeepSignal } from 'deepsignal';
 import { Signal, useComputed } from '@preact/signals';
 import type { Container as ContainerConfig } from '../../../../../project-schema/timeline-items/container';
 import TimelineChildren from '../../TimelineChildren';
-import { parseTime } from '../../../../utils/time';
-import { getDuration } from '../../../../utils/timeline-item';
+import { getStartTime, getEndTime } from '../../../../utils/timeline-item';
 import BaseContainer from '../../BaseContainer';
 
 interface Props {
   time: Signal<number>;
   projectDir: FileSystemDirectoryHandle;
   config: DeepSignal<ContainerConfig>;
+  parentStart: number;
+  parentEnd: number;
 }
 
-const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
-  const startValue = useComputed(() => parseTime(config.start));
-  const durationValue = useComputed(() => getDuration(config));
-  const endValue = useComputed(() => startValue.value + durationValue.value);
+const Container: FunctionComponent<Props> = ({ config, time, projectDir, parentStart, parentEnd }) => {
+  const startValue = useComputed(() => getStartTime(config, parentStart));
+  const endValue = useComputed(() => getEndTime(config, parentStart, parentEnd));
 
   const computedEnter = useComputed(() => {
     if (!config.enter) return undefined;
@@ -48,6 +48,8 @@ const Container: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         projectDir={projectDir}
         time={time}
         childrenTimeline={config.childrenTimeline}
+        parentStart={startValue.value}
+        parentEnd={endValue.value}
       />
     </BaseContainer>
   );
