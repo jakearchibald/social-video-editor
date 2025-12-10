@@ -77,7 +77,6 @@
                 }
             },
             "required": [
-                "end",
                 "type"
             ],
             "type": "object"
@@ -240,7 +239,6 @@
                 }
             },
             "required": [
-                "end",
                 "type"
             ],
             "type": "object"
@@ -369,7 +367,6 @@
                 }
             },
             "required": [
-                "end",
                 "type"
             ],
             "type": "object"
@@ -433,7 +430,6 @@
                 }
             },
             "required": [
-                "end",
                 "source",
                 "type"
             ],
@@ -510,7 +506,6 @@
                 }
             },
             "required": [
-                "end",
                 "segmentCharLength",
                 "source",
                 "subtitlesStart",
@@ -557,7 +552,6 @@
                 }
             },
             "required": [
-                "end",
                 "type"
             ],
             "type": "object"
@@ -634,7 +628,6 @@
                 }
             },
             "required": [
-                "end",
                 "text",
                 "type"
             ],
@@ -705,7 +698,6 @@
                 }
             },
             "required": [
-                "end",
                 "source",
                 "type"
             ],

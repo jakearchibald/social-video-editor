@@ -5,6 +5,8 @@ import type {
 import { getAudioTimelineItems as getVideoAudioTimelineItems } from '../Project/Editor/timeline-items/Video';
 import { AudioFileDecoder } from './audio-decoder';
 import { getFile } from './file';
+import { parseTime } from './time';
+import { getEndTime, getStartTime } from './timeline-item';
 
 export interface AudioTimelineItem {
   start: number;
@@ -30,22 +32,33 @@ export class AudioTimeline {
     this.#projectDir = projectDir;
   }
 
-  #scanTimeline(timeline: ChildrenTimelineItem[]) {
+  #scanTimeline(
+    timeline: ChildrenTimelineItem[],
+    parentStart: number,
+    parentEnd: number
+  ) {
     for (const item of timeline) {
       if (item.disabled) continue;
 
       if (item.type === 'video') {
-        this.#items.push(...getVideoAudioTimelineItems(item));
+        this.#items.push(
+          ...getVideoAudioTimelineItems(item, parentStart, parentEnd)
+        );
       }
       if ('childrenTimeline' in item && item.childrenTimeline) {
-        this.#scanTimeline(item.childrenTimeline);
+        this.#scanTimeline(
+          item.childrenTimeline,
+          getStartTime(item, parentStart),
+          getEndTime(item, parentStart, parentEnd)
+        );
       }
     }
   }
 
   buildTimeline(config: Project) {
     this.#items = [];
-    this.#scanTimeline(config.childrenTimeline);
+    const end = parseTime(config.end);
+    this.#scanTimeline(config.childrenTimeline, 0, end);
   }
 
   #getItems(start: number, duration: number): AudioTimelineItem[] {

@@ -8,9 +8,13 @@ import type { AudioTimelineItem } from '../../../../utils/AudioTimeline';
 import type { VideoClip } from '../../../../../project-schema/timeline-items/video';
 import type { DeepSignal } from 'deepsignal';
 import BaseVideo from '../../BaseVideo';
-import { getDuration } from '../../../../utils/timeline-item';
+import { getDuration, getStartTime } from '../../../../utils/timeline-item';
 
-export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
+export function getAudioTimelineItems(
+  item: VideoClip,
+  parentStart: number,
+  parentEnd: number
+): AudioTimelineItem[] {
   if (item.disabled) return [];
 
   const source =
@@ -22,12 +26,12 @@ export function getAudioTimelineItems(item: VideoClip): AudioTimelineItem[] {
 
   return [
     {
-      start: parseTime(item.start),
+      start: getStartTime(item, parentStart),
       audioStart:
         ('audioStart' in item
           ? parseTime(item.audioStart || 0)
           : parseTime(item.videoStart || 0)) + audioDelay,
-      duration: getDuration(item),
+      duration: getDuration(item, parentStart, parentEnd),
       source,
     },
   ];
@@ -37,11 +41,18 @@ interface Props {
   projectDir: FileSystemDirectoryHandle;
   time: Signal<number>;
   config: DeepSignal<VideoClip>;
+  parentStart: number;
+  parentEnd: number;
 }
 
-const Video: FunctionComponent<Props> = ({ projectDir, time, config }) => {
+const Video: FunctionComponent<Props> = ({
+  projectDir,
+  time,
+  config,
+  parentStart,
+}) => {
   const file = useSignal<File | null>(null);
-  const startValue = useComputed(() => parseTime(config.start));
+  const startValue = useComputed(() => getStartTime(config, parentStart));
   const videoStartValue = useComputed(() => parseTime(config.videoStart || 0));
 
   useLayoutEffect(() => {

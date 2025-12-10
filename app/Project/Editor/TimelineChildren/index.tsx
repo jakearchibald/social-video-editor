@@ -8,7 +8,7 @@ import Demo from '../timeline-items/Demo';
 import Code from '../timeline-items/Code';
 import Title from '../timeline-items/Title';
 import Image from '../timeline-items/Image';
-import { getStartTime, getDuration, getEndTime } from '../../../utils/timeline-item';
+import { getStartTime, getEndTime } from '../../../utils/timeline-item';
 import Subtitles from '../timeline-items/Subtitles';
 import Support from '../timeline-items/Support';
 
@@ -50,7 +50,14 @@ const TimelineChildren: FunctionComponent<Props> = ({
 
       if (item.type === 'video') {
         return (
-          <Video key={key} projectDir={projectDir} time={time} config={item} />
+          <Video
+            key={key}
+            projectDir={projectDir}
+            time={time}
+            config={item}
+            parentStart={parentStart}
+            parentEnd={parentEnd}
+          />
         );
       }
       if (item.type === 'container') {
