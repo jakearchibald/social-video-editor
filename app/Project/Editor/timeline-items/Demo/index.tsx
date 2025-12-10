@@ -13,6 +13,8 @@ import styles from './styles.module.css';
 import { parseTime } from '../../../../utils/time';
 import { getAssets } from './getAssets';
 import { shallowEqual } from '../../../../utils/shallowEqual';
+import { getStartTime } from '../../../../utils/timeline-item';
+import { animateFromKeyed, animateFrom } from '../../../../utils/animateFrom';
 
 interface IframeMessage {
   start: number;
@@ -27,6 +29,8 @@ interface IframeAPI {
     effect: typeof effect;
     waitUntil: typeof waitUntil;
     assets: Record<string, string>;
+    animateFromKeyed: typeof animateFromKeyed;
+    animateFrom: typeof animateFrom;
   };
 }
 
@@ -34,9 +38,15 @@ interface Props {
   time: Signal<number>;
   projectDir: FileSystemDirectoryHandle;
   config: DeepSignal<DemoConfig>;
+  parentStart: number;
 }
 
-const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
+const Demo: FunctionComponent<Props> = ({
+  config,
+  time,
+  projectDir,
+  parentStart,
+}) => {
   const iframeContainer = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const lastActiveTimeline = useRef<DemoTimelineItem[]>([]);
@@ -96,7 +106,7 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
       const iframeDoc = iframe.contentDocument!;
       iframeWin.socialVid = {
         messages: iframeMessages,
-        start: parseTime(config.start),
+        start: getStartTime(config, parentStart),
         time,
         effect: (callback, options) => {
           const dispose = effect(function () {
@@ -111,6 +121,8 @@ const Demo: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         },
         waitUntil,
         assets,
+        animateFromKeyed,
+        animateFrom,
       };
 
       if (style) {

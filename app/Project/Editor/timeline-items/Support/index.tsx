@@ -15,7 +15,7 @@ import { waitUntil } from '../../../../utils/waitUntil';
 import { useComputedShallow } from '../../../../utils/useComputedShallow';
 import { parseTime } from '../../../../utils/time';
 import { classes } from '../../../../utils/classes';
-import { animateFrom } from '../../../../utils/animateFrom';
+import { animateFromKeyed } from '../../../../utils/animateFrom';
 
 interface SupportItem {
   img: string;
@@ -66,9 +66,9 @@ const Support: FunctionComponent<Props> = ({ config, time }) => {
     for (const [i, item] of items.value.entries()) {
       const ref = browserRefs[i];
       if (!ref.value || !item.active) continue;
-      animateFrom(
-        time,
+      animateFromKeyed(
         item.timelineItem!,
+        time,
         ref.value,
         parseTime(item.timelineItem!.start),
         { scale: '0.7' },

@@ -19,6 +19,7 @@ import { mulberry32 } from '../../../../utils/mulberry32';
 import { useComputedShallow } from '../../../../utils/useComputedShallow';
 import BaseContainer from '../../BaseContainer';
 import { findText } from '../../../../utils/findText';
+import { getStartTime } from '../../../../utils/timeline-item';
 
 const theme = 'dark-plus';
 
@@ -38,9 +39,15 @@ interface Props {
   time: Signal<number>;
   projectDir: FileSystemDirectoryHandle;
   config: DeepSignal<CodeConfig>;
+  parentStart: number;
 }
 
-const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
+const Code: FunctionComponent<Props> = ({
+  config,
+  time,
+  projectDir,
+  parentStart,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const codeContainerRef = useRef<HTMLDivElement>(null);
   const codeReady = useRef<Promise<void>>(Promise.resolve());
@@ -61,7 +68,7 @@ const Code: FunctionComponent<Props> = ({ config, time, projectDir }) => {
         source: config.source,
         lang: config.lang,
         slice: config.slice,
-        start: config.start,
+        start: getStartTime(config, parentStart),
       },
       ...activeTimelineItems.value.filter((item) => item.type === 'update'),
     ]

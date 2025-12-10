@@ -4,15 +4,13 @@ const activeAnims = new WeakSet<object>();
 
 export function animateFrom(
   time: Signal<number>,
-  key: object,
   element: Element,
   start: number,
   from: PropertyIndexedKeyframes,
   options: KeyframeAnimationOptions
-) {
-  if (activeAnims.has(key)) return;
-  if (time.value < start) return;
-  if (time.value > start + (options.duration as number)) return;
+): Animation | null {
+  if (time.value < start) return null;
+  if (time.value > start + (options.duration as number)) return null;
 
   const anim = element.animate(
     { ...from, offset: 0 },
@@ -24,8 +22,6 @@ export function animateFrom(
   anim.pause();
   anim.currentTime = time.value - start;
 
-  activeAnims.add(key);
-
   const disposeEffect = effect(() => {
     const stopAnim =
       !element.isConnected ||
@@ -34,11 +30,30 @@ export function animateFrom(
 
     if (stopAnim) {
       disposeEffect();
-      activeAnims.delete(key);
       anim.cancel();
       return;
     }
 
     anim.currentTime = time.value - start;
   });
+
+  return anim;
+}
+
+export function animateFromKeyed(
+  key: object,
+  ...args: Parameters<typeof animateFrom>
+) {
+  if (activeAnims.has(key)) return;
+  const anim = animateFrom(...args);
+  if (!anim) return;
+
+  activeAnims.add(key);
+
+  anim.finished
+    .finally(() => {
+      console.log('cleaning anim');
+      activeAnims.delete(key);
+    })
+    .catch(() => {});
 }

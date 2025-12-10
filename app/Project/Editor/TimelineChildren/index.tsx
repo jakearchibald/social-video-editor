@@ -74,12 +74,24 @@ const TimelineChildren: FunctionComponent<Props> = ({
       }
       if (item.type === 'demo') {
         return (
-          <Demo key={key} config={item} projectDir={projectDir} time={time} />
+          <Demo
+            key={key}
+            config={item}
+            projectDir={projectDir}
+            time={time}
+            parentStart={parentStart}
+          />
         );
       }
       if (item.type === 'code') {
         return (
-          <Code key={key} config={item} projectDir={projectDir} time={time} />
+          <Code
+            key={key}
+            config={item}
+            projectDir={projectDir}
+            time={time}
+            parentStart={parentStart}
+          />
         );
       }
       if (item.type === 'title') {
@@ -97,6 +109,7 @@ const TimelineChildren: FunctionComponent<Props> = ({
             config={item}
             projectDir={projectDir}
             time={time}
+            parentStart={parentStart}
           />
         );
       }

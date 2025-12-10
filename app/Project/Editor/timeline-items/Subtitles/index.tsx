@@ -9,6 +9,7 @@ import type { SubtitlesData } from './subtitles-type';
 import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
+import { getStartTime } from '../../../../utils/timeline-item';
 
 const segmentKeys = new WeakMap<any, string>();
 const minWordDisplayTime = 50;
@@ -17,6 +18,7 @@ interface Props {
   time: Signal<number>;
   projectDir: FileSystemDirectoryHandle;
   config: DeepSignal<SubtitlesConfig>;
+  parentStart: number;
 }
 
 type ResolvedWord = { start: number; end: number; text: string };
@@ -41,7 +43,7 @@ class ResolvedSubtitleSegment {
   }
 }
 
-const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
+const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir, parentStart }) => {
   const subtitlesData = useSignal<SubtitlesData | null>(null);
   const containerEl = useSignalRef<HTMLDivElement | null>(null);
 
@@ -49,7 +51,7 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir }) => {
     if (!subtitlesData.value) return null;
 
     const timeShift =
-      -parseTime(config.subtitlesStart) + parseTime(config.start);
+      -parseTime(config.subtitlesStart) + getStartTime(config, parentStart);
 
     const items: ResolvedSubtitleItem[] = [];
 
