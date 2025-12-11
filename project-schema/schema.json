@@ -26,6 +26,9 @@
                 },
                 {
                     "$ref": "#/definitions/Support"
+                },
+                {
+                    "$ref": "#/definitions/Mouse"
                 }
             ]
         },
@@ -434,6 +437,122 @@
                 "type"
             ],
             "type": "object"
+        },
+        "Mouse": {
+            "properties": {
+                "disabled": {
+                    "description": "Ignore this entry (for debugging)",
+                    "type": "boolean"
+                },
+                "duration": {
+                    "description": "Duration. 00:00:00.000 or ms. Defaults to the end of the parent.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "end": {
+                    "description": "End time. 00:00:00.000 or ms. Defaults to the end of the parent.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "left": {
+                    "type": "number"
+                },
+                "scale": {
+                    "type": "number"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms. Defaults to the start of the parent.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "timeline": {
+                    "items": {
+                        "$ref": "#/definitions/MouseTimelineItem"
+                    },
+                    "type": "array"
+                },
+                "top": {
+                    "type": "number"
+                },
+                "type": {
+                    "const": "mouse",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "left",
+                "top",
+                "type"
+            ],
+            "type": "object"
+        },
+        "MouseClick": {
+            "properties": {
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "type": {
+                    "const": "click",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "start",
+                "type"
+            ],
+            "type": "object"
+        },
+        "MousePositionChange": {
+            "properties": {
+                "duration": {
+                    "type": "number"
+                },
+                "left": {
+                    "type": "number"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "top": {
+                    "type": "number"
+                },
+                "type": {
+                    "const": "position",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "duration",
+                "left",
+                "start",
+                "top",
+                "type"
+            ],
+            "type": "object"
+        },
+        "MouseTimelineItem": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/MousePositionChange"
+                },
+                {
+                    "$ref": "#/definitions/MouseClick"
+                }
+            ]
         },
         "SimpleCSSDeclaration": {
             "$ref": "#/definitions/__type_1"

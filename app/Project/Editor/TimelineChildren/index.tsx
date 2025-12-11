@@ -11,6 +11,7 @@ import Image from '../timeline-items/Image';
 import { getStartTime, getEndTime } from '../../../utils/timeline-item';
 import Subtitles from '../timeline-items/Subtitles';
 import Support from '../timeline-items/Support';
+import Mouse from '../timeline-items/Mouse';
 
 const keyMap = new WeakMap<object, string>();
 
@@ -115,6 +116,9 @@ const TimelineChildren: FunctionComponent<Props> = ({
       }
       if (item.type === 'support') {
         return <Support key={key} config={item} time={time} />;
+      }
+      if (item.type === 'mouse') {
+        return <Mouse key={key} config={item} time={time} />;
       }
       throw new Error(`Unknown timeline item type: ${(item as any).type}`);
     })

@@ -2,23 +2,20 @@ import { effect, type Signal } from '@preact/signals';
 
 const activeAnims = new WeakSet<object>();
 
-export function animateFrom(
+export function animate(
   time: Signal<number>,
   element: Element,
   start: number,
-  from: PropertyIndexedKeyframes,
+  keyframes: Keyframe[] | PropertyIndexedKeyframes,
   options: KeyframeAnimationOptions
 ): Animation | null {
   if (time.value < start) return null;
   if (time.value > start + (options.duration as number)) return null;
 
-  const anim = element.animate(
-    { ...from, offset: 0 },
-    {
-      ...options,
-      fill: 'backwards',
-    }
-  );
+  const anim = element.animate(keyframes, {
+    ...options,
+    fill: 'backwards',
+  });
   anim.pause();
   anim.currentTime = time.value - start;
 
@@ -40,20 +37,44 @@ export function animateFrom(
   return anim;
 }
 
-export function animateFromKeyed(
-  key: object,
-  ...args: Parameters<typeof animateFrom>
-) {
+export function animateFrom(
+  time: Signal<number>,
+  element: Element,
+  start: number,
+  from: PropertyIndexedKeyframes,
+  options: KeyframeAnimationOptions
+): Animation | null {
+  return animate(time, element, start, { ...from, offset: 0 }, options);
+}
+
+export function animateKeyed(key: object, ...args: Parameters<typeof animate>) {
   if (activeAnims.has(key)) return;
-  const anim = animateFrom(...args);
+  const anim = animate(...args);
   if (!anim) return;
 
   activeAnims.add(key);
 
   anim.finished
     .finally(() => {
-      console.log('cleaning anim');
       activeAnims.delete(key);
     })
     .catch(() => {});
+}
+
+export function animateFromKeyed(
+  key: object,
+  time: Signal<number>,
+  element: Element,
+  start: number,
+  from: PropertyIndexedKeyframes,
+  options: KeyframeAnimationOptions
+) {
+  return animateKeyed(
+    key,
+    time,
+    element,
+    start,
+    { ...from, offset: 0 },
+    options
+  );
 }

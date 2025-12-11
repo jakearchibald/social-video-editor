@@ -2,6 +2,7 @@ import type { Code } from './timeline-items/code';
 import type { Container } from './timeline-items/container';
 import type { Demo } from './timeline-items/demo';
 import type { Image } from './timeline-items/image';
+import type { Mouse } from './timeline-items/mouse';
 import type { Subtitles } from './timeline-items/subtitles';
 import type { Support } from './timeline-items/support';
 import type { Title } from './timeline-items/title';
@@ -28,7 +29,8 @@ export type ChildrenTimelineItem =
   | Title
   | Image
   | Subtitles
-  | Support;
+  | Support
+  | Mouse;
 
 export interface ChildrenTimelineItemBase {
   /** Start time. 00:00:00.000 or ms. Defaults to the start of the parent. */
