@@ -54,6 +54,7 @@ const Video: FunctionComponent<Props> = ({
   const file = useSignal<File | null>(null);
   const startValue = useComputed(() => getStartTime(config, parentStart));
   const videoStartValue = useComputed(() => parseTime(config.videoStart || 0));
+  const initialPlaybackRate = useComputed(() => config.playbackRate ?? 1);
 
   useLayoutEffect(() => {
     const p = (async () => {
@@ -70,6 +71,8 @@ const Video: FunctionComponent<Props> = ({
       start={startValue}
       time={time}
       videoStart={videoStartValue}
+      timeline={config.timeline}
+      initialPlaybackRate={initialPlaybackRate}
     />
   );
 };

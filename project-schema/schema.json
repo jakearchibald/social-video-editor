@@ -674,6 +674,10 @@
                         "number"
                     ]
                 },
+                "playbackRate": {
+                    "description": "Playback rate of the video, where 1 is normal",
+                    "type": "number"
+                },
                 "source": {
                     "description": "Relative path to video file",
                     "type": "string"
@@ -684,6 +688,12 @@
                         "string",
                         "number"
                     ]
+                },
+                "timeline": {
+                    "items": {
+                        "$ref": "#/definitions/VideoClipTimeChange"
+                    },
+                    "type": "array"
                 },
                 "type": {
                     "const": "video",
@@ -699,6 +709,36 @@
             },
             "required": [
                 "source",
+                "type"
+            ],
+            "type": "object"
+        },
+        "VideoClipTimeChange": {
+            "properties": {
+                "playbackRate": {
+                    "type": "number"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "type": {
+                    "const": "time-change",
+                    "type": "string"
+                },
+                "videoTime": {
+                    "description": "New time within the video file. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                }
+            },
+            "required": [
+                "start",
                 "type"
             ],
             "type": "object"

@@ -5,12 +5,16 @@ import { VideoFrameDecoder } from '../../../utils/video-decoder';
 import useSignalLayoutEffect from '../../../utils/useSignalLayoutEffect';
 import styles from './styles.module.css';
 import { waitUntil } from '../../../utils/waitUntil';
+import type { VideoClipTimelineItem } from '../../../../project-schema/timeline-items/video';
+import { parseTime } from '../../../utils/time';
 
 interface Props {
   file: Blob;
   start: Signal<number>;
   time: Signal<number>;
+  initialPlaybackRate?: Signal<number>;
   videoStart?: Signal<number | undefined>;
+  timeline?: VideoClipTimelineItem[];
 }
 
 const BaseVideo: FunctionComponent<Props> = ({
@@ -18,12 +22,62 @@ const BaseVideo: FunctionComponent<Props> = ({
   start,
   time,
   videoStart,
+  timeline,
+  initialPlaybackRate,
 }) => {
   const localTime = useComputed(() => time.value - start.value);
 
-  const videoTime = useComputed(
-    () => localTime.value + (videoStart?.value || 0)
-  );
+  const videoTime = useComputed(() => {
+    const local = localTime.value;
+    const currentTime = time.value;
+    const baseVideoStart = videoStart?.value || 0;
+
+    // If no timeline or initialPlaybackRate, use simple calculation
+    if (!timeline || timeline.length === 0) {
+      const rate = initialPlaybackRate?.value ?? 1;
+      return baseVideoStart + local * rate;
+    }
+
+    // Sort timeline items by start time
+    const sortedTimeline = [...timeline].sort((a, b) => {
+      const aStart = parseTime(a.start);
+      const bStart = parseTime(b.start);
+      return aStart - bStart;
+    });
+
+    let currentVideoTime = baseVideoStart;
+    let currentAbsoluteTime = start.value;
+    let currentPlaybackRate = initialPlaybackRate?.value ?? 1;
+
+    // Process each timeline item up to the current time
+    for (const item of sortedTimeline) {
+      if (item.type !== 'time-change') continue;
+      const itemStart = parseTime(item.start);
+
+      if (itemStart > currentTime) break;
+
+      // Add elapsed time at current playback rate
+      const elapsed = itemStart - currentAbsoluteTime;
+      currentVideoTime += elapsed * currentPlaybackRate;
+      currentAbsoluteTime = itemStart;
+
+      // Apply time change
+      if (item.videoTime !== undefined) {
+        currentVideoTime = parseTime(item.videoTime);
+      }
+
+      // Update playback rate
+      if (item.playbackRate !== undefined) {
+        currentPlaybackRate = item.playbackRate;
+      }
+    }
+
+    // Add remaining time at current playback rate
+    const remainingTime = currentTime - currentAbsoluteTime;
+    currentVideoTime += remainingTime * currentPlaybackRate;
+
+    return currentVideoTime;
+  });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
   const decoder = useRef<Promise<VideoFrameDecoder> | null>(null);
