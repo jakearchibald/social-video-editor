@@ -710,6 +710,14 @@
         },
         "Title": {
             "properties": {
+                "brand": {
+                    "enum": [
+                        "devtools",
+                        "nightly",
+                        "release"
+                    ],
+                    "type": "string"
+                },
                 "disabled": {
                     "description": "Ignore this entry (for debugging)",
                     "type": "boolean"

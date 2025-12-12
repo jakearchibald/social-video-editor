@@ -32,3 +32,18 @@
   display: grid;
   place-items: end stretch;
 }
+
+.devtools {
+  .top {
+    background: linear-gradient(in oklab to bottom, #063F96, #0A214D);
+  }
+}
+
+.nightly {
+  .top {
+    background: linear-gradient(in oklab to bottom, #2BC4A2, #0A214D);
+  }
+  .bottom {
+    background: linear-gradient(in oklab to bottom, #582ACB, #2B1141);
+  }
+}
