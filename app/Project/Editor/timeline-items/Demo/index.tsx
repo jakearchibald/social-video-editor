@@ -12,9 +12,9 @@ import { getFile } from '../../../../utils/file';
 import styles from './styles.module.css';
 import { parseTime } from '../../../../utils/time';
 import { getAssets } from './getAssets';
-import { shallowEqual } from '../../../../utils/shallowEqual';
 import { getStartTime } from '../../../../utils/timeline-item';
 import { animateFromKeyed, animateFrom } from '../../../../utils/animateFrom';
+import { useComputedShallow } from '../../../../utils/useComputedShallow';
 
 interface IframeMessage {
   start: number;
@@ -49,16 +49,10 @@ const Demo: FunctionComponent<Props> = ({
 }) => {
   const iframeContainer = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const lastActiveTimeline = useRef<DemoTimelineItem[]>([]);
-  const activeTimelineItems = useComputed(() => {
+  const activeTimelineItems = useComputedShallow(() => {
     const timeline: DemoTimelineItem[] = (config.timeline || []).filter(
       (item) => item.type === 'message' && time.value >= parseTime(item.start)
     );
-
-    if (shallowEqual(lastActiveTimeline.current, timeline)) {
-      return lastActiveTimeline.current!;
-    }
-    lastActiveTimeline.current = timeline;
     return timeline;
   });
 
