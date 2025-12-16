@@ -164,7 +164,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       target: new StreamTarget(fileStream),
     });
     const canvasSource = new CanvasSource(outputCanvas, {
-      codec: 'avc',
+      codec: 'av1',
       bitrateMode: 'variable',
       bitrate: 35_000_000,
       hardwareAcceleration: 'prefer-software',
