@@ -9,21 +9,18 @@ export function animate(
   keyframes: Keyframe[] | PropertyIndexedKeyframes,
   options: KeyframeAnimationOptions
 ): Animation | null {
-  if (time.value < start) return null;
-  if (time.value > start + (options.duration as number)) return null;
+  if (time.peek() < start) return null;
+  if (time.peek() > start + (options.duration as number)) return null;
 
   const anim = element.animate(keyframes, {
     ...options,
     fill: 'backwards',
   });
   anim.pause();
-  anim.currentTime = time.value - start;
+  anim.currentTime = time.peek() - start;
 
   const disposeEffect = effect(() => {
-    const stopAnim =
-      !element.isConnected ||
-      time.value < start ||
-      time.value > start + (options.duration as number);
+    const stopAnim = !element.isConnected || time.value < start;
 
     if (stopAnim) {
       disposeEffect();
