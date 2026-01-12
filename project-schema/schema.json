@@ -685,6 +685,9 @@
                     ],
                     "type": "string"
                 },
+                "partial": {
+                    "type": "boolean"
+                },
                 "start": {
                     "description": "Start time. 00:00:00.000 or ms",
                     "type": [
@@ -2406,6 +2409,12 @@
         },
         "height": {
             "$ref": "#/definitions/integer"
+        },
+        "start": {
+            "type": [
+                "string",
+                "number"
+            ]
         },
         "width": {
             "$ref": "#/definitions/integer"

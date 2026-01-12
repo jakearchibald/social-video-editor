@@ -33,4 +33,8 @@
     background-color: #1a8e2d;
     scale: 1;
   }
+
+  &.partial {
+    background-color: #df7100;
+  }
 }

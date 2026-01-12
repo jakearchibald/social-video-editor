@@ -21,6 +21,7 @@ interface SupportItem {
   img: string;
   active: boolean;
   text: string;
+  partial: boolean;
   timelineItem?: SupportTimelineItemBrowser;
 }
 
@@ -46,9 +47,24 @@ const Support: FunctionComponent<Props> = ({ config, time }) => {
   });
 
   const items = useComputed(() => {
-    const firefox: SupportItem = { img: firefoxImg, active: false, text: '' };
-    const chrome: SupportItem = { img: chromeImg, active: false, text: '' };
-    const safari: SupportItem = { img: safariImg, active: false, text: '' };
+    const firefox: SupportItem = {
+      img: firefoxImg,
+      active: false,
+      partial: false,
+      text: '',
+    };
+    const chrome: SupportItem = {
+      img: chromeImg,
+      active: false,
+      partial: false,
+      text: '',
+    };
+    const safari: SupportItem = {
+      img: safariImg,
+      active: false,
+      partial: false,
+      text: '',
+    };
     const all = { firefox, chrome, safari };
 
     for (const timelineItem of activeTimelineItems.value) {
@@ -56,6 +72,7 @@ const Support: FunctionComponent<Props> = ({ config, time }) => {
       const browserItem = all[timelineItem.browser];
       browserItem.active = true;
       browserItem.text = timelineItem.version;
+      browserItem.partial = timelineItem.partial === true;
       browserItem.timelineItem = timelineItem;
     }
 
@@ -108,6 +125,7 @@ const Support: FunctionComponent<Props> = ({ config, time }) => {
             class={classes({
               [styles.supportResult]: true,
               [styles.active]: item.active,
+              [styles.partial]: item.partial,
             })}
             ref={browserRefs[i]}
           >
