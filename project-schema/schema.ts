@@ -16,6 +16,7 @@ export interface Project {
   height: integer;
   audioSampleRate: integer;
   fps: number;
+  start?: string | number;
   /** End time */
   end: string | number;
   childrenTimeline: ChildrenTimelineItem[];

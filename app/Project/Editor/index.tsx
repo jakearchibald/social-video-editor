@@ -24,7 +24,7 @@ import SafeArea from './SafeArea';
 import styles from './styles.module.css';
 
 const forceDuration = 0;
-const forceOutputStart = 0;
+const forceStart = 0;
 
 const initialTime = Number(sessionStorage.getItem('time') || 0);
 
@@ -106,6 +106,12 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     sessionStorage.setItem('time', time.value.toString());
   });
 
+  const start = useComputed(() => {
+    if (forceStart) return parseTime(forceStart);
+    if (project.start) return parseTime(project.start);
+    return 0;
+  });
+
   const duration = useComputed(() => {
     if (forceDuration) return forceDuration;
     return parseTime(project.end);
@@ -179,7 +185,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
 
     await videoOutput.start();
 
-    const outputStart = forceOutputStart ? parseTime(forceOutputStart) : 0;
+    const outputStart = start.value;
     const durationValue = duration.value - outputStart;
 
     audioBufferSource.add(
@@ -248,7 +254,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       <div class={styles.rangeContainer}>
         <input
           type="range"
-          min="0"
+          min={start}
           max={duration}
           step={1000 / project.fps}
           value={time.value}
