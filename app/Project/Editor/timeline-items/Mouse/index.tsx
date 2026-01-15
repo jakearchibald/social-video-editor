@@ -10,7 +10,7 @@ import styles from './styles.module.css';
 import { useComputedShallow } from '../../../../utils/useComputedShallow';
 import { parseTime } from '../../../../utils/time';
 import useSignalLayoutEffect from '../../../../utils/useSignalLayoutEffect';
-import { animateFromKeyed, animateKeyed } from '../../../../utils/animateFrom';
+import { animateFromKeyed, animateKeyed } from '../../../../utils/animate';
 import { useSignalRef } from '@preact/signals/utils';
 
 const clickDownTime = 100;

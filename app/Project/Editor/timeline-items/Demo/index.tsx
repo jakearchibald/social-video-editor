@@ -13,7 +13,11 @@ import styles from './styles.module.css';
 import { parseTime } from '../../../../utils/time';
 import { getAssets } from './getAssets';
 import { getStartTime } from '../../../../utils/timeline-item';
-import { animateFromKeyed, animateFrom } from '../../../../utils/animateFrom';
+import {
+  animateFromKeyed,
+  animateFrom,
+  adoptAnim,
+} from '../../../../utils/animate';
 import { useComputedShallow } from '../../../../utils/useComputedShallow';
 
 interface IframeMessage {
@@ -31,6 +35,7 @@ interface IframeAPI {
     assets: Record<string, string>;
     animateFromKeyed: typeof animateFromKeyed;
     animateFrom: typeof animateFrom;
+    adoptAnim: typeof adoptAnim;
   };
 }
 
@@ -117,6 +122,7 @@ const Demo: FunctionComponent<Props> = ({
         assets,
         animateFromKeyed,
         animateFrom,
+        adoptAnim,
       };
 
       if (style) {

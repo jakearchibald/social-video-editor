@@ -1,6 +1,31 @@
 import { effect, type Signal } from '@preact/signals';
 
 const activeAnims = new WeakSet<object>();
+const adoptedAnims = new WeakSet<Animation>();
+
+export function adoptAnim(
+  time: Signal<number>,
+  start: number,
+  anim: Animation
+) {
+  if (adoptedAnims.has(anim)) return;
+  adoptedAnims.add(anim);
+  anim.pause();
+  anim.currentTime = time.peek() - start;
+
+  const disposeEffect = effect(() => {
+    const effect = anim.effect as KeyframeEffect;
+    const stopAnim = !effect.target!.isConnected || time.value < start;
+
+    if (stopAnim) {
+      disposeEffect();
+      anim.cancel();
+      return;
+    }
+
+    anim.currentTime = time.value - start;
+  });
+}
 
 export function animate(
   time: Signal<number>,
@@ -16,21 +41,8 @@ export function animate(
     ...options,
     fill: 'backwards',
   });
-  anim.pause();
-  anim.currentTime = time.peek() - start;
 
-  const disposeEffect = effect(() => {
-    const stopAnim = !element.isConnected || time.value < start;
-
-    if (stopAnim) {
-      disposeEffect();
-      anim.cancel();
-      return;
-    }
-
-    anim.currentTime = time.value - start;
-  });
-
+  adoptAnim(time, start, anim);
   return anim;
 }
 

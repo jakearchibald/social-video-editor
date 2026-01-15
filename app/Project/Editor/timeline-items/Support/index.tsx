@@ -15,7 +15,7 @@ import { waitUntil } from '../../../../utils/waitUntil';
 import { useComputedShallow } from '../../../../utils/useComputedShallow';
 import { parseTime } from '../../../../utils/time';
 import { classes } from '../../../../utils/classes';
-import { animateFromKeyed } from '../../../../utils/animateFrom';
+import { animateFromKeyed } from '../../../../utils/animate';
 
 interface SupportItem {
   img: string;
