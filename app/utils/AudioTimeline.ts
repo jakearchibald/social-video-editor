@@ -96,7 +96,7 @@ export class AudioTimeline {
           const localAudioTime = start - item.start + item.audioStart;
 
           const iterator = decoder.getFrames(
-            Math.max(0, start - item.start) + item.audioStart,
+            Math.max(0, start - item.start + item.audioStart),
             Math.min(localAudioTime + duration, item.audioStart + item.duration)
           );
 
