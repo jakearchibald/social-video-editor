@@ -15,6 +15,7 @@ interface Props {
   initialPlaybackRate?: Signal<number>;
   videoStart?: Signal<number | undefined>;
   timeline?: VideoClipTimelineItem[];
+  posterImage?: { file: File; duration: number };
 }
 
 const BaseVideo: FunctionComponent<Props> = ({
@@ -24,6 +25,7 @@ const BaseVideo: FunctionComponent<Props> = ({
   videoStart,
   timeline,
   initialPlaybackRate,
+  posterImage,
 }) => {
   const localTime = useComputed(() => time.value - start.value);
 
@@ -78,16 +80,48 @@ const BaseVideo: FunctionComponent<Props> = ({
 
     return currentVideoTime;
   });
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
   const decoder = useRef<Promise<VideoFrameDecoder> | null>(null);
+  const posterImageRef = useRef<ImageBitmap | null>(null);
 
   useSignalLayoutEffect(() => {
     const frameTime = videoTime.value;
     const canvas = canvasRef.current!;
+    const currentTime = time.value;
+    const startTime = start.value;
     let aborted = false;
 
     const p = (async () => {
+      // Check if we should render the poster image
+      const posterEnd = posterImage ? startTime + posterImage.duration : 0;
+
+      if (posterImage && currentTime < posterEnd) {
+        // Load poster image if not already loaded
+        if (!posterImageRef.current) {
+          const bitmap = await createImageBitmap(posterImage.file);
+          posterImageRef.current = bitmap;
+        }
+
+        const bitmap = posterImageRef.current;
+
+        if (!canvasContextRef.current) {
+          const ctx = canvas.getContext('2d')!;
+          canvasContextRef.current = ctx;
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+        }
+
+        const ctx = canvasContextRef.current!;
+        if (aborted) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bitmap, 0, 0);
+        return;
+      }
+
+      // Render video frame
       if (!decoder.current) {
         const p = (async () => {
           const videoDecoder = new VideoFrameDecoder(file);

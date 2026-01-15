@@ -808,6 +808,25 @@
                     "description": "Playback rate of the video, where 1 is normal",
                     "type": "number"
                 },
+                "posterImage": {
+                    "description": "Path to a poster image, used instead of the first frame",
+                    "properties": {
+                        "duration": {
+                            "description": "Defaults to 1ms",
+                            "type": [
+                                "string",
+                                "number"
+                            ]
+                        },
+                        "source": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "source"
+                    ],
+                    "type": "object"
+                },
                 "source": {
                     "description": "Relative path to video file",
                     "type": "string"

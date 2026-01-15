@@ -14,6 +14,12 @@ export interface VideoClip extends ChildrenTimelineItemBase {
   audioDelay?: string | number;
   /** Playback rate of the video, where 1 is normal */
   playbackRate?: number;
+  /** Path to a poster image, used instead of the first frame */
+  posterImage?: {
+    source: string;
+    /** Defaults to 1ms */
+    duration?: string | number;
+  };
   timeline?: VideoClipTimelineItem[];
 }
 

@@ -52,15 +52,36 @@ const Video: FunctionComponent<Props> = ({
   parentStart,
 }) => {
   const file = useSignal<File | null>(null);
+  const posterImageFile = useSignal<File | null>(null);
   const startValue = useComputed(() => getStartTime(config, parentStart));
   const videoStartValue = useComputed(() => parseTime(config.videoStart || 0));
   const initialPlaybackRate = useComputed(() => config.playbackRate ?? 1);
+  const posterImageProp = useComputed(() => {
+    if (!posterImageFile.value || !config.posterImage) return undefined;
+    return {
+      file: posterImageFile.value,
+      duration:
+        config.posterImage.duration === undefined
+          ? 1
+          : parseTime(config.posterImage.duration),
+    };
+  });
 
   useLayoutEffect(() => {
-    const p = (async () => {
+    const videoP = (async () => {
       file.value = await getFile(projectDir, config.source);
     })();
-    waitUntil(p);
+
+    const posterP = (async () => {
+      if (!config.posterImage) return;
+      posterImageFile.value = await getFile(
+        projectDir,
+        config.posterImage.source
+      );
+    })();
+
+    waitUntil(videoP);
+    waitUntil(posterP);
   }, []);
 
   if (!file.value) return null;
@@ -73,6 +94,7 @@ const Video: FunctionComponent<Props> = ({
       videoStart={videoStartValue}
       timeline={config.timeline}
       initialPlaybackRate={initialPlaybackRate}
+      posterImage={posterImageProp.value}
     />
   );
 };
