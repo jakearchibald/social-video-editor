@@ -19,7 +19,7 @@ export type CodeTimelineItem =
 
 export interface CodeTimelineItemUpdate extends TimelineItemBase {
   type: 'update';
-  animMode?: 'lines' | 'chars';
+  animMode?: 'lines' | 'chars' | 'chars-smooth';
   source?: string;
   lang?: string;
   slice?: Slice;

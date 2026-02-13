@@ -17,6 +17,12 @@
   }
 }
 
+.addWrapperSmooth,
+.delWrapperSmooth {
+  display: inline-block;
+  overflow: clip;
+}
+
 .highlights {
   position: absolute;
   inset: 0;

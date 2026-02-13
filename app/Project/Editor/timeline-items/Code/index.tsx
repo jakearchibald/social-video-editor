@@ -212,9 +212,10 @@ const Code: FunctionComponent<Props> = ({
       const diff =
         currentCodeItem.animMode === 'lines'
           ? diffLines(prevText, text)
-          : currentCodeItem.animMode === 'chars'
-          ? diffChars(prevText, text)
-          : undefined;
+          : currentCodeItem.animMode === 'chars' ||
+              currentCodeItem.animMode === 'chars-smooth'
+            ? diffChars(prevText, text)
+            : undefined;
 
       codeContainerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(
         prevText,
@@ -239,6 +240,8 @@ const Code: FunctionComponent<Props> = ({
         let delStart = 0;
         let addStart = 0;
 
+        debugger;
+
         for (const diffEntry of diff!) {
           if (!diffEntry.removed && !diffEntry.added) {
             delStart += diffEntry.count;
@@ -250,7 +253,7 @@ const Code: FunctionComponent<Props> = ({
             const addEnd = addStart + diffEntry.count;
             const walker = document.createTreeWalker(
               oldContent.nextElementSibling!,
-              NodeFilter.SHOW_TEXT
+              NodeFilter.SHOW_TEXT,
             );
             let charIndex = 0;
             let node: Text | null;
@@ -280,7 +283,7 @@ const Code: FunctionComponent<Props> = ({
           const delEnd = delStart + diffEntry.count;
           const walker = document.createTreeWalker(
             oldContent,
-            NodeFilter.SHOW_TEXT
+            NodeFilter.SHOW_TEXT,
           );
           let charIndex = 0;
           let node: Text | null;
@@ -320,7 +323,7 @@ const Code: FunctionComponent<Props> = ({
               duration: delDuration,
               easing: 'step-end',
               fill: 'forwards',
-            }
+            },
           );
           anim.pause();
           anim.currentTime = time.value - currentStartNum;
@@ -337,7 +340,7 @@ const Code: FunctionComponent<Props> = ({
               duration: addStartAnimTime,
               easing: 'step-end',
               fill: 'forwards',
-            }
+            },
           );
           anim.pause();
           anim.currentTime = time.value - currentStartNum;
@@ -350,7 +353,7 @@ const Code: FunctionComponent<Props> = ({
               duration: addStartAnimTime,
               easing: 'step-end',
               fill: 'forwards',
-            }
+            },
           );
           anim.pause();
           anim.currentTime = time.value - currentStartNum;
@@ -371,11 +374,229 @@ const Code: FunctionComponent<Props> = ({
             {
               duration: typeDelay,
               easing: 'step-end',
-            }
+            },
           );
           anim.pause();
           anim.currentTime = time.value - currentStartNum;
           currentAnimations.current.push(anim);
+        }
+      } else if (animMode === 'chars-smooth') {
+        codeContainerRef.current?.prepend(oldContent);
+
+        let delStart = 0;
+        let addStart = 0;
+
+        for (const diffEntry of diff!) {
+          if (!diffEntry.removed && !diffEntry.added) {
+            delStart += diffEntry.count;
+            addStart += diffEntry.count;
+            continue;
+          }
+
+          if (diffEntry.added) {
+            const addEnd = addStart + diffEntry.count;
+
+            // Split the added text on newlines
+            const addedText = text.slice(addStart, addEnd);
+            const segments = addedText.split('\n');
+
+            let segmentStart = addStart;
+            for (let i = 0; i < segments.length; i++) {
+              const segment = segments[i];
+              if (segment.length === 0) {
+                segmentStart += 1; // Skip the newline
+                continue;
+              }
+
+              const segmentEnd = segmentStart + segment.length;
+              const walker = document.createTreeWalker(
+                oldContent.nextElementSibling!,
+                NodeFilter.SHOW_TEXT,
+              );
+              let charIndex = 0;
+              let node: Text | null;
+              let rangeStart: { node: Text; offset: number } | null = null;
+              let rangeEnd: { node: Text; offset: number } | null = null;
+
+              while ((node = walker.nextNode() as Text)) {
+                if (node.data.length === 0) continue;
+
+                const nodeEnd = charIndex + node.data.length;
+
+                // Check if this node contains the start of our segment
+                if (rangeStart === null && segmentStart < nodeEnd) {
+                  rangeStart = {
+                    node,
+                    offset: Math.max(0, segmentStart - charIndex),
+                  };
+                }
+
+                // Check if this node contains the end of our segment
+                if (rangeEnd === null && segmentEnd <= nodeEnd) {
+                  rangeEnd = {
+                    node,
+                    offset: Math.max(0, segmentEnd - charIndex),
+                  };
+                  break;
+                }
+
+                charIndex += node.data.length;
+              }
+
+              // Create a single wrapper for this segment
+              if (rangeStart && rangeEnd) {
+                const range = document.createRange();
+                range.setStart(rangeStart.node, rangeStart.offset);
+                range.setEnd(rangeEnd.node, rangeEnd.offset);
+                const wrapper = document.createElement('span');
+                wrapper.className = styles.addWrapperSmooth;
+                const contents = range.extractContents();
+                wrapper.append(contents);
+                range.insertNode(wrapper);
+              }
+
+              segmentStart = segmentEnd + 1; // +1 for the newline
+            }
+
+            addStart += diffEntry.count;
+            continue;
+          }
+
+          const delEnd = delStart + diffEntry.count;
+
+          // Split the deleted text on newlines
+          const deletedText = prevText.slice(delStart, delEnd);
+          const segments = deletedText.split('\n');
+
+          let segmentStart = delStart;
+          for (let i = 0; i < segments.length; i++) {
+            const segment = segments[i];
+            if (segment.length === 0) {
+              segmentStart += 1; // Skip the newline
+              continue;
+            }
+
+            const segmentEnd = segmentStart + segment.length;
+            const walker = document.createTreeWalker(
+              oldContent,
+              NodeFilter.SHOW_TEXT,
+            );
+            let charIndex = 0;
+            let node: Text | null;
+            let rangeStart: { node: Text; offset: number } | null = null;
+            let rangeEnd: { node: Text; offset: number } | null = null;
+
+            while ((node = walker.nextNode() as Text)) {
+              if (node.data.length === 0) continue;
+
+              const nodeEnd = charIndex + node.data.length;
+
+              // Check if this node contains the start of our segment
+              if (rangeStart === null && segmentStart < nodeEnd) {
+                rangeStart = {
+                  node,
+                  offset: Math.max(0, segmentStart - charIndex),
+                };
+              }
+
+              // Check if this node contains the end of our segment
+              if (rangeEnd === null && segmentEnd <= nodeEnd) {
+                rangeEnd = {
+                  node,
+                  offset: Math.max(0, segmentEnd - charIndex),
+                };
+                break;
+              }
+
+              charIndex += node.data.length;
+            }
+
+            // Create a single wrapper for this segment
+            if (rangeStart && rangeEnd) {
+              const range = document.createRange();
+              range.setStart(rangeStart.node, rangeStart.offset);
+              range.setEnd(rangeEnd.node, rangeEnd.offset);
+              const wrapper = document.createElement('span');
+              wrapper.className = styles.delWrapperSmooth;
+              const contents = range.extractContents();
+              wrapper.append(contents);
+              range.insertNode(wrapper);
+            }
+
+            segmentStart = segmentEnd + 1; // +1 for the newline
+          }
+
+          delStart += diffEntry.count;
+        }
+
+        // Animate
+        const delEls = codeContainerRef.current!.querySelectorAll(
+          `.${styles.delWrapperSmooth}`,
+        );
+        let delay = 0;
+
+        for (const el of [...delEls].reverse()) {
+          const duration = 250;
+          const anim = el.animate([{ width: 'auto' }, { width: '0' }], {
+            duration,
+            easing: 'ease',
+            delay,
+            fill: 'both',
+          });
+          anim.pause();
+          anim.currentTime = time.value - currentStartNum;
+          currentAnimations.current.push(anim);
+
+          delay += duration;
+        }
+
+        if (delay) delay += 100;
+
+        // Make the swap
+        {
+          const anim = oldContent.animate(
+            [{ display: 'block' }, { display: 'none' }],
+            {
+              duration: delay,
+              easing: 'step-end',
+              fill: 'forwards',
+            },
+          );
+          anim.pause();
+          anim.currentTime = time.value - currentStartNum;
+          currentAnimations.current.push(anim);
+        }
+
+        {
+          const anim = oldContent.nextElementSibling!.animate(
+            [{ display: 'none' }, { display: 'block' }],
+            {
+              duration: delay,
+              easing: 'step-end',
+              fill: 'forwards',
+            },
+          );
+          anim.pause();
+          anim.currentTime = time.value - currentStartNum;
+          currentAnimations.current.push(anim);
+        }
+
+        const addEls = codeContainerRef.current!.querySelectorAll(
+          `.${styles.addWrapperSmooth}`,
+        );
+
+        for (const el of addEls) {
+          const duration = 250;
+          const anim = el.animate([{ width: '0' }, { width: 'auto' }], {
+            duration,
+            easing: 'ease',
+            delay,
+            fill: 'both',
+          });
+          anim.pause();
+          anim.currentTime = time.value - currentStartNum;
+          currentAnimations.current.push(anim);
+          delay += duration;
         }
       } else if (animMode === 'lines') {
         const lines = codeContainerRef.current!.querySelectorAll('.line');
@@ -402,7 +623,7 @@ const Code: FunctionComponent<Props> = ({
               wrapper.append(
                 line,
                 // Need to include next text node, which is often a newline
-                line.nextSibling || ''
+                line.nextSibling || '',
               );
             }
 
@@ -412,7 +633,7 @@ const Code: FunctionComponent<Props> = ({
                 duration: 300,
                 easing: 'ease',
                 fill: 'forwards',
-              }
+              },
             );
 
             anim.pause();
@@ -428,7 +649,7 @@ const Code: FunctionComponent<Props> = ({
               wrapper.append(
                 line,
                 // Need to include next text node, which is often a newline
-                line.nextSibling || ''
+                line.nextSibling || '',
               );
             }
 
@@ -437,7 +658,7 @@ const Code: FunctionComponent<Props> = ({
               {
                 duration: 250,
                 easing: 'ease',
-              }
+              },
             );
 
             anim.pause();

@@ -133,6 +133,7 @@
                 "animMode": {
                     "enum": [
                         "chars",
+                        "chars-smooth",
                         "lines"
                     ],
                     "type": "string"
