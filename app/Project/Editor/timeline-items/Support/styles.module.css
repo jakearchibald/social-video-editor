@@ -28,6 +28,7 @@
   font-weight: bold;
   font-size: 47px;
   scale: 0.7;
+  will-change: transform;
 
   &.active {
     background-color: #1a8e2d;
