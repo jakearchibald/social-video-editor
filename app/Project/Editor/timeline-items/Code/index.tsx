@@ -240,8 +240,6 @@ const Code: FunctionComponent<Props> = ({
         let delStart = 0;
         let addStart = 0;
 
-        debugger;
-
         for (const diffEntry of diff!) {
           if (!diffEntry.removed && !diffEntry.added) {
             delStart += diffEntry.count;
