@@ -119,7 +119,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
 
   const outputCanvasRef = useSignalRef<HTMLCanvasElement | null>(null);
   const outputCanvasContext = useComputed(
-    () => outputCanvasRef.value?.getContext('2d')!
+    () => outputCanvasRef.value?.getContext('2d')!,
   );
 
   // Draw to canvas, if it's there

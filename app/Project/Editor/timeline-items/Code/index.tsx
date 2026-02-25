@@ -654,7 +654,7 @@ const Code: FunctionComponent<Props> = ({
             const anim = wrapper.animate(
               [{ height: '0' }, { height: 'auto' }],
               {
-                duration: 250,
+                duration: 300,
                 easing: 'ease',
               },
             );
