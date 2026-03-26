@@ -538,14 +538,13 @@ const Code: FunctionComponent<Props> = ({
           const anim = el.animate([{ width: 'auto' }, { width: '0' }], {
             duration,
             easing: 'ease',
-            delay,
             fill: 'both',
           });
           anim.pause();
           anim.currentTime = time.value - currentStartNum;
           currentAnimations.current.push(anim);
 
-          delay += duration;
+          delay = duration;
         }
 
         if (delay) delay += 100;
@@ -594,7 +593,6 @@ const Code: FunctionComponent<Props> = ({
           anim.pause();
           anim.currentTime = time.value - currentStartNum;
           currentAnimations.current.push(anim);
-          delay += duration;
         }
       } else if (animMode === 'lines') {
         const lines = codeContainerRef.current!.querySelectorAll('.line');
