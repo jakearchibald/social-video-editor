@@ -1,12 +1,5 @@
-import type { Code } from './timeline-items/code';
 import type { Container } from './timeline-items/container';
-import type { Demo } from './timeline-items/demo';
-import type { Image } from './timeline-items/image';
-import type { Mouse } from './timeline-items/mouse';
-import type { Subtitles } from './timeline-items/subtitles';
 import type { Support } from './timeline-items/support';
-import type { Title } from './timeline-items/title';
-import type { VideoClip } from './timeline-items/video';
 
 type integer = number;
 
@@ -14,7 +7,6 @@ export interface Project {
   appCommit?: string;
   width: integer;
   height: integer;
-  audioSampleRate: integer;
   fps: number;
   start?: string | number;
   /** End time */
@@ -22,16 +14,7 @@ export interface Project {
   childrenTimeline: ChildrenTimelineItem[];
 }
 
-export type ChildrenTimelineItem =
-  | VideoClip
-  | Container
-  | Demo
-  | Code
-  | Title
-  | Image
-  | Subtitles
-  | Support
-  | Mouse;
+export type ChildrenTimelineItem = Container | Support;
 
 export interface ChildrenTimelineItemBase {
   /** Start time. 00:00:00.000 or ms. Defaults to the start of the parent. */

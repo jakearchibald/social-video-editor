@@ -1,14 +1,14 @@
 import type { FunctionComponent } from 'preact';
 import { useSignal, useSignalEffect, useComputed } from '@preact/signals';
 import { useSignalRef } from '@preact/signals/utils';
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'preact/hooks';
+import { useCallback, useLayoutEffect, useRef } from 'preact/hooks';
 import type { DeepSignal } from 'deepsignal';
 import {
   Output,
   Mp4OutputFormat,
   StreamTarget,
   CanvasSource,
-  AudioBufferSource,
+  BufferTarget,
 } from 'mediabunny';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
@@ -16,7 +16,6 @@ import { formatTime, parseTime } from '../../utils/time';
 import useThrottledSignal from '../../utils/useThrottledSignal';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
-import { AudioTimeline } from '../../utils/AudioTimeline';
 import TimelineChildren from './TimelineChildren';
 import IframeContent from './IframeContent';
 import SafeArea from './SafeArea';
@@ -35,14 +34,11 @@ interface Props {
 
 const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const outputting = useSignal(false);
-  const framePreviewSetting = useSignal(false);
+  const framePreviewSetting = useSignal(true);
   const throttleFramesDuringScrubbing = useSignal(true);
   const showSafeArea = useSignal(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const outputRef = useSignalRef<HTMLDivElement | null>(null);
-  const audioTimeline = useRef<AudioTimeline>(
-    useMemo(() => new AudioTimeline(projectDir), [projectDir]),
-  );
   const width = useComputed(() => project.width);
   const height = useComputed(() => project.height);
   const frame = useSignal(Math.round(initialTimeMs / (1000 / project.fps)));
@@ -97,11 +93,6 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     };
   }, []);
 
-  useSignalLayoutEffect(() => {
-    console.log('building audio');
-    audioTimeline.current.buildTimeline(project);
-  });
-
   useSignalEffect(() => {
     sessionStorage.setItem('time', time.value.toString());
   });
@@ -139,11 +130,13 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     outputCanvasPromise.current = (async () => {
       await wait();
       if (aborted) return;
-      outputCanvas.requestPaint();
-      await new Promise<void>((r) =>
-        outputCanvas.addEventListener('paint', () => r(), { once: true }),
-      );
-      if (aborted) return;
+      if ('requestPaint' in outputCanvas) {
+        outputCanvas.requestPaint();
+        await new Promise<void>((r) =>
+          outputCanvas.addEventListener('paint', () => r(), { once: true }),
+        );
+        if (aborted) return;
+      }
       context.clearRect(0, 0, width.value, height.value);
       context.drawElementImage(outputDiv, 0, 0, width.value, height.value);
     })();
@@ -153,27 +146,15 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     };
   });
 
-  // Play a clip of the audio while scrubbing
-  useSignalLayoutEffect(() => {
-    if (!outputting.value) {
-      audioTimeline.current.play(activeTime.value, 100).catch((err) => {
-        if (err instanceof Error && err.name === 'AbortError') return;
-        throw err;
-      });
-    }
-  });
-
   const output = useCallback(async () => {
     outputting.value = true;
 
     await 0;
 
     const outputCanvas = outputCanvasRef.current!;
-    const file = await projectDir.getFileHandle('output.mp4', { create: true });
-    const fileStream = await file.createWritable();
     const videoOutput = new Output({
       format: new Mp4OutputFormat(),
-      target: new StreamTarget(fileStream),
+      target: new BufferTarget(),
     });
     const canvasSource = new CanvasSource(outputCanvas, {
       codec: 'av1',
@@ -181,29 +162,16 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       bitrate: 35_000_000,
       hardwareAcceleration: 'prefer-software',
     });
-    const audioBufferSource = new AudioBufferSource({
-      codec: 'pcm-s16',
-    });
     videoOutput.addVideoTrack(canvasSource, {
       frameRate: project.fps,
     });
-    videoOutput.addAudioTrack(audioBufferSource);
 
     await videoOutput.start();
 
     const outputStart = start.value;
-    const durationValue = duration.value - outputStart;
-
-    audioBufferSource.add(
-      await audioTimeline.current.toBuffer(
-        project.audioSampleRate,
-        outputStart,
-        durationValue,
-      ),
-    );
 
     const startFrame = Math.round(outputStart / (1000 / project.fps));
-    const endFrame = Math.round(duration.value / (1000 / project.fps));
+    const endFrame = Math.round(duration.value / (1000 / project.fps)) - 1;
 
     for (let frameValue = startFrame; frameValue <= endFrame; frameValue++) {
       frame.value = frameValue;
@@ -211,11 +179,23 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       await wait();
       await 0;
       await outputCanvasPromise.current;
-      await canvasSource.add((frameValue - startFrame) / project.fps, 1 / project.fps);
+      await canvasSource.add(
+        (frameValue - startFrame) / project.fps,
+        1 / project.fps,
+      );
     }
 
     await videoOutput.finalize();
     outputting.value = false;
+
+    const url = URL.createObjectURL(
+      new Blob([videoOutput.target.buffer!], { type: 'video/mp4' }),
+    );
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'output.mp4';
+    a.click();
+    URL.revokeObjectURL(url);
   }, []);
 
   return (
@@ -261,7 +241,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
         <input
           type="range"
           min={Math.round(start.value / (1000 / project.fps))}
-          max={Math.round(duration.value / (1000 / project.fps))}
+          max={Math.round(duration.value / (1000 / project.fps)) - 1}
           step={1}
           value={frame.value}
           disabled={outputting}

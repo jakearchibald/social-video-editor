@@ -6,7 +6,7 @@ import './styles.module.css';
 import Project from './Project';
 
 function App() {
-  const projectDir = useSignal<FileSystemDirectoryHandle | null>(null);
+  const projectDir = useSignal<FileSystemDirectoryHandle | null>('./dummy');
 
   if (projectDir.value) return <Project projectDir={projectDir.value} />;
 

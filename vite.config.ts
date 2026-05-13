@@ -12,9 +12,15 @@ export default defineConfig({
   environments: {
     client: {
       build: {
+        minify: false,
         rollupOptions: {
           input: {
             index: 'index.html',
+          },
+          preserveEntrySignatures: 'strict',
+          output: {
+            preserveModules: true,
+            preserveModulesRoot: '.',
           },
         },
       },

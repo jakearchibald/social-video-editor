@@ -10,31 +10,41 @@ interface Props {
   projectDir: FileSystemDirectoryHandle;
 }
 
+const demoProject = deepSignal({
+  $schema: '../../social-video-editor/project-schema/schema.json',
+  appCommit: '',
+  width: 1080,
+  height: 1920,
+  fps: 60,
+  end: '00:02.000',
+  start: '00:00',
+  childrenTimeline: [
+    {
+      type: 'container',
+      enter: {
+        type: 'fade',
+      },
+      exit: {
+        type: 'fade',
+      },
+      start: '00:01.000',
+      styles: {
+        position: 'absolute',
+        inset: '0',
+        display: 'grid',
+        placeContent: 'center',
+      },
+      childrenTimeline: [
+        {
+          type: 'support',
+        },
+      ],
+    },
+  ],
+} as const);
+
 const Project: FunctionComponent<Props> = ({ projectDir }) => {
-  const project = useSignal<null | DeepSignal<ProjectSchema>>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const fileHandle = await projectDir.getFileHandle('index.json');
-        const file = await fileHandle.getFile();
-        const text = await file.text();
-        const proj = JSON.parse(text) as ProjectSchema;
-        if (cancelled) return;
-        project.value = deepSignal(proj);
-      } catch (err) {
-        console.error('Error loading project:', err);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [projectDir]);
-
-  if (!project.value) return <p>Loading project…</p>;
+  const project = useSignal<null | DeepSignal<ProjectSchema>>(demoProject);
 
   return <Editor project={project.value} projectDir={projectDir} />;
 };
