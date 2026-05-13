@@ -226,8 +226,8 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
           <canvas
             layoutsubtree
             ref={outputCanvasRef}
-            width={width}
-            height={height}
+            width={width.value}
+            height={height.value}
           >
             <div class={styles.output} ref={outputRef}>
               <IframeContent width={width} height={height}>
