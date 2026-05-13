@@ -42,7 +42,7 @@ const Support: FunctionComponent<Props> = ({ config, time }) => {
     if (!config.timeline) return [];
 
     return config.timeline.filter(
-      (item) => time.value >= parseTime(item.start)
+      (item) => time.value >= parseTime(item.start),
     );
   });
 
@@ -92,7 +92,7 @@ const Support: FunctionComponent<Props> = ({ config, time }) => {
         {
           duration: 500,
           easing: `linear(0, 0.009, 0.035 1.8%, 0.141 3.9%, 0.725 11.5%, 0.942 14.9%, 1.022, 1.082, 1.125, 1.152 21.9%, 1.16, 1.163, 1.161 25.3%, 1.153 26.7%, 1.129 29.1%, 1.05 35.3%, 1.016 38.4%, 0.989, 0.976 45.6%, 0.973 48.1%, 0.975 50.8%, 0.997 62.3%, 1.004 69%, 0.999)`,
-        }
+        },
       );
     }
   });
@@ -106,13 +106,10 @@ const Support: FunctionComponent<Props> = ({ config, time }) => {
         const localImgs = [...imgs].map((img) => {
           const localImg = new Image();
           localImg.src = img.src;
-          return new Promise<void>((resolve, reject) => {
-            localImg.onload = () => resolve();
-            localImg.onerror = () => reject();
-          });
+          return localImg.decode();
         });
         await Promise.all(localImgs);
-      })()
+      })(),
     );
   });
 

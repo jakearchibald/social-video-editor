@@ -41,19 +41,19 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const stageRef = useRef<HTMLDivElement>(null);
   const outputRef = useSignalRef<HTMLDivElement | null>(null);
   const audioTimeline = useRef<AudioTimeline>(
-    useMemo(() => new AudioTimeline(projectDir), [projectDir])
+    useMemo(() => new AudioTimeline(projectDir), [projectDir]),
   );
   const width = useComputed(() => project.width);
   const height = useComputed(() => project.height);
   const time = useSignal(initialTime);
   const clampedTime = useComputed(
-    () => Math.floor(time.value / (1000 / project.fps)) * (1000 / project.fps)
+    () => Math.floor(time.value / (1000 / project.fps)) * (1000 / project.fps),
   );
   const throttledTime = useThrottledSignal(clampedTime, 50);
   const activeTime = useComputed(() =>
     outputting.value || !throttleFramesDuringScrubbing.value
       ? clampedTime.value
-      : throttledTime.value
+      : throttledTime.value,
   );
   const timeStr = useComputed(() => {
     return formatTime(activeTime.value, {
@@ -121,6 +121,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   const outputCanvasContext = useComputed(
     () => outputCanvasRef.value?.getContext('2d')!,
   );
+  const outputCanvasPromise = useRef<Promise<void> | null>(null);
 
   // Draw to canvas, if it's there
   useSignalLayoutEffect(() => {
@@ -135,8 +136,13 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
 
     let aborted = false;
 
-    (async () => {
+    outputCanvasPromise.current = (async () => {
       await wait();
+      if (aborted) return;
+      outputCanvas.requestPaint();
+      await new Promise<void>((r) =>
+        outputCanvas.addEventListener('paint', () => r(), { once: true }),
+      );
       if (aborted) return;
       context.clearRect(0, 0, width.value, height.value);
       context.drawElementImage(outputDiv, 0, 0, width.value, height.value);
@@ -192,8 +198,8 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       await audioTimeline.current.toBuffer(
         project.audioSampleRate,
         outputStart,
-        durationValue
-      )
+        durationValue,
+      ),
     );
 
     for (
@@ -205,11 +211,12 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       await 0;
       await wait();
       await 0;
+      await outputCanvasPromise.current;
       await canvasSource.add((timeValue - outputStart) / 1000, 1 / project.fps);
     }
-    outputting.value = false;
 
     await videoOutput.finalize();
+    outputting.value = false;
   }, []);
 
   return (

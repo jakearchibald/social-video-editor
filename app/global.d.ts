@@ -9,6 +9,10 @@ declare global {
     ): void;
   }
 
+  interface HTMLCanvasElement {
+    requestPaint(): void;
+  }
+
   namespace preact.JSX {
     interface CanvasHTMLAttributes {
       layoutsubtree?: boolean | undefined;
