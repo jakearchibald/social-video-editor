@@ -26,7 +26,7 @@ import styles from './styles.module.css';
 const forceDuration = 0;
 const forceStart = 0;
 
-const initialTime = Number(sessionStorage.getItem('time') || 0);
+const initialTimeMs = Number(sessionStorage.getItem('time') || 0);
 
 interface Props {
   project: DeepSignal<ProjectSchema>;
@@ -45,16 +45,16 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   );
   const width = useComputed(() => project.width);
   const height = useComputed(() => project.height);
-  const time = useSignal(initialTime);
-  const clampedTime = useComputed(
-    () => Math.floor(time.value / (1000 / project.fps)) * (1000 / project.fps),
-  );
-  const throttledTime = useThrottledSignal(clampedTime, 50);
-  const activeTime = useComputed(() =>
-    outputting.value || !throttleFramesDuringScrubbing.value
-      ? clampedTime.value
-      : throttledTime.value,
-  );
+  const frame = useSignal(Math.round(initialTimeMs / (1000 / project.fps)));
+  const time = useComputed(() => frame.value * (1000 / project.fps));
+  const throttledFrame = useThrottledSignal(frame, 50);
+  const activeTime = useComputed(() => {
+    const activeFrame =
+      outputting.value || !throttleFramesDuringScrubbing.value
+        ? frame.value
+        : throttledFrame.value;
+    return activeFrame * (1000 / project.fps);
+  });
   const timeStr = useComputed(() => {
     return formatTime(activeTime.value, {
       forceMinutes: true,
@@ -202,17 +202,16 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       ),
     );
 
-    for (
-      let timeValue = outputStart;
-      timeValue <= duration.value;
-      timeValue += 1000 / project.fps
-    ) {
-      time.value = timeValue;
+    const startFrame = Math.round(outputStart / (1000 / project.fps));
+    const endFrame = Math.round(duration.value / (1000 / project.fps));
+
+    for (let frameValue = startFrame; frameValue <= endFrame; frameValue++) {
+      frame.value = frameValue;
       await 0;
       await wait();
       await 0;
       await outputCanvasPromise.current;
-      await canvasSource.add((timeValue - outputStart) / 1000, 1 / project.fps);
+      await canvasSource.add((frameValue - startFrame) / project.fps, 1 / project.fps);
     }
 
     await videoOutput.finalize();
@@ -261,13 +260,13 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
       <div class={styles.rangeContainer}>
         <input
           type="range"
-          min={start}
-          max={duration}
-          step={1000 / project.fps}
-          value={time.value}
+          min={Math.round(start.value / (1000 / project.fps))}
+          max={Math.round(duration.value / (1000 / project.fps))}
+          step={1}
+          value={frame.value}
           disabled={outputting}
           onInput={(e) => {
-            time.value = (e.target as HTMLInputElement).valueAsNumber;
+            frame.value = (e.target as HTMLInputElement).valueAsNumber;
           }}
         />
         <div>{timeStr}</div>
