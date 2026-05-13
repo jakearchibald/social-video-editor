@@ -17,10 +17,10 @@ export default defineConfig({
           input: {
             index: 'index.html',
           },
-          preserveEntrySignatures: 'strict',
           output: {
-            preserveModules: true,
-            preserveModulesRoot: '.',
+            manualChunks(id) {
+              if (id.includes('node_modules')) return 'vendor';
+            },
           },
         },
       },

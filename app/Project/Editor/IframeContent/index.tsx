@@ -25,10 +25,14 @@ const IframeContent: FunctionComponent<Props> = ({
     const iframeDoc = iframeRef.current.contentDocument!;
 
     function updateStyles() {
-      const iframeStyles = iframeDoc.head.querySelectorAll('style');
+      const iframeStyles = iframeDoc.head.querySelectorAll(
+        'style, link[rel="stylesheet"]',
+      );
       for (const style of iframeStyles) style.remove();
 
-      const styles = document.head.querySelectorAll('style');
+      const styles = document.head.querySelectorAll(
+        'style, link[rel="stylesheet"]',
+      );
       for (const style of styles) {
         const newStyle = style.cloneNode(true);
         iframeDoc.head.appendChild(newStyle);
@@ -42,6 +46,8 @@ const IframeContent: FunctionComponent<Props> = ({
     observer.observe(document.head, {
       childList: true,
       subtree: true,
+      attributes: true,
+      attributeFilter: ['href'],
     });
 
     updateStyles();

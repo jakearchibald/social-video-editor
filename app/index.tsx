@@ -2,7 +2,7 @@ import { render } from 'preact';
 import { useSignal } from '@preact/signals';
 
 import ProjectSelect from './ProjectSelect';
-import './styles.module.css';
+import './styles.css';
 import Project from './Project';
 
 function App() {
