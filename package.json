@@ -20,7 +20,7 @@
     "deepsignal": "^1.6.0",
     "diff": "^9.0.0",
     "idb": "^8.0.3",
-    "mediabunny": "^1.44.2",
+    "mediabunny": "^1.40.1",
     "preact": "^10.29.1",
     "shiki": "^4.0.2",
     "typescript": "^6.0.3",

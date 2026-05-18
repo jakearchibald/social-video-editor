@@ -139,11 +139,13 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     outputCanvasPromise.current = (async () => {
       await wait();
       if (aborted) return;
-      outputCanvas.requestPaint();
-      await new Promise<void>((r) =>
-        outputCanvas.addEventListener('paint', () => r(), { once: true }),
-      );
-      if (aborted) return;
+      if ('requestPaint' in outputCanvas) {
+        outputCanvas.requestPaint();
+        await new Promise<void>((r) =>
+          outputCanvas.addEventListener('paint', () => r(), { once: true }),
+        );
+        if (aborted) return;
+      }
       context.clearRect(0, 0, width.value, height.value);
       context.drawElementImage(outputDiv, 0, 0, width.value, height.value);
     })();
@@ -205,13 +207,16 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     const startFrame = Math.round(outputStart / (1000 / project.fps));
     const endFrame = Math.round(duration.value / (1000 / project.fps));
 
-    for (let frameValue = startFrame; frameValue <= endFrame; frameValue++) {
+    for (let frameValue = startFrame; frameValue < endFrame; frameValue++) {
       frame.value = frameValue;
       await 0;
       await wait();
       await 0;
       await outputCanvasPromise.current;
-      await canvasSource.add((frameValue - startFrame) / project.fps, 1 / project.fps);
+      await canvasSource.add(
+        (frameValue - startFrame) / project.fps,
+        1 / project.fps,
+      );
     }
 
     await videoOutput.finalize();
@@ -261,7 +266,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
         <input
           type="range"
           min={Math.round(start.value / (1000 / project.fps))}
-          max={Math.round(duration.value / (1000 / project.fps))}
+          max={Math.round(duration.value / (1000 / project.fps)) - 1}
           step={1}
           value={frame.value}
           disabled={outputting}
