@@ -25,7 +25,7 @@ const theme = 'dark-plus';
 
 // TODO: optimise highlighter
 const syntaxHighlighterP = createHighlighter({
-  langs: ['javascript', 'html', 'xml', 'css', 'mdx'],
+  langs: ['javascript', 'html', 'xml', 'css', 'mdx', 'scss'],
   themes: [theme],
 });
 
@@ -57,7 +57,7 @@ const Code: FunctionComponent<Props> = ({
     return config.timeline.filter(
       (item) =>
         time.value >= parseTime(item.start) &&
-        ('end' in item ? time.value < parseTime(item.end) : true)
+        ('end' in item ? time.value < parseTime(item.end) : true),
     );
   });
 
@@ -75,17 +75,17 @@ const Code: FunctionComponent<Props> = ({
       .slice(-2)
       .reverse() as [
       CodeTimelineItemUpdate,
-      CodeTimelineItemUpdate | undefined
+      CodeTimelineItemUpdate | undefined,
     ];
   });
 
   const currentFileSource = useComputed(
-    () => currentPrevCodeItems.value[0].source || config.source
+    () => currentPrevCodeItems.value[0].source || config.source,
   );
   const prevFileSource = useComputed(() =>
     currentPrevCodeItems.value[1]
       ? currentPrevCodeItems.value[1].source || config.source
-      : null
+      : null,
   );
 
   const currentFileTextPromise = useComputed(async () => {
@@ -204,7 +204,7 @@ const Code: FunctionComponent<Props> = ({
           {
             lang: getLang(currentLang, currentFile),
             theme,
-          }
+          },
         );
         return;
       }
@@ -222,7 +222,7 @@ const Code: FunctionComponent<Props> = ({
         {
           lang: getLang(currentLang, currentFile),
           theme,
-        }
+        },
       );
 
       const oldContent = codeContainerRef.current!.firstElementChild!;
@@ -693,7 +693,7 @@ const Code: FunctionComponent<Props> = ({
   const activeHighlights = useComputedShallow(() => {
     if (!config.timeline) return [];
     return activeTimelineItems.value.filter(
-      (item) => item.type === 'highlight'
+      (item) => item.type === 'highlight',
     );
   });
 
@@ -705,7 +705,7 @@ const Code: FunctionComponent<Props> = ({
       await codeReady.current;
       const highlightEls =
         containerRef.current!.querySelectorAll<HTMLDivElement>(
-          `.${styles.highlight}`
+          `.${styles.highlight}`,
         );
 
       for (const [i, el] of highlightEls.entries()) {
@@ -717,7 +717,7 @@ const Code: FunctionComponent<Props> = ({
 
         if (!range) {
           console.error(
-            `Could not find text to highlight: "${highlight.text}"`
+            `Could not find text to highlight: "${highlight.text}"`,
           );
           continue;
         }
