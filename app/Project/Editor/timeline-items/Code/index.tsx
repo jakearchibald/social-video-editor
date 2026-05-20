@@ -57,7 +57,9 @@ const Code: FunctionComponent<Props> = ({
     return config.timeline.filter(
       (item) =>
         time.value >= parseTime(item.start) &&
-        ('end' in item ? time.value < parseTime(item.end) : true),
+        ('end' in item && item.end !== undefined
+          ? time.value < parseTime(item.end)
+          : true),
     );
   });
 
@@ -743,7 +745,11 @@ const Code: FunctionComponent<Props> = ({
             <BaseContainer
               class={styles.highlightInner}
               time={time}
-              exit={{ type: 'fade', end: parseTime(highlight.end) }}
+              exit={
+                highlight.end !== undefined
+                  ? { type: 'fade', end: parseTime(highlight.end) }
+                  : undefined
+              }
               styles={{
                 clipPath: 'inset(0 100% 0 0 round 0.2em)',
               }}

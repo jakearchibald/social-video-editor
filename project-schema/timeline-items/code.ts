@@ -29,5 +29,5 @@ export interface CodeTimelineItemHighlight extends TimelineItemBase {
   type: 'highlight';
   text: string;
   index?: number;
-  end: string | number;
+  end?: string | number;
 }
