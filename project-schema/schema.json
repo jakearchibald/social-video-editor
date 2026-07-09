@@ -809,23 +809,67 @@
                     "type": "number"
                 },
                 "posterImage": {
-                    "description": "Path to a poster image, used instead of the first frame",
-                    "properties": {
-                        "duration": {
-                            "description": "Defaults to 1ms",
-                            "type": [
-                                "string",
-                                "number"
+                    "anyOf": [
+                        {
+                            "allOf": [
+                                {
+                                    "properties": {
+                                        "source": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "source"
+                                    ],
+                                    "type": "object"
+                                },
+                                {
+                                    "properties": {
+                                        "duration": {
+                                            "description": "Defaults to 1ms",
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        }
+                                    },
+                                    "type": "object"
+                                }
                             ]
                         },
-                        "source": {
-                            "type": "string"
+                        {
+                            "allOf": [
+                                {
+                                    "properties": {
+                                        "frameTime": {
+                                            "description": "Point within the video file. 00:00:00.000 or ms",
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "frameTime"
+                                    ],
+                                    "type": "object"
+                                },
+                                {
+                                    "properties": {
+                                        "duration": {
+                                            "description": "Defaults to 1ms",
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            ]
                         }
-                    },
-                    "required": [
-                        "source"
                     ],
-                    "type": "object"
+                    "description": "Path to a poster image, used instead of the first frame"
                 },
                 "source": {
                     "description": "Relative path to video file",

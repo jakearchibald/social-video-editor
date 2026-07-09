@@ -13,7 +13,7 @@ import { getDuration, getStartTime } from '../../../../utils/timeline-item';
 export function getAudioTimelineItems(
   item: VideoClip,
   parentStart: number,
-  parentEnd: number
+  parentEnd: number,
 ): AudioTimelineItem[] {
   if (item.disabled) return [];
 
@@ -57,14 +57,18 @@ const Video: FunctionComponent<Props> = ({
   const videoStartValue = useComputed(() => parseTime(config.videoStart || 0));
   const initialPlaybackRate = useComputed(() => config.playbackRate ?? 1);
   const posterImageProp = useComputed(() => {
-    if (!posterImageFile.value || !config.posterImage) return undefined;
-    return {
-      file: posterImageFile.value,
-      duration:
-        config.posterImage.duration === undefined
-          ? 1
-          : parseTime(config.posterImage.duration),
-    };
+    const posterImage = config.posterImage;
+    if (!posterImage) return undefined;
+
+    const duration =
+      posterImage.duration === undefined ? 1 : parseTime(posterImage.duration);
+
+    if ('frameTime' in posterImage) {
+      return { frameTime: parseTime(posterImage.frameTime), duration };
+    }
+
+    if (!posterImageFile.value) return undefined;
+    return { file: posterImageFile.value, duration };
   });
 
   useLayoutEffect(() => {
@@ -73,11 +77,9 @@ const Video: FunctionComponent<Props> = ({
     })();
 
     const posterP = (async () => {
-      if (!config.posterImage) return;
-      posterImageFile.value = await getFile(
-        projectDir,
-        config.posterImage.source
-      );
+      const posterImage = config.posterImage;
+      if (!posterImage || !('source' in posterImage)) return;
+      posterImageFile.value = await getFile(projectDir, posterImage.source);
     })();
 
     waitUntil(videoP);

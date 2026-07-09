@@ -15,7 +15,10 @@ interface Props {
   initialPlaybackRate?: Signal<number>;
   videoStart?: Signal<number | undefined>;
   timeline?: VideoClipTimelineItem[];
-  posterImage?: { file: File; duration: number };
+  posterImage?: (
+    | { file: File }
+    | { frameTime: number }
+  ) & { duration: number };
 }
 
 const BaseVideo: FunctionComponent<Props> = ({
@@ -93,12 +96,49 @@ const BaseVideo: FunctionComponent<Props> = ({
     const startTime = start.value;
     let aborted = false;
 
+    const ensureDecoder = () => {
+      if (!decoder.current) {
+        const p = (async () => {
+          const videoDecoder = new VideoFrameDecoder(file);
+          await videoDecoder.ready;
+          return videoDecoder;
+        })();
+        decoder.current = p;
+      }
+      return decoder.current;
+    };
+
     const p = (async () => {
       // Check if we should render the poster image
       const posterEnd = posterImage ? startTime + posterImage.duration : 0;
 
       if (posterImage && currentTime < posterEnd) {
-        // Load poster image if not already loaded
+        // A poster sourced from a frame of the video itself
+        if ('frameTime' in posterImage) {
+          const videoDecoder = (await ensureDecoder())!;
+
+          if (!canvasContextRef.current) {
+            const ctx = canvas.getContext('2d')!;
+            canvasContextRef.current = ctx;
+            canvas.width = videoDecoder.videoData!.width;
+            canvas.height = videoDecoder.videoData!.height;
+          }
+
+          const ctx = canvasContextRef.current!;
+          try {
+            const frame = await videoDecoder.getFrameAt(posterImage.frameTime);
+
+            if (!frame || aborted) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(frame.canvas, 0, 0);
+          } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') return;
+            throw err;
+          }
+          return;
+        }
+
+        // A poster sourced from a separate image file
         if (!posterImageRef.current) {
           const bitmap = await createImageBitmap(posterImage.file);
           posterImageRef.current = bitmap;
@@ -122,16 +162,7 @@ const BaseVideo: FunctionComponent<Props> = ({
       }
 
       // Render video frame
-      if (!decoder.current) {
-        const p = (async () => {
-          const videoDecoder = new VideoFrameDecoder(file);
-          await videoDecoder.ready;
-          return videoDecoder;
-        })();
-        decoder.current = p;
-      }
-
-      const videoDecoder = (await decoder.current)!;
+      const videoDecoder = (await ensureDecoder())!;
 
       if (!canvasContextRef.current) {
         const ctx = canvas.getContext('2d')!;
