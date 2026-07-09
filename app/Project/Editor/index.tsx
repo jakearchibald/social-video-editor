@@ -207,6 +207,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     const startFrame = Math.round(outputStart / (1000 / project.fps));
     const endFrame = Math.round(duration.value / (1000 / project.fps));
 
+    let lastPauseAt = performance.now();
     for (let frameValue = startFrame; frameValue < endFrame; frameValue++) {
       frame.value = frameValue;
       await 0;
@@ -217,6 +218,11 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
         (frameValue - startFrame) / project.fps,
         1 / project.fps,
       );
+      if (performance.now() - lastPauseAt >= 30_000) {
+        // Works around a crash bug. I should try to remove this at some point.
+        await new Promise((resolve) => setTimeout(resolve, 5_000));
+        lastPauseAt = performance.now();
+      }
     }
 
     await videoOutput.finalize();
