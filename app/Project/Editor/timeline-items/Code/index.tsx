@@ -25,7 +25,7 @@ const theme = 'dark-plus';
 
 // TODO: optimise highlighter
 const syntaxHighlighterP = createHighlighter({
-  langs: ['javascript', 'html', 'xml', 'css', 'mdx', 'scss', 'jsx'],
+  langs: ['javascript', 'html', 'xml', 'css', 'mdx', 'scss', 'jsx', 'rust'],
   themes: [theme],
 });
 
