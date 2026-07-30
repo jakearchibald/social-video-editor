@@ -47,7 +47,7 @@ const Mouse: FunctionComponent<Props> = ({ time, config }) => {
     const top = timelineItem ? timelineItem.top : config.top;
     const left = timelineItem ? timelineItem.left : config.left;
 
-    return `translate: ${left}px ${top}px; scale: ${config.scale ?? 1}px;`;
+    return `translate: ${left}px ${top}px; scale: ${config.scale ?? 1};`;
   });
 
   useSignalLayoutEffect(() => {
