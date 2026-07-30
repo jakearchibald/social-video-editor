@@ -133,7 +133,8 @@
                     "enum": [
                         "chars",
                         "chars-smooth",
-                        "lines"
+                        "lines",
+                        "words-smooth"
                     ],
                     "type": "string"
                 },

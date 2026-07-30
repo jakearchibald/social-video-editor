@@ -3,7 +3,7 @@ import { type DeepSignal } from 'deepsignal';
 import { Signal, useComputed } from '@preact/signals';
 import { useRef } from 'preact/hooks';
 import { createHighlighter } from 'shiki';
-import { diffChars, diffLines } from 'diff';
+import { diffChars, diffLines, diffWordsWithSpace } from 'diff';
 
 import type {
   Code as CodeConfig,
@@ -214,10 +214,12 @@ const Code: FunctionComponent<Props> = ({
       const diff =
         currentCodeItem.animMode === 'lines'
           ? diffLines(prevText, text)
-          : currentCodeItem.animMode === 'chars' ||
-              currentCodeItem.animMode === 'chars-smooth'
-            ? diffChars(prevText, text)
-            : undefined;
+          : currentCodeItem.animMode === 'words-smooth'
+            ? diffWordsWithSpace(prevText, text)
+            : currentCodeItem.animMode === 'chars' ||
+                currentCodeItem.animMode === 'chars-smooth'
+              ? diffChars(prevText, text)
+              : undefined;
 
       codeContainerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(
         prevText,
@@ -380,7 +382,7 @@ const Code: FunctionComponent<Props> = ({
           anim.currentTime = time.value - currentStartNum;
           currentAnimations.current.push(anim);
         }
-      } else if (animMode === 'chars-smooth') {
+      } else if (animMode === 'chars-smooth' || animMode === 'words-smooth') {
         codeContainerRef.current?.prepend(oldContent);
 
         let delStart = 0;
@@ -388,13 +390,13 @@ const Code: FunctionComponent<Props> = ({
 
         for (const diffEntry of diff!) {
           if (!diffEntry.removed && !diffEntry.added) {
-            delStart += diffEntry.count;
-            addStart += diffEntry.count;
+            delStart += diffEntry.value.length;
+            addStart += diffEntry.value.length;
             continue;
           }
 
           if (diffEntry.added) {
-            const addEnd = addStart + diffEntry.count;
+            const addEnd = addStart + diffEntry.value.length;
 
             // Split the added text on newlines
             const addedText = text.slice(addStart, addEnd);
@@ -458,11 +460,11 @@ const Code: FunctionComponent<Props> = ({
               segmentStart = segmentEnd + 1; // +1 for the newline
             }
 
-            addStart += diffEntry.count;
+            addStart += diffEntry.value.length;
             continue;
           }
 
-          const delEnd = delStart + diffEntry.count;
+          const delEnd = delStart + diffEntry.value.length;
 
           // Split the deleted text on newlines
           const deletedText = prevText.slice(delStart, delEnd);
@@ -526,7 +528,7 @@ const Code: FunctionComponent<Props> = ({
             segmentStart = segmentEnd + 1; // +1 for the newline
           }
 
-          delStart += diffEntry.count;
+          delStart += diffEntry.value.length;
         }
 
         // Animate
