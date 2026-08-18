@@ -17,6 +17,7 @@ import {
   animateFromKeyed,
   animateFrom,
   adoptAnim,
+  animateKeyed,
 } from '../../../../utils/animate';
 import { useComputedShallow } from '../../../../utils/useComputedShallow';
 
@@ -35,6 +36,7 @@ interface IframeAPI {
     assets: Record<string, string>;
     animateFromKeyed: typeof animateFromKeyed;
     animateFrom: typeof animateFrom;
+    animateKeyed: typeof animateKeyed;
     adoptAnim: typeof adoptAnim;
   };
 }
@@ -56,7 +58,7 @@ const Demo: FunctionComponent<Props> = ({
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const activeTimelineItems = useComputedShallow(() => {
     const timeline: DemoTimelineItem[] = (config.timeline || []).filter(
-      (item) => item.type === 'message' && time.value >= parseTime(item.start)
+      (item) => item.type === 'message' && time.value >= parseTime(item.start),
     );
     return timeline;
   });
@@ -122,6 +124,7 @@ const Demo: FunctionComponent<Props> = ({
         assets,
         animateFromKeyed,
         animateFrom,
+        animateKeyed,
         adoptAnim,
       };
 
