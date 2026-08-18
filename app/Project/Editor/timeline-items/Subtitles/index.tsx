@@ -13,6 +13,9 @@ import { getStartTime } from '../../../../utils/timeline-item';
 
 const segmentKeys = new WeakMap<any, string>();
 const minWordDisplayTime = 50;
+// Gaps between subtitles shorter than this look like a flash, so the previous
+// subtitle is left on screen to fill them.
+const minSubtitleGap = 1000;
 
 interface Props {
   time: Signal<number>;
@@ -27,6 +30,11 @@ type ResolvedSubtitleItem = string | ResolvedWord;
 
 class ResolvedSubtitleSegment {
   items: ResolvedSubtitleItem[] = [];
+  /**
+   * The time this segment leaves the screen. This may be later than `end`, to
+   * avoid a brief gap before the next segment appears.
+   */
+  displayEnd = -1;
 
   constructor() {
     segmentKeys.set(this, String(Math.random()));
@@ -43,7 +51,12 @@ class ResolvedSubtitleSegment {
   }
 }
 
-const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir, parentStart }) => {
+const Subtitles: FunctionComponent<Props> = ({
+  config,
+  time,
+  projectDir,
+  parentStart,
+}) => {
   const subtitlesData = useSignal<SubtitlesData | null>(null);
   const containerEl = useSignalRef<HTMLDivElement | null>(null);
 
@@ -172,6 +185,22 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir, parentS
       segments.splice(i + 1, 0, newSegment);
     }
 
+    // Extend each segment's on-screen time to fill short gaps before the next
+    // segment, otherwise the transition looks like a flash.
+    for (const [i, segment] of segments.entries()) {
+      const nextSegment = segments[i + 1];
+
+      if (!nextSegment) {
+        segment.displayEnd = segment.end + minSubtitleGap;
+        continue;
+      }
+
+      const gap = nextSegment.start - segment.end;
+
+      segment.displayEnd =
+        gap < minSubtitleGap ? nextSegment.start : segment.end + minSubtitleGap;
+    }
+
     return segments;
   });
 
@@ -181,21 +210,12 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir, parentS
     const now = time.value;
 
     // TODO: optimise with binary tree - some of the offsetting may make this hard
-    for (const [i, segment] of resolvedSegments.value.entries()) {
+    for (const segment of resolvedSegments.value) {
       // Allow segment to appear 500ms ahead of time
-      if (segment.start - 500 > now) return null;
-      if (segment.end < now) {
-        const nextSegment = resolvedSegments.value[i + 1];
-
-        // If it isn't time to show the next segment (or there isn't one)
-        // Let the current segment hang around for an extra bit
-        if (
-          (nextSegment && nextSegment.start < now) ||
-          segment.end + 500 < now
-        ) {
-          continue;
-        }
-      }
+      if (segment.start - minSubtitleGap > now) return null;
+      // The segment hangs around until its display end, which covers short gaps
+      // before the next segment.
+      if (segment.displayEnd < now) continue;
       return segment;
     }
 
@@ -213,8 +233,8 @@ const Subtitles: FunctionComponent<Props> = ({ config, time, projectDir, parentS
     const activeWords: Set<ResolvedSubtitleItem> = new Set(
       subtitlesSegment.value.items.slice(
         0,
-        firstFutureIndex === -1 ? undefined : firstFutureIndex
-      )
+        firstFutureIndex === -1 ? undefined : firstFutureIndex,
+      ),
     );
 
     return activeWords;
