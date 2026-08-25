@@ -2,6 +2,7 @@ import type {
   ChildrenTimelineItem,
   Project,
 } from '../../project-schema/schema';
+import { getAudioTimelineItems as getAudioItemTimelineItems } from '../Project/Editor/timeline-items/Audio';
 import { getAudioTimelineItems as getVideoAudioTimelineItems } from '../Project/Editor/timeline-items/Video';
 import { AudioFileDecoder } from './audio-decoder';
 import { getFile } from './file';
@@ -13,11 +14,17 @@ export interface AudioTimelineItem {
   audioStart: number;
   duration: number;
   source: string;
+  /** 0-1 volume. Defaults to 1 */
+  volume?: number;
 }
 
 interface ScheduleItem {
   buffer: AudioBuffer;
+  /** Offset in ms from the start of the play range to the start of the buffer */
   delay: number;
+  /** How long to play for, in ms, from the point playback starts */
+  duration: number;
+  volume?: number;
 }
 
 const audioFileDecoders = new WeakMap<object, Promise<AudioFileDecoder>>();
@@ -43,6 +50,11 @@ export class AudioTimeline {
       if (item.type === 'video') {
         this.#items.push(
           ...getVideoAudioTimelineItems(item, parentStart, parentEnd)
+        );
+      }
+      if (item.type === 'audio') {
+        this.#items.push(
+          ...getAudioItemTimelineItems(item, parentStart, parentEnd)
         );
       }
       if ('childrenTimeline' in item && item.childrenTimeline) {
@@ -94,6 +106,12 @@ export class AudioTimeline {
           const decoder = await decoders[index];
           const schedule: ScheduleItem[] = [];
           const localAudioTime = start - item.start + item.audioStart;
+          // The item may end before the range does, in which case the audio is
+          // cut off there. Otherwise it plays until the audio itself runs out.
+          const playUntil = Math.min(
+            duration,
+            item.start + item.duration - start
+          );
 
           const iterator = decoder.getFrames(
             Math.max(0, start - item.start + item.audioStart),
@@ -105,10 +123,16 @@ export class AudioTimeline {
             if (done) break;
 
             const delay = wrappedBuffer.timestamp * 1000 - localAudioTime;
+            // Buffers may extend beyond the end of the item, as they're only
+            // decoded in whole chunks.
+            const playDuration = playUntil - Math.max(delay, 0);
+            if (playDuration <= 0) continue;
 
             schedule.push({
               buffer: wrappedBuffer.buffer,
               delay,
+              duration: playDuration,
+              volume: item.volume,
             });
           }
 
@@ -138,11 +162,20 @@ export class AudioTimeline {
     for (const item of toPlay) {
       const source = ctx.createBufferSource();
       source.buffer = item.buffer;
-      source.connect(ctx.destination);
+
+      if (item.volume !== undefined && item.volume !== 1) {
+        const gain = ctx.createGain();
+        gain.gain.value = item.volume;
+        source.connect(gain);
+        gain.connect(ctx.destination);
+      } else {
+        source.connect(ctx.destination);
+      }
+
       source.start(
         item.delay > 0 ? currentTime + item.delay / 1000 : 0,
         item.delay < 0 ? item.delay / -1000 : 0,
-        (duration - item.delay) / 1000
+        item.duration / 1000
       );
 
       signal?.addEventListener('abort', () => {

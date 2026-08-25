@@ -1,3 +1,4 @@
+import type { Audio } from './timeline-items/audio';
 import type { Code } from './timeline-items/code';
 import type { Container } from './timeline-items/container';
 import type { Demo } from './timeline-items/demo';
@@ -31,7 +32,8 @@ export type ChildrenTimelineItem =
   | Image
   | Subtitles
   | Support
-  | Mouse;
+  | Mouse
+  | Audio;
 
 export interface ChildrenTimelineItemBase {
   /** Start time. 00:00:00.000 or ms. Defaults to the start of the parent. */

@@ -120,6 +120,8 @@ const TimelineChildren: FunctionComponent<Props> = ({
       if (item.type === 'mouse') {
         return <Mouse key={key} config={item} time={time} />;
       }
+      // Audio has no visual representation. It's handled by AudioTimeline.
+      if (item.type === 'audio') return null;
       throw new Error(`Unknown timeline item type: ${(item as any).type}`);
     })
   );

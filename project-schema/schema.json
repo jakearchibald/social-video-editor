@@ -1,8 +1,57 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
+        "Audio": {
+            "properties": {
+                "disabled": {
+                    "description": "Ignore this entry (for debugging)",
+                    "type": "boolean"
+                },
+                "duration": {
+                    "description": "Duration. 00:00:00.000 or ms. Defaults to the end of the parent.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "end": {
+                    "description": "End time. 00:00:00.000 or ms. Defaults to the end of the parent.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "source": {
+                    "description": "Relative path to audio file",
+                    "type": "string"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms. Defaults to the start of the parent.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "type": {
+                    "const": "audio",
+                    "type": "string"
+                },
+                "volume": {
+                    "description": "0-1 volume. Defaults to 1",
+                    "type": "number"
+                }
+            },
+            "required": [
+                "source",
+                "type"
+            ],
+            "type": "object"
+        },
         "ChildrenTimelineItem": {
             "anyOf": [
+                {
+                    "$ref": "#/definitions/Audio"
+                },
                 {
                     "$ref": "#/definitions/Code"
                 },
