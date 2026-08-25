@@ -34,8 +34,11 @@ export function animate(
   keyframes: Keyframe[] | PropertyIndexedKeyframes,
   options: KeyframeAnimationOptions
 ): Animation | null {
+  const delay = options.delay ?? 0;
+  const end = start + delay + (options.duration as number);
+
   if (time.peek() < start) return null;
-  if (time.peek() > start + (options.duration as number)) return null;
+  if (time.peek() > end) return null;
 
   const anim = element.animate(keyframes, {
     ...options,

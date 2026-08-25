@@ -8,7 +8,6 @@ import {
   Mp4OutputFormat,
   StreamTarget,
   CanvasSource,
-  AudioBufferSource,
 } from 'mediabunny';
 
 import type { Project as ProjectSchema } from '../../../project-schema/schema';
@@ -17,6 +16,11 @@ import useThrottledSignal from '../../utils/useThrottledSignal';
 import useSignalLayoutEffect from '../../utils/useSignalLayoutEffect';
 import { wait } from '../../utils/waitUntil';
 import { AudioTimeline } from '../../utils/AudioTimeline';
+import { muxVideoChunks, type VideoChunk } from '../../utils/mux-video-chunks';
+import {
+  getChunkFileName,
+  openVideoChunkDir,
+} from '../../utils/video-chunk-dir';
 import TimelineChildren from './TimelineChildren';
 import IframeContent from './IframeContent';
 import SafeArea from './SafeArea';
@@ -25,6 +29,17 @@ import styles from './styles.module.css';
 
 const forceDuration = 0;
 const forceStart = 0;
+const videoEncodingConfig = {
+  codec: 'av1',
+  bitrateMode: 'variable',
+  bitrate: 35_000_000,
+  hardwareAcceleration: 'prefer-software',
+} as const;
+// The video is encoded in chunks of this length (in ms), which are muxed together at the end. This
+// keeps each encoder session short, working around browser crashes during long encodes. Chunks are
+// kept on disk, so a crashed output can pick up where it left off.
+const chunkDuration = 5_000;
+const chunkDirName = 'output-chunks';
 
 const initialTimeMs = Number(sessionStorage.getItem('time') || 0);
 
@@ -171,61 +186,124 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
     await 0;
 
     const outputCanvas = outputCanvasRef.current!;
-    const file = await projectDir.getFileHandle('output.mp4', { create: true });
-    const fileStream = await file.createWritable();
-    const videoOutput = new Output({
-      format: new Mp4OutputFormat(),
-      target: new StreamTarget(fileStream),
-    });
-    const canvasSource = new CanvasSource(outputCanvas, {
-      codec: 'av1',
-      bitrateMode: 'variable',
-      bitrate: 35_000_000,
-      hardwareAcceleration: 'prefer-software',
-    });
-    const audioBufferSource = new AudioBufferSource({
-      codec: 'pcm-s16',
-    });
-    videoOutput.addVideoTrack(canvasSource, {
-      frameRate: project.fps,
-    });
-    videoOutput.addAudioTrack(audioBufferSource);
-
-    await videoOutput.start();
-
+    const frameDuration = 1000 / project.fps;
     const outputStart = start.value;
-    const durationValue = duration.value - outputStart;
-
-    audioBufferSource.add(
-      await audioTimeline.current.toBuffer(
-        project.audioSampleRate,
-        outputStart,
-        durationValue,
-      ),
+    const startFrame = Math.round(outputStart / frameDuration);
+    const endFrame = Math.round(duration.value / frameDuration);
+    const framesPerChunk = Math.max(
+      1,
+      Math.round(chunkDuration / frameDuration),
     );
+    const chunkFrameCounts: number[] = [];
 
-    const startFrame = Math.round(outputStart / (1000 / project.fps));
-    const endFrame = Math.round(duration.value / (1000 / project.fps));
+    for (
+      let chunkStart = startFrame;
+      chunkStart < endFrame;
+      chunkStart += framesPerChunk
+    )
+      chunkFrameCounts.push(Math.min(framesPerChunk, endFrame - chunkStart));
 
-    let lastPauseAt = performance.now();
-    for (let frameValue = startFrame; frameValue < endFrame; frameValue++) {
-      frame.value = frameValue;
-      await 0;
-      await wait();
-      await 0;
-      await outputCanvasPromise.current;
-      await canvasSource.add(
-        (frameValue - startFrame) / project.fps,
-        1 / project.fps,
+    const { dir: chunkDir, completeChunks } = await openVideoChunkDir({
+      parentDir: projectDir,
+      dirName: chunkDirName,
+      // Any project change could affect any frame, so all chunks are discarded when it changes
+      fingerprint: {
+        project,
+        startFrame,
+        endFrame,
+        framesPerChunk,
+        videoEncodingConfig,
+      },
+      chunkFrameCounts,
+    });
+
+    const chunkFileHandles = [...completeChunks];
+
+    if (completeChunks.length) {
+      console.log(
+        `reusing ${completeChunks.length} chunk(s) from a previous output`,
       );
-      if (performance.now() - lastPauseAt >= 30_000) {
-        // Works around a crash bug. I should try to remove this at some point.
-        await new Promise((resolve) => setTimeout(resolve, 5_000));
-        lastPauseAt = performance.now();
-      }
     }
 
-    await videoOutput.finalize();
+    let lastPauseAt = performance.now();
+
+    for (
+      let chunkIndex = completeChunks.length;
+      chunkIndex < chunkFrameCounts.length;
+      chunkIndex++
+    ) {
+      const chunkStartFrame = startFrame + chunkIndex * framesPerChunk;
+      const chunkEndFrame = chunkStartFrame + chunkFrameCounts[chunkIndex];
+      const chunkFileHandle = await chunkDir.getFileHandle(
+        getChunkFileName(chunkIndex),
+        { create: true },
+      );
+      chunkFileHandles.push(chunkFileHandle);
+
+      const chunkOutput = new Output({
+        format: new Mp4OutputFormat(),
+        target: new StreamTarget(await chunkFileHandle.createWritable()),
+      });
+      const canvasSource = new CanvasSource(outputCanvas, videoEncodingConfig);
+      chunkOutput.addVideoTrack(canvasSource, {
+        frameRate: project.fps,
+      });
+
+      await chunkOutput.start();
+
+      for (
+        let frameValue = chunkStartFrame;
+        frameValue < chunkEndFrame;
+        frameValue++
+      ) {
+        frame.value = frameValue;
+        await 0;
+        await wait();
+        await 0;
+        await outputCanvasPromise.current;
+        await canvasSource.add(
+          (frameValue - chunkStartFrame) / project.fps,
+          1 / project.fps,
+        );
+        if (performance.now() - lastPauseAt >= 30_000) {
+          // Works around a crash bug. I should try to remove this at some point.
+          await new Promise((resolve) => setTimeout(resolve, 5_000));
+          lastPauseAt = performance.now();
+        }
+      }
+
+      canvasSource.close();
+      await chunkOutput.finalize();
+      console.log(
+        `encoded ${chunkEndFrame - startFrame}/${endFrame - startFrame} frames`,
+      );
+      // Give the browser a moment to tear the encoder down before starting the next one.
+      // await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    const chunks: VideoChunk[] = await Promise.all(
+      chunkFileHandles.map(async (handle, index) => ({
+        file: await handle.getFile(),
+        timeOffset: (index * framesPerChunk) / project.fps,
+      })),
+    );
+
+    const file = await projectDir.getFileHandle('output.mp4', { create: true });
+
+    await muxVideoChunks({
+      chunks,
+      videoCodec: videoEncodingConfig.codec,
+      frameRate: project.fps,
+      audioBuffer: await audioTimeline.current.toBuffer(
+        project.audioSampleRate,
+        outputStart,
+        duration.value - outputStart,
+      ),
+      audioEncodingConfig: { codec: 'pcm-s16' },
+      target: new StreamTarget(await file.createWritable()),
+    });
+
+    await projectDir.removeEntry(chunkDirName, { recursive: true });
     outputting.value = false;
   }, []);
 

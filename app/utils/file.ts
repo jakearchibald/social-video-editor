@@ -25,3 +25,21 @@ export async function getDirectory(
 
   return dirHandle;
 }
+
+export async function getEmptyDirectory(
+  parentDir: FileSystemDirectoryHandle,
+  name: string
+) {
+  await ignoreNotFound(parentDir.removeEntry(name, { recursive: true }));
+  return parentDir.getDirectoryHandle(name, { create: true });
+}
+
+/** Resolves with null if the file system operation failed because an entry didn't exist. */
+export async function ignoreNotFound<T>(promise: Promise<T>): Promise<T | null> {
+  try {
+    return await promise;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'NotFoundError') return null;
+    throw err;
+  }
+}
