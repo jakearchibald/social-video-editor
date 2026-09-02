@@ -16,63 +16,67 @@ interface FindTextsOptions {
   root?: Node;
 }
 
+/**
+ * Yield a range for each occurrence of `str` within the text of `root`.
+ *
+ * Matches may span multiple text nodes. Overlapping matches are included, so
+ * searching for 'aa' in 'aaa' yields two ranges.
+ */
 export function* findTexts(
   str: string,
-  { root = document.body }: FindTextsOptions = {}
+  { root = document.body }: FindTextsOptions = {},
 ) {
-  let matchPos = 0;
-  let startContainer: Node | null = null;
-  let rewindCount = 0;
-  let startOffset = 0;
+  if (!str) return;
+
+  // Flatten the text nodes into a single string, keeping the offset each node
+  // starts at, so a match position can be mapped back to a node & offset.
+  const nodes: Text[] = [];
+  const nodeStarts: number[] = [];
+  let text = '';
 
   const ittr = document.createNodeIterator(root, NodeFilter.SHOW_TEXT);
 
-  while (true) {
-    let textNode = ittr.nextNode();
-    if (!textNode) return;
+  for (let node = ittr.nextNode(); node; node = ittr.nextNode()) {
+    const value = node.nodeValue!;
+    if (!value) continue;
+    nodes.push(node as Text);
+    nodeStarts.push(text.length);
+    text += value;
+  }
 
-    let text = textNode.nodeValue!;
+  if (nodes.length === 0) return;
 
-    // This lets us rewind if we don't find a match
-    if (matchPos) rewindCount++;
+  // Index into nodeStarts for the node containing `pos`.
+  let searchNode = 0;
 
-    for (let i = 0; i < text.length; i++) {
-      if (text[i] == str[matchPos]) {
-        // Possible match
-        if (matchPos == 0) {
-          startContainer = textNode;
-          startOffset = i;
-        }
-
-        matchPos++;
-
-        // Total match
-        if (matchPos == str.length) {
-          const range = document.createRange();
-          range.setStart(startContainer!, startOffset);
-          range.setEnd(textNode!, i + 1);
-
-          yield range;
-
-          matchPos = 0;
-          startContainer = null;
-          startOffset = 0;
-          rewindCount = 0;
-        }
-      }
-      // Match failure
-      else if (matchPos) {
-        // Rewind everything to the first character of the initial match & continue
-        while (rewindCount) {
-          textNode = ittr.previousNode();
-          rewindCount--;
-        }
-        text = textNode!.nodeValue!;
-        i = startOffset;
-        matchPos = 0;
-        startContainer = null;
-        startOffset = 0;
-      }
+  const nodeIndexAt = (pos: number) => {
+    while (
+      searchNode + 1 < nodeStarts.length &&
+      nodeStarts[searchNode + 1] <= pos
+    ) {
+      searchNode++;
     }
+    return searchNode;
+  };
+
+  for (
+    let pos = text.indexOf(str);
+    pos !== -1;
+    pos = text.indexOf(str, pos + 1)
+  ) {
+    const startNode = nodeIndexAt(pos);
+    const endPos = pos + str.length;
+    // The end is exclusive, so look up the node containing the final
+    // character, otherwise the range ends at offset 0 of the following node.
+    const endNode = nodeIndexAt(endPos - 1);
+
+    const range = document.createRange();
+    range.setStart(nodes[startNode], pos - nodeStarts[startNode]);
+    range.setEnd(nodes[endNode], endPos - nodeStarts[endNode]);
+
+    yield range;
+
+    // Matches are yielded in order, so the next search can't start earlier.
+    searchNode = startNode;
   }
 }
