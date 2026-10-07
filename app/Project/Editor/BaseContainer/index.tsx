@@ -24,7 +24,7 @@ interface Props {
 
 // Can't use 'offset' style in keyframes, as it means something else
 function objWithoutOffset<T extends Record<string, any>>(
-  obj: T
+  obj: T,
 ): Omit<T, 'offset'> {
   const { offset, ...rest } = obj;
   return rest;
@@ -73,7 +73,7 @@ const BaseContainer: FunctionComponent<Props> = ({
               Object.keys(timelineItem.styles).map((key) => [
                 key,
                 styles[key as keyof typeof styles] || '',
-              ])
+              ]),
             ) as typeof styles;
 
             if (!activeAnimations.current.has(timelineItem)) {
@@ -85,7 +85,7 @@ const BaseContainer: FunctionComponent<Props> = ({
                 {
                   duration: timelineItem.transition.duration,
                   easing: timelineItem.transition.easing,
-                }
+                },
               );
               animation.pause();
               activeAnimations.current.set(timelineItem, animation);
@@ -98,7 +98,7 @@ const BaseContainer: FunctionComponent<Props> = ({
 
           Object.assign(
             styles,
-            timelineItem.styles as RevertDeepSignal<typeof timelineItem.styles>
+            timelineItem.styles as RevertDeepSignal<typeof timelineItem.styles>,
           );
         }
       }
@@ -130,7 +130,7 @@ const BaseContainer: FunctionComponent<Props> = ({
         {
           duration: enter.duration ?? defaultEnterExitDuration,
           easing: 'ease',
-        }
+        },
       );
       enterAnim.current.pause();
     }
@@ -144,7 +144,7 @@ const BaseContainer: FunctionComponent<Props> = ({
           duration: exitDuration,
           easing: 'ease',
           fill: 'forwards',
-        }
+        },
       );
       exitAnim.current.pause();
     }
