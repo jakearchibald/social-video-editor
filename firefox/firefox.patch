@@ -1,0 +1,48 @@
+diff --git a/dom/canvas/CanvasUtils.cpp b/dom/canvas/CanvasUtils.cpp
+index 17bfd4697484..4e8e063917ac 100644
+--- a/dom/canvas/CanvasUtils.cpp
++++ b/dom/canvas/CanvasUtils.cpp
+@@ -741,6 +741,9 @@ bool CoerceDouble(const JS::Value& v, double* d) {
+ }
+ 
+ bool HasDrawWindowPrivilege(JSContext* aCx, JSObject* /* unused */) {
++  if (StaticPrefs::gfx_canvas_drawWindow_content_enabled()) {
++    return true;
++  }
+   return nsContentUtils::CallerHasPermission(aCx,
+                                              nsGkAtoms::all_urlsPermission);
+ }
+diff --git a/dom/media/webcodecs/DecoderAgent.cpp b/dom/media/webcodecs/DecoderAgent.cpp
+index bb30e545bb8c..71f8448aa775 100644
+--- a/dom/media/webcodecs/DecoderAgent.cpp
++++ b/dom/media/webcodecs/DecoderAgent.cpp
+@@ -89,8 +89,11 @@ RefPtr<DecoderAgent::ConfigurePromise> DecoderAgent::Configure(
+   MOZ_ASSERT(!mDecoder);
+   SetState(State::Configuring);
+ 
++  // Without a compositor, software decoders output frames in CPU memory, rather
++  // than GPU surfaces (such as IOSurfaces on macOS) that are slow to read back.
+   RefPtr<layers::KnowsCompositor> knowsCompositor =
+-      layers::ImageBridgeChild::GetSingleton();
++      aPreferSoftwareDecoder ? nullptr
++                             : layers::ImageBridgeChild::GetSingleton();
+ 
+   auto params = CreateDecoderParams{
+       *mInfo,
+diff --git a/modules/libpref/init/StaticPrefList.yaml b/modules/libpref/init/StaticPrefList.yaml
+index 462a9d0091d5..849bc98880d8 100644
+--- a/modules/libpref/init/StaticPrefList.yaml
++++ b/modules/libpref/init/StaticPrefList.yaml
+@@ -7378,6 +7378,12 @@
+   mirror: always
+ #endif
+ 
++# Exposes CanvasRenderingContext2D.drawWindow to all web content. Insecure.
++- name: gfx.canvas.drawWindow.content.enabled
++  type: bool
++  value: false
++  mirror: always
++
+ - name: gfx.canvas.accelerated
+   type: bool
+ #if defined(XP_MACOSX) || defined(XP_LINUX) && !defined(ANDROID)

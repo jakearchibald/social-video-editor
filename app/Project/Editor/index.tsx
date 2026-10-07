@@ -29,12 +29,23 @@ import styles from './styles.module.css';
 
 const forceDuration = 0;
 const forceStart = 0;
-const videoEncodingConfig = {
-  codec: 'av1',
-  bitrateMode: 'variable',
-  bitrate: 35_000_000,
-  hardwareAcceleration: 'prefer-software',
-} as const;
+// Otherwise, the output is captured using drawWindow, which needs a patched Firefox build.
+const supportsDrawElementImage =
+  'drawElementImage' in CanvasRenderingContext2D.prototype;
+const videoEncodingConfig = supportsDrawElementImage
+  ? ({
+      codec: 'av1',
+      bitrateMode: 'variable',
+      bitrate: 35_000_000,
+      hardwareAcceleration: 'prefer-software',
+    } as const)
+  : // Firefox's AV1 encoder is slow, so use hardware H.264 with a very high bitrate instead
+    ({
+      codec: 'avc',
+      bitrateMode: 'variable',
+      bitrate: 100_000_000,
+      hardwareAcceleration: 'prefer-hardware',
+    } as const);
 // The video is encoded in chunks of this length (in ms), which are muxed together at the end. This
 // keeps each encoder session short, working around browser crashes during long encodes. Chunks are
 // kept on disk, so a crashed output can pick up where it left off.
@@ -162,7 +173,19 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
         if (aborted) return;
       }
       context.clearRect(0, 0, width.value, height.value);
-      context.drawElementImage(outputDiv, 0, 0, width.value, height.value);
+      if (supportsDrawElementImage) {
+        context.drawElementImage(outputDiv, 0, 0, width.value, height.value);
+      } else {
+        const iframe = outputDiv.querySelector('iframe')!;
+        context.drawWindow(
+          iframe.contentWindow!,
+          0,
+          0,
+          width.value,
+          height.value,
+          'rgba(0, 0, 0, 0)',
+        );
+      }
     })();
 
     return () => {
@@ -265,7 +288,10 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
           (frameValue - chunkStartFrame) / project.fps,
           1 / project.fps,
         );
-        if (performance.now() - lastPauseAt >= 30_000) {
+        if (
+          supportsDrawElementImage &&
+          performance.now() - lastPauseAt >= 30_000
+        ) {
           // Works around a crash bug. I should try to remove this at some point.
           await new Promise((resolve) => setTimeout(resolve, 5_000));
           lastPauseAt = performance.now();
@@ -310,7 +336,8 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   return (
     <div class={styles.editor}>
       <div class={styles.stage} ref={stageRef} style={stageStyle}>
-        {framePreviewSetting.value || outputting.value ? (
+        {(framePreviewSetting.value || outputting.value) &&
+        supportsDrawElementImage ? (
           <canvas
             layoutsubtree
             ref={outputCanvasRef}
@@ -330,7 +357,7 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             </div>
           </canvas>
         ) : (
-          <div class={styles.output}>
+          <div class={styles.output} ref={outputRef}>
             <IframeContent width={width} height={height}>
               <TimelineChildren
                 projectDir={projectDir}
@@ -342,6 +369,15 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
             </IframeContent>
           </div>
         )}
+        {(framePreviewSetting.value || outputting.value) &&
+          !supportsDrawElementImage && (
+            // Covers the output, which needs to be rendered for drawWindow to capture it
+            <canvas
+              ref={outputCanvasRef}
+              width={width.value}
+              height={height.value}
+            />
+          )}
         {showSafeArea.value && (
           <SafeArea width={width.value} height={height.value} />
         )}

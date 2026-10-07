@@ -1,8 +1,10 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 
+import { fromStorableHandle, toStorableHandle } from '../utils/fs-shim';
+
 interface Schema extends DBSchema {
   projects: {
-    value: FileSystemDirectoryHandle;
+    value: FileSystemDirectoryHandle | { fsShimPath: string };
     key: string;
   };
 }
@@ -38,18 +40,18 @@ function getDB() {
 }
 
 export async function getProjectDir(
-  projectId: string
+  projectId: string,
 ): Promise<FileSystemDirectoryHandle | undefined> {
   const db = await getDB();
-  return db.get('projects', projectId);
+  return fromStorableHandle(await db.get('projects', projectId));
 }
 
 export async function setProjectDir(
   projectId: string,
-  dirHandle: FileSystemDirectoryHandle
+  dirHandle: FileSystemDirectoryHandle,
 ): Promise<void> {
   const db = await getDB();
-  await db.put('projects', dirHandle, projectId);
+  await db.put('projects', toStorableHandle(dirHandle), projectId);
 }
 
 export async function deleteProjectDir(projectId: string): Promise<void> {

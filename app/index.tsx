@@ -4,6 +4,9 @@ import { useSignal } from '@preact/signals';
 import ProjectSelect from './ProjectSelect';
 import './styles.module.css';
 import Project from './Project';
+import { installFSShim } from './utils/fs-shim';
+
+installFSShim();
 
 function App() {
   const projectDir = useSignal<FileSystemDirectoryHandle | null>(null);

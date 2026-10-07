@@ -4,3 +4,4 @@ node_modules/
 dist
 .dev.vars
 .DS_Store
+firefox/profile

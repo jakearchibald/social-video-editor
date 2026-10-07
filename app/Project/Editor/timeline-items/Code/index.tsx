@@ -535,14 +535,22 @@ const Code: FunctionComponent<Props> = ({
         const delEls = codeContainerRef.current!.querySelectorAll(
           `.${styles.delWrapperSmooth}`,
         );
+        const addEls = codeContainerRef.current!.querySelectorAll(
+          `.${styles.addWrapperSmooth}`,
+        );
+        // Measure before animating, as animations affect layout.
+        // Explicit sizes are used, as not all browsers can animate to/from 'auto'.
+        const delWidths = [...delEls].map((el) => getComputedStyle(el).width);
+        const addWidths = [...addEls].map((el) => getComputedStyle(el).width);
         let delay = 0;
 
-        for (const el of [...delEls].reverse()) {
+        for (const [i, el] of [...delEls].entries()) {
           const duration = 250;
-          const anim = el.animate([{ width: 'auto' }, { width: '0' }], {
+          // No fill backwards, so 'auto' applies before the animation.
+          const anim = el.animate([{ width: delWidths[i] }, { width: '0' }], {
             duration,
             easing: 'ease',
-            fill: 'both',
+            fill: 'forwards',
           });
           anim.pause();
           anim.currentTime = time.value - currentStartNum;
@@ -582,17 +590,14 @@ const Code: FunctionComponent<Props> = ({
           currentAnimations.current.push(anim);
         }
 
-        const addEls = codeContainerRef.current!.querySelectorAll(
-          `.${styles.addWrapperSmooth}`,
-        );
-
-        for (const el of addEls) {
+        for (const [i, el] of addEls.entries()) {
           const duration = 250;
-          const anim = el.animate([{ width: '0' }, { width: 'auto' }], {
+          // No fill forwards, so 'auto' takes over after the animation.
+          const anim = el.animate([{ width: '0' }, { width: addWidths[i] }], {
             duration,
             easing: 'ease',
             delay,
-            fill: 'both',
+            fill: 'backwards',
           });
           anim.pause();
           anim.currentTime = time.value - currentStartNum;
@@ -604,6 +609,7 @@ const Code: FunctionComponent<Props> = ({
 
         let lineDiff = 0;
         let oldLineDiff = 0;
+        const wrappers: { wrapper: HTMLElement; removed: boolean }[] = [];
 
         for (const diffEntry of diff!) {
           if (diffEntry.removed === true) {
@@ -627,18 +633,7 @@ const Code: FunctionComponent<Props> = ({
               );
             }
 
-            const anim = wrapper.animate(
-              [{ height: 'auto' }, { height: '0' }],
-              {
-                duration: 300,
-                easing: 'ease',
-                fill: 'forwards',
-              },
-            );
-
-            anim.pause();
-            anim.currentTime = time.value - currentStartNum;
-            currentAnimations.current.push(anim);
+            wrappers.push({ wrapper, removed: true });
           } else if (diffEntry.added === true) {
             const wrapper = document.createElement('div');
             wrapper.style.overflow = 'clip';
@@ -653,17 +648,7 @@ const Code: FunctionComponent<Props> = ({
               );
             }
 
-            const anim = wrapper.animate(
-              [{ height: '0' }, { height: 'auto' }],
-              {
-                duration: 300,
-                easing: 'ease',
-              },
-            );
-
-            anim.pause();
-            anim.currentTime = time.value - currentStartNum;
-            currentAnimations.current.push(anim);
+            wrappers.push({ wrapper, removed: false });
           }
 
           if (diffEntry.removed === false) {
@@ -672,6 +657,30 @@ const Code: FunctionComponent<Props> = ({
           if (diffEntry.added === false) {
             oldLineDiff += diffEntry.count;
           }
+        }
+
+        // Measure before animating, as animations affect layout.
+        // Explicit sizes are used, as not all browsers can animate to/from 'auto'.
+        const heights = wrappers.map(
+          ({ wrapper }) => getComputedStyle(wrapper).height,
+        );
+
+        for (const [i, { wrapper, removed }] of wrappers.entries()) {
+          // Fill only on the 0 side, so 'auto' applies otherwise.
+          const anim = wrapper.animate(
+            removed
+              ? [{ height: heights[i] }, { height: '0' }]
+              : [{ height: '0' }, { height: heights[i] }],
+            {
+              duration: 300,
+              easing: 'ease',
+              fill: removed ? 'forwards' : 'none',
+            },
+          );
+
+          anim.pause();
+          anim.currentTime = time.value - currentStartNum;
+          currentAnimations.current.push(anim);
         }
       }
     })();

@@ -3,8 +3,15 @@ import {
   CanvasSink,
   Input,
   ALL_FORMATS,
+  registerDecoder,
   type WrappedCanvas,
 } from 'mediabunny';
+
+import { CPUAlphaVideoDecoder } from './alpha-video-decoder';
+
+// Mediabunny's alpha handling is fast in Chrome, so this is only needed for Firefox
+if (!('drawElementImage' in CanvasRenderingContext2D.prototype))
+  registerDecoder(CPUAlphaVideoDecoder);
 
 interface VideoData {
   width: number;
