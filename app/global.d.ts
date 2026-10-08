@@ -5,7 +5,8 @@ declare global {
       dx: number,
       dy: number,
       dw: number,
-      dh: number
+      dh: number,
+      options?: { preserveElementGeometry?: boolean }
     ): void;
     /** Non-standard. Only exposed to web content in a patched Firefox build. */
     drawWindow(
@@ -24,8 +25,12 @@ declare global {
   }
 
   namespace preact.JSX {
+    interface HTMLAttributes {
+      drawable?: boolean | undefined;
+    }
+
     interface CanvasHTMLAttributes {
-      layoutsubtree?: boolean | undefined;
+      content?: 'fallback' | 'drawable' | undefined;
     }
   }
 }

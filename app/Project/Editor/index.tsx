@@ -339,12 +339,12 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
         {(framePreviewSetting.value || outputting.value) &&
         supportsDrawElementImage ? (
           <canvas
-            layoutsubtree
+            content="drawable"
             ref={outputCanvasRef}
             width={width.value}
             height={height.value}
           >
-            <div class={styles.output} ref={outputRef}>
+            <div class={styles.output} ref={outputRef} drawable>
               <IframeContent width={width} height={height}>
                 <TimelineChildren
                   projectDir={projectDir}
