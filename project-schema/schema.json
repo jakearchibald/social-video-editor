@@ -921,6 +921,10 @@
                     ],
                     "description": "Path to a poster image, used instead of the first frame"
                 },
+                "proxySource": {
+                    "description": "Relative path to a lower quality version of the video, used in the editor to make scrubbing\nfaster. The full quality source is used when outputting.",
+                    "type": "string"
+                },
                 "source": {
                     "description": "Relative path to video file",
                     "type": "string"

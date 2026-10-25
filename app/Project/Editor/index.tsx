@@ -21,6 +21,7 @@ import {
   getChunkFileName,
   openVideoChunkDir,
 } from '../../utils/video-chunk-dir';
+import { OutputtingContext } from '../../utils/outputting-context';
 import TimelineChildren from './TimelineChildren';
 import IframeContent from './IframeContent';
 import SafeArea from './SafeArea';
@@ -334,17 +335,31 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
   }, []);
 
   return (
-    <div class={styles.editor}>
-      <div class={styles.stage} ref={stageRef} style={stageStyle}>
-        {(framePreviewSetting.value || outputting.value) &&
-        supportsDrawElementImage ? (
-          <canvas
-            content="drawable"
-            ref={outputCanvasRef}
-            width={width.value}
-            height={height.value}
-          >
-            <div class={styles.output} ref={outputRef} drawable>
+    <OutputtingContext.Provider value={outputting}>
+      <div class={styles.editor}>
+        <div class={styles.stage} ref={stageRef} style={stageStyle}>
+          {(framePreviewSetting.value || outputting.value) &&
+          supportsDrawElementImage ? (
+            <canvas
+              content="drawable"
+              ref={outputCanvasRef}
+              width={width.value}
+              height={height.value}
+            >
+              <div class={styles.output} ref={outputRef} drawable>
+                <IframeContent width={width} height={height}>
+                  <TimelineChildren
+                    projectDir={projectDir}
+                    time={time}
+                    childrenTimeline={project.childrenTimeline}
+                    parentStart={0}
+                    parentEnd={duration.value}
+                  />
+                </IframeContent>
+              </div>
+            </canvas>
+          ) : (
+            <div class={styles.output} ref={outputRef}>
               <IframeContent width={width} height={height}>
                 <TimelineChildren
                   projectDir={projectDir}
@@ -355,92 +370,80 @@ const Editor: FunctionComponent<Props> = ({ project, projectDir }) => {
                 />
               </IframeContent>
             </div>
-          </canvas>
-        ) : (
-          <div class={styles.output} ref={outputRef}>
-            <IframeContent width={width} height={height}>
-              <TimelineChildren
-                projectDir={projectDir}
-                time={time}
-                childrenTimeline={project.childrenTimeline}
-                parentStart={0}
-                parentEnd={duration.value}
-              />
-            </IframeContent>
-          </div>
-        )}
-        {(framePreviewSetting.value || outputting.value) &&
-          !supportsDrawElementImage && (
-            // Covers the output, which needs to be rendered for drawWindow to capture it
-            <canvas
-              ref={outputCanvasRef}
-              width={width.value}
-              height={height.value}
-            />
           )}
-        {showSafeArea.value && (
-          <SafeArea width={width.value} height={height.value} />
-        )}
-      </div>
-      <div class={styles.rangeContainer}>
-        <input
-          type="range"
-          min={Math.round(start.value / (1000 / project.fps))}
-          max={Math.round(duration.value / (1000 / project.fps)) - 1}
-          step={1}
-          value={frame.value}
-          disabled={outputting}
-          onInput={(e) => {
-            frame.value = (e.target as HTMLInputElement).valueAsNumber;
-          }}
-        />
-        <div>{timeStr}</div>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(timeStr.value);
-          }}
-        >
-          Copy
-        </button>
-      </div>
-      <div>
-        <button onClick={output}>Output video</button>{' '}
-        <label>
+          {(framePreviewSetting.value || outputting.value) &&
+            !supportsDrawElementImage && (
+              // Covers the output, which needs to be rendered for drawWindow to capture it
+              <canvas
+                ref={outputCanvasRef}
+                width={width.value}
+                height={height.value}
+              />
+            )}
+          {showSafeArea.value && (
+            <SafeArea width={width.value} height={height.value} />
+          )}
+        </div>
+        <div class={styles.rangeContainer}>
           <input
-            type="checkbox"
-            checked={framePreviewSetting}
-            onChange={(e) =>
-              (framePreviewSetting.value = (
-                e.target as HTMLInputElement
-              ).checked)
-            }
-          />{' '}
-          Frame preview
-        </label>{' '}
-        <label>
-          <input
-            type="checkbox"
-            checked={throttleFramesDuringScrubbing}
-            onChange={(e) =>
-              (throttleFramesDuringScrubbing.value = (
-                e.target as HTMLInputElement
-              ).checked)
-            }
-          />{' '}
-          Throttle frames during scrubbing
-        </label>{' '}
-        <label>
-          <input
-            type="checkbox"
-            checked={showSafeArea}
-            onChange={(e) =>
-              (showSafeArea.value = (e.target as HTMLInputElement).checked)
-            }
-          />{' '}
-          Show safe area
-        </label>{' '}
+            type="range"
+            min={Math.round(start.value / (1000 / project.fps))}
+            max={Math.round(duration.value / (1000 / project.fps)) - 1}
+            step={1}
+            value={frame.value}
+            disabled={outputting}
+            onInput={(e) => {
+              frame.value = (e.target as HTMLInputElement).valueAsNumber;
+            }}
+          />
+          <div>{timeStr}</div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(timeStr.value);
+            }}
+          >
+            Copy
+          </button>
+        </div>
+        <div>
+          <button onClick={output}>Output video</button>{' '}
+          <label>
+            <input
+              type="checkbox"
+              checked={framePreviewSetting}
+              onChange={(e) =>
+                (framePreviewSetting.value = (
+                  e.target as HTMLInputElement
+                ).checked)
+              }
+            />{' '}
+            Frame preview
+          </label>{' '}
+          <label>
+            <input
+              type="checkbox"
+              checked={throttleFramesDuringScrubbing}
+              onChange={(e) =>
+                (throttleFramesDuringScrubbing.value = (
+                  e.target as HTMLInputElement
+                ).checked)
+              }
+            />{' '}
+            Throttle frames during scrubbing
+          </label>{' '}
+          <label>
+            <input
+              type="checkbox"
+              checked={showSafeArea}
+              onChange={(e) =>
+                (showSafeArea.value = (e.target as HTMLInputElement).checked)
+              }
+            />{' '}
+            Show safe area
+          </label>{' '}
+        </div>
       </div>
-    </div>
+    </OutputtingContext.Provider>
   );
 };
 

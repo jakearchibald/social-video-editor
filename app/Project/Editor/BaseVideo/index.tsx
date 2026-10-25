@@ -9,7 +9,7 @@ import type { VideoClipTimelineItem } from '../../../../project-schema/timeline-
 import { parseTime } from '../../../utils/time';
 
 interface Props {
-  file: Blob;
+  file: Signal<Blob>;
   start: Signal<number>;
   time: Signal<number>;
   initialPlaybackRate?: Signal<number>;
@@ -85,103 +85,74 @@ const BaseVideo: FunctionComponent<Props> = ({
   });
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
-  const decoder = useRef<Promise<VideoFrameDecoder> | null>(null);
+  const decoders = useRef(new Map<Blob, Promise<VideoFrameDecoder>>());
   const posterImageRef = useRef<ImageBitmap | null>(null);
 
   useSignalLayoutEffect(() => {
     const frameTime = videoTime.value;
+    const videoFile = file.value;
     const canvas = canvasRef.current!;
     const currentTime = time.value;
     const startTime = start.value;
     let aborted = false;
 
-    const ensureDecoder = () => {
-      if (!decoder.current) {
-        const p = (async () => {
-          const videoDecoder = new VideoFrameDecoder(file);
+    const getDecoder = () => {
+      let decoder = decoders.current.get(videoFile);
+      if (!decoder) {
+        decoder = (async () => {
+          const videoDecoder = new VideoFrameDecoder(videoFile);
           await videoDecoder.ready;
           return videoDecoder;
         })();
-        decoder.current = p;
+        decoders.current.set(videoFile, decoder);
       }
-      return decoder.current;
+      return decoder;
     };
 
-    const p = (async () => {
-      // Check if we should render the poster image
-      const posterEnd = posterImage ? startTime + posterImage.duration : 0;
+    const draw = (image: CanvasImageSource, width: number, height: number) => {
+      // Files can differ in resolution, such as a proxy and its source
+      if (canvas.width !== width) canvas.width = width;
+      if (canvas.height !== height) canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(image, 0, 0, width, height);
+    };
 
-      if (posterImage && currentTime < posterEnd) {
-        // A poster sourced from a frame of the video itself
-        if ('frameTime' in posterImage) {
-          const videoDecoder = (await ensureDecoder())!;
+    const drawVideoFrame = async (at: number) => {
+      const videoDecoder = await getDecoder();
 
-          if (!canvasContextRef.current) {
-            const ctx = canvas.getContext('2d')!;
-            canvasContextRef.current = ctx;
-            canvas.width = videoDecoder.videoData!.width;
-            canvas.height = videoDecoder.videoData!.height;
-          }
-
-          const ctx = canvasContextRef.current!;
-          try {
-            const frame = await videoDecoder.getFrameAt(posterImage.frameTime);
-
-            if (!frame || aborted) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(frame.canvas, 0, 0);
-          } catch (err) {
-            if (err instanceof Error && err.name === 'AbortError') return;
-            throw err;
-          }
-          return;
-        }
-
-        // A poster sourced from a separate image file
-        if (!posterImageRef.current) {
-          const bitmap = await createImageBitmap(posterImage.file);
-          posterImageRef.current = bitmap;
-        }
-
-        const bitmap = posterImageRef.current;
-
-        if (!canvasContextRef.current) {
-          const ctx = canvas.getContext('2d')!;
-          canvasContextRef.current = ctx;
-          canvas.width = bitmap.width;
-          canvas.height = bitmap.height;
-        }
-
-        const ctx = canvasContextRef.current!;
-        if (aborted) return;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(bitmap, 0, 0);
-        return;
-      }
-
-      // Render video frame
-      const videoDecoder = (await ensureDecoder())!;
-
-      if (!canvasContextRef.current) {
-        const ctx = canvas.getContext('2d')!;
-        canvasContextRef.current = ctx;
-        canvas.width = videoDecoder.videoData!.width;
-        canvas.height = videoDecoder.videoData!.height;
-      }
-
-      const ctx = canvasContextRef.current!;
       try {
-        const frame = await videoDecoder.getFrameAt(frameTime);
-
+        const frame = await videoDecoder.getFrameAt(at);
         if (!frame || aborted) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(frame.canvas, 0, 0);
+        const { width, height } = videoDecoder.videoData!;
+        draw(frame.canvas, width, height);
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
         throw err;
       }
+    };
+
+    const p = (async () => {
+      const posterEnd = posterImage ? startTime + posterImage.duration : 0;
+
+      if (!posterImage || currentTime >= posterEnd) {
+        await drawVideoFrame(frameTime);
+        return;
+      }
+
+      // A poster sourced from a frame of the video itself
+      if ('frameTime' in posterImage) {
+        await drawVideoFrame(posterImage.frameTime);
+        return;
+      }
+
+      // A poster sourced from a separate image file
+      if (!posterImageRef.current)
+        posterImageRef.current = await createImageBitmap(posterImage.file);
+
+      if (aborted) return;
+      const bitmap = posterImageRef.current;
+      draw(bitmap, bitmap.width, bitmap.height);
     })();
 
     waitUntil(p);
