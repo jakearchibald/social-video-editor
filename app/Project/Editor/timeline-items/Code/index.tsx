@@ -35,6 +35,21 @@ function getLang(lang: string | undefined, source: string | undefined): string {
   return source.split('.').slice(-1)[0];
 }
 
+// An element hidden with display: none while from <= time < to (relative to
+// the update start). Firefox doesn't support animating 'display' with Web
+// Animations, so these are applied directly rather than as animations.
+interface HideStep {
+  el: HTMLElement;
+  from: number;
+  to: number;
+}
+
+function applyHideSteps(steps: HideStep[], time: number) {
+  for (const { el, from, to } of steps) {
+    el.style.display = time >= from && time < to ? 'none' : '';
+  }
+}
+
 interface Props {
   time: Signal<number>;
   projectDir: FileSystemDirectoryHandle;
@@ -103,6 +118,7 @@ const Code: FunctionComponent<Props> = ({
   });
 
   const currentAnimations = useRef<Animation[]>([]);
+  const currentHideSteps = useRef<HideStep[]>([]);
 
   const previousChangeData: Ref<{
     prevText: string | null;
@@ -199,6 +215,7 @@ const Code: FunctionComponent<Props> = ({
       }
 
       currentAnimations.current = [];
+      currentHideSteps.current = [];
 
       if (prevText === null) {
         codeContainerRef.current!.innerHTML = syntaxHighlighter.codeToHtml(
@@ -318,49 +335,28 @@ const Code: FunctionComponent<Props> = ({
 
         for (const [i, el] of [...delEls].reverse().entries()) {
           delDuration = 70 * i;
-
-          const anim = el.animate(
-            [{ display: 'inline' }, { display: 'none' }],
-            {
-              duration: delDuration,
-              easing: 'step-end',
-              fill: 'forwards',
-            },
-          );
-          anim.pause();
-          anim.currentTime = time.value - currentStartNum;
-          currentAnimations.current.push(anim);
+          currentHideSteps.current.push({
+            el: el as HTMLElement,
+            from: delDuration,
+            to: Infinity,
+          });
         }
 
         const addStartAnimTime = delDuration ? delDuration + 100 : 0;
 
         // Make the swap
-        {
-          const anim = oldContent.animate(
-            [{ display: 'block' }, { display: 'none' }],
-            {
-              duration: addStartAnimTime,
-              easing: 'step-end',
-              fill: 'forwards',
-            },
-          );
-          anim.pause();
-          anim.currentTime = time.value - currentStartNum;
-          currentAnimations.current.push(anim);
-        }
-        {
-          const anim = oldContent.nextElementSibling!.animate(
-            [{ display: 'none' }, { display: 'block' }],
-            {
-              duration: addStartAnimTime,
-              easing: 'step-end',
-              fill: 'forwards',
-            },
-          );
-          anim.pause();
-          anim.currentTime = time.value - currentStartNum;
-          currentAnimations.current.push(anim);
-        }
+        currentHideSteps.current.push(
+          {
+            el: oldContent as HTMLElement,
+            from: addStartAnimTime,
+            to: Infinity,
+          },
+          {
+            el: oldContent.nextElementSibling as HTMLElement,
+            from: 0,
+            to: addStartAnimTime,
+          },
+        );
 
         const addEls =
           codeContainerRef.current!.querySelectorAll('.add-wrapper');
@@ -370,18 +366,14 @@ const Code: FunctionComponent<Props> = ({
 
         for (const el of addEls) {
           typeDelay += Math.pow(rand(), 2) * 150 + 20;
-
-          const anim = el.animate(
-            [{ display: 'none' }, { display: 'inline' }],
-            {
-              duration: typeDelay,
-              easing: 'step-end',
-            },
-          );
-          anim.pause();
-          anim.currentTime = time.value - currentStartNum;
-          currentAnimations.current.push(anim);
+          currentHideSteps.current.push({
+            el: el as HTMLElement,
+            from: 0,
+            to: typeDelay,
+          });
         }
+
+        applyHideSteps(currentHideSteps.current, time.value - currentStartNum);
       } else if (animMode === 'chars-smooth' || animMode === 'words-smooth') {
         codeContainerRef.current?.prepend(oldContent);
 
@@ -562,33 +554,15 @@ const Code: FunctionComponent<Props> = ({
         if (delay) delay += 100;
 
         // Make the swap
-        {
-          const anim = oldContent.animate(
-            [{ display: 'block' }, { display: 'none' }],
-            {
-              duration: delay,
-              easing: 'step-end',
-              fill: 'forwards',
-            },
-          );
-          anim.pause();
-          anim.currentTime = time.value - currentStartNum;
-          currentAnimations.current.push(anim);
-        }
-
-        {
-          const anim = oldContent.nextElementSibling!.animate(
-            [{ display: 'none' }, { display: 'block' }],
-            {
-              duration: delay,
-              easing: 'step-end',
-              fill: 'forwards',
-            },
-          );
-          anim.pause();
-          anim.currentTime = time.value - currentStartNum;
-          currentAnimations.current.push(anim);
-        }
+        currentHideSteps.current.push(
+          { el: oldContent as HTMLElement, from: delay, to: Infinity },
+          {
+            el: oldContent.nextElementSibling as HTMLElement,
+            from: 0,
+            to: delay,
+          },
+        );
+        applyHideSteps(currentHideSteps.current, time.value - currentStartNum);
 
         for (const [i, el] of addEls.entries()) {
           const duration = 250;
@@ -701,6 +675,8 @@ const Code: FunctionComponent<Props> = ({
     for (const anim of currentAnimations.current) {
       anim.currentTime = timeVal - start;
     }
+
+    applyHideSteps(currentHideSteps.current, timeVal - start);
   });
 
   const activeHighlights = useComputedShallow(() => {
