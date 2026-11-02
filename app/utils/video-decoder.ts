@@ -78,6 +78,15 @@ export class VideoFrameDecoder {
         return this.#nowNext[0];
       }
 
+      // Current frame is the last frame, and the requested frame is beyond it?
+      if (
+        this.#nowNext[0] &&
+        !this.#nowNext[1] &&
+        frameTime >= this.#nowNext[0].timestamp
+      ) {
+        return this.#nowNext[0];
+      }
+
       // Requested frame is next frame?
       if (
         this.#nowNext[1] &&
