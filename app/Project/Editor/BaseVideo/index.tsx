@@ -7,6 +7,7 @@ import styles from './styles.module.css';
 import { waitUntil } from '../../../utils/waitUntil';
 import type { VideoClipTimelineItem } from '../../../../project-schema/timeline-items/video';
 import { getMediaTime, getTimeSegments } from '../../../utils/time-segments';
+import { wrapLoopTime } from '../../../utils/loop';
 
 interface Props {
   file: Signal<Blob>;
@@ -15,6 +16,8 @@ interface Props {
   initialPlaybackRate?: Signal<number>;
   videoStart?: Signal<number | undefined>;
   timeline?: VideoClipTimelineItem[];
+  /** Times within the video file, in ms. `end` defaults to the end of the file. */
+  loop?: Signal<{ start: number; end?: number } | undefined>;
   posterImage?: (
     | { file: File }
     | { frameTime: number }
@@ -28,6 +31,7 @@ const BaseVideo: FunctionComponent<Props> = ({
   videoStart,
   timeline,
   initialPlaybackRate,
+  loop,
   posterImage,
 }) => {
   const timeSegments = useComputed(() =>
@@ -59,6 +63,7 @@ const BaseVideo: FunctionComponent<Props> = ({
     const canvas = canvasRef.current!;
     const currentTime = time.value;
     const startTime = start.value;
+    const loopValue = loop?.value;
     let aborted = false;
 
     const getDecoder = () => {
@@ -85,11 +90,11 @@ const BaseVideo: FunctionComponent<Props> = ({
 
     const drawVideoFrame = async (at: number) => {
       const videoDecoder = await getDecoder();
+      const { width, height } = videoDecoder.videoData!;
 
       try {
         const frame = await videoDecoder.getFrameAt(at);
         if (!frame || aborted) return;
-        const { width, height } = videoDecoder.videoData!;
         draw(frame.canvas, width, height);
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
@@ -101,7 +106,14 @@ const BaseVideo: FunctionComponent<Props> = ({
       const posterEnd = posterImage ? startTime + posterImage.duration : 0;
 
       if (!posterImage || currentTime >= posterEnd) {
-        await drawVideoFrame(frameTime);
+        if (!loopValue) {
+          await drawVideoFrame(frameTime);
+          return;
+        }
+
+        const videoDecoder = await getDecoder();
+        const loopEnd = loopValue.end ?? videoDecoder.videoData!.duration;
+        await drawVideoFrame(wrapLoopTime(frameTime, loopValue.start, loopEnd));
         return;
       }
 

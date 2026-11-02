@@ -4,11 +4,13 @@ import type {
 } from '../../project-schema/schema';
 import { getAudioTimelineItems as getAudioItemTimelineItems } from '../Project/Editor/timeline-items/Audio';
 import { getAudioTimelineItems as getVideoAudioTimelineItems } from '../Project/Editor/timeline-items/Video';
+import { ALL_FORMATS, BlobSource, Input } from 'mediabunny';
 import { AudioFileDecoder } from './audio-decoder';
 import { getFile } from './file';
 import { parseTime } from './time';
 import { getEndTime, getStartTime } from './timeline-item';
 import { getVolume, type VolumeKeyframe } from './volume-keyframes';
+import { wrapLoopTime } from './loop';
 
 export interface AudioTimelineItem {
   start: number;
@@ -19,6 +21,21 @@ export interface AudioTimelineItem {
   volume?: VolumeKeyframe[];
   /** Playback rate, where 1 is normal. Defaults to 1 */
   playbackRate?: number;
+  loop?: AudioLoop;
+}
+
+export interface AudioLoop {
+  /** Time within the audio file to loop back to, in ms */
+  start: number;
+  /**
+   * Time within the audio file at which to loop, in ms. Defaults to the duration of
+   * `durationSource` plus `durationOffset`.
+   */
+  end?: number;
+  /** File used to calculate the default end. Defaults to the audio source. */
+  durationSource?: string;
+  /** Offset in ms added to the duration to calculate the default end. Defaults to 0. */
+  durationOffset?: number;
 }
 
 interface ScheduleItem {
@@ -70,6 +87,8 @@ export class AudioTimeline {
   #projectDir: FileSystemDirectoryHandle;
   #audioContext?: AudioContext;
   #playAbortController?: AbortController;
+  /** Duration in ms of each source */
+  #durations = new Map<string, Promise<number>>();
 
   constructor(projectDir: FileSystemDirectoryHandle) {
     this.#projectDir = projectDir;
@@ -105,6 +124,7 @@ export class AudioTimeline {
 
   buildTimeline(config: Project) {
     this.#items = [];
+    this.#durations.clear();
     const end = parseTime(config.end);
     this.#scanTimeline(config.childrenTimeline, 0, end);
   }
@@ -126,6 +146,33 @@ export class AudioTimeline {
     return decoder;
   }
 
+  #getDuration(source: string): Promise<number> {
+    let duration = this.#durations.get(source);
+    if (!duration) {
+      duration = (async () => {
+        const input = new Input({
+          source: new BlobSource(await getFile(this.#projectDir, source)),
+          formats: ALL_FORMATS,
+        });
+        return (await input.computeDuration()) * 1000;
+      })();
+      this.#durations.set(source, duration);
+    }
+    return duration;
+  }
+
+  async #resolveLoop(
+    loop: AudioLoop,
+    source: string
+  ): Promise<{ start: number; end: number } | undefined> {
+    const end =
+      loop.end ??
+      (await this.#getDuration(loop.durationSource ?? source)) +
+        (loop.durationOffset ?? 0);
+    if (end <= loop.start) return undefined;
+    return { start: loop.start, end };
+  }
+
   async #getToPlay(start: number, duration: number): Promise<ScheduleItem[]> {
     const items = this.#getItems(start, duration);
     const decoders = await Promise.all(
@@ -144,7 +191,10 @@ export class AudioTimeline {
           const decoder = await decoders[index];
           const schedule: ScheduleItem[] = [];
           const playbackRate = item.playbackRate ?? 1;
-          // Converts a time relative to the play range into a time within the audio file
+          const loop =
+            item.loop && (await this.#resolveLoop(item.loop, item.source));
+          // Converts a time relative to the play range into a time within the audio file,
+          // ignoring looping
           const toAudioTime = (time: number) =>
             item.audioStart + (start + time - item.start) * playbackRate;
           // The range, relative to the play range, during which this item plays
@@ -153,34 +203,52 @@ export class AudioTimeline {
             duration,
             item.start + item.duration - start
           );
-          const audioFrom = toAudioTime(playFrom);
 
-          const iterator = decoder.getFrames(
-            Math.max(0, audioFrom),
-            toAudioTime(playUntil)
-          );
+          // Play in pieces that run continuously through the audio file, as
+          // looping jumps back to the loop start.
+          let pieceFrom = playFrom;
+          let audioFrom = toAudioTime(playFrom);
+          if (loop) audioFrom = wrapLoopTime(audioFrom, loop.start, loop.end);
 
-          while (true) {
-            const { value: wrappedBuffer, done } = await iterator.next();
-            if (done) break;
+          while (pieceFrom < playUntil) {
+            const pieceUntil = loop
+              ? Math.min(
+                  playUntil,
+                  pieceFrom + (loop.end - audioFrom) / playbackRate
+                )
+              : playUntil;
 
-            // Buffers may extend beyond either end of the item, as they're
-            // only decoded in whole chunks.
-            const bufferDelay =
-              (wrappedBuffer.timestamp * 1000 - audioFrom) / playbackRate +
-              playFrom;
-            const delay = Math.max(bufferDelay, playFrom);
-            const playDuration = playUntil - delay;
-            if (playDuration <= 0) continue;
+            const iterator = decoder.getFrames(
+              Math.max(0, audioFrom),
+              audioFrom + (pieceUntil - pieceFrom) * playbackRate
+            );
 
-            schedule.push({
-              buffer: wrappedBuffer.buffer,
-              delay,
-              offset: ((delay - bufferDelay) * playbackRate) / 1000,
-              duration: playDuration,
-              volume: item.volume,
-              playbackRate,
-            });
+            while (true) {
+              const { value: wrappedBuffer, done } = await iterator.next();
+              if (done) break;
+
+              // Buffers may extend beyond either end of the piece, as they're
+              // only decoded in whole chunks.
+              const bufferDelay =
+                (wrappedBuffer.timestamp * 1000 - audioFrom) / playbackRate +
+                pieceFrom;
+              const delay = Math.max(bufferDelay, pieceFrom);
+              const playDuration = pieceUntil - delay;
+              if (playDuration <= 0) continue;
+
+              schedule.push({
+                buffer: wrappedBuffer.buffer,
+                delay,
+                offset: ((delay - bufferDelay) * playbackRate) / 1000,
+                duration: playDuration,
+                volume: item.volume,
+                playbackRate,
+              });
+            }
+
+            if (!loop) break;
+            pieceFrom = pieceUntil;
+            audioFrom = loop.start;
           }
 
           return schedule;

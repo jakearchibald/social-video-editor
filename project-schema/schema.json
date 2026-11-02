@@ -21,6 +21,24 @@
                         "number"
                     ]
                 },
+                "loop": {
+                    "description": "Loop the audio once it reaches `loopEnd`",
+                    "type": "boolean"
+                },
+                "loopEnd": {
+                    "description": "Time within the audio file at which to loop. 00:00:00.000 or ms. Defaults to the end of the file",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "loopStart": {
+                    "description": "Time within the audio file to loop back to. 00:00:00.000 or ms. Defaults to 0",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
                 "playbackRate": {
                     "description": "Playback rate of the audio, where 1 is normal",
                     "type": "number"
@@ -899,6 +917,24 @@
                 },
                 "end": {
                     "description": "End time. 00:00:00.000 or ms. Defaults to the end of the parent.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "loop": {
+                    "description": "Loop the video (and its audio) once it reaches `loopEnd`",
+                    "type": "boolean"
+                },
+                "loopEnd": {
+                    "description": "Time within the video file at which to loop. 00:00:00.000 or ms. Defaults to the end of the file",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "loopStart": {
+                    "description": "Time within the video file to loop back to. 00:00:00.000 or ms. Defaults to 0",
                     "type": [
                         "string",
                         "number"

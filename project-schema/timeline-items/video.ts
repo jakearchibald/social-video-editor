@@ -22,6 +22,12 @@ export interface VideoClip extends ChildrenTimelineItemBase {
   playbackRate?: number;
   /** 0-1 volume of the audio. Defaults to 1 */
   volume?: number;
+  /** Loop the video (and its audio) once it reaches `loopEnd` */
+  loop?: boolean;
+  /** Time within the video file to loop back to. 00:00:00.000 or ms. Defaults to 0 */
+  loopStart?: string | number;
+  /** Time within the video file at which to loop. 00:00:00.000 or ms. Defaults to the end of the file */
+  loopEnd?: string | number;
   /** Path to a poster image, used instead of the first frame */
   posterImage?: (
     | { source: string }

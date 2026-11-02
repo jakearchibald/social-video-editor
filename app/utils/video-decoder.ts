@@ -16,6 +16,8 @@ if (!('drawElementImage' in CanvasRenderingContext2D.prototype))
 interface VideoData {
   width: number;
   height: number;
+  /** Duration of the file, in ms */
+  duration: number;
 }
 
 export class VideoFrameDecoder {
@@ -38,6 +40,7 @@ export class VideoFrameDecoder {
       this.#videoData = {
         width: track?.displayWidth || 0,
         height: track?.displayHeight || 0,
+        duration: (await this.#input.computeDuration()) * 1000,
       };
       this.#canvasSink = new CanvasSink(track!, { poolSize: 2, alpha: true });
     })();

@@ -21,7 +21,9 @@ export function getVolumeKeyframes(
     .map((change) => ({ ...change, start: parseTime(change.start) }))
     .sort((a, b) => a.start - b.start);
 
-  let keyframes: VolumeKeyframe[] = [{ time: -Infinity, volume: initialVolume }];
+  let keyframes: VolumeKeyframe[] = [
+    { time: -Infinity, volume: initialVolume },
+  ];
 
   for (const change of sortedChanges) {
     const fromVolume = getVolume(keyframes, change.start);

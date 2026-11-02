@@ -9,7 +9,10 @@ import { useContext, useLayoutEffect } from 'preact/hooks';
 import { parseTime } from '../../../../utils/time';
 import { waitUntil } from '../../../../utils/waitUntil';
 import { getFile } from '../../../../utils/file';
-import type { AudioTimelineItem } from '../../../../utils/AudioTimeline';
+import type {
+  AudioLoop,
+  AudioTimelineItem,
+} from '../../../../utils/AudioTimeline';
 import type { VideoClip } from '../../../../../project-schema/timeline-items/video';
 import type { DeepSignal } from 'deepsignal';
 import BaseVideo from '../../BaseVideo';
@@ -59,6 +62,20 @@ export function getAudioTimelineItems(
     item.timeline?.filter((change) => change.type === 'volume-change'),
   );
 
+  // Loop times are within the video file, so they're offset for the audio. The default end is
+  // the end of the video file, so the audio stays in sync even if it's a different length.
+  const loop: AudioLoop | undefined = item.loop
+    ? {
+        start: parseTime(item.loopStart || 0) + audioOffset,
+        end:
+          item.loopEnd === undefined
+            ? undefined
+            : parseTime(item.loopEnd) + audioOffset,
+        durationSource: item.source,
+        durationOffset: audioOffset,
+      }
+    : undefined;
+
   return clipTimeSegments(segments, start, start + duration).map(
     (segment) => ({
       start: segment.start,
@@ -67,6 +84,7 @@ export function getAudioTimelineItems(
       playbackRate: segment.playbackRate,
       source,
       volume,
+      loop,
     }),
   );
 }
@@ -102,6 +120,14 @@ const Video: FunctionComponent<Props> = ({
   const startValue = useComputed(() => getStartTime(config, parentStart));
   const videoStartValue = useComputed(() => parseTime(config.videoStart || 0));
   const initialPlaybackRate = useComputed(() => config.playbackRate ?? 1);
+  const loopProp = useComputed(() => {
+    if (!config.loop) return undefined;
+    return {
+      start: parseTime(config.loopStart || 0),
+      end:
+        config.loopEnd === undefined ? undefined : parseTime(config.loopEnd),
+    };
+  });
   const posterImageProp = useComputed(() => {
     const posterImage = config.posterImage;
     if (!posterImage) return undefined;
@@ -158,6 +184,7 @@ const Video: FunctionComponent<Props> = ({
       videoStart={videoStartValue}
       timeline={config.timeline}
       initialPlaybackRate={initialPlaybackRate}
+      loop={loopProp}
       posterImage={posterImageProp.value}
     />
   );

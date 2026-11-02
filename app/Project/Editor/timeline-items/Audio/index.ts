@@ -1,6 +1,10 @@
-import type { AudioTimelineItem } from '../../../../utils/AudioTimeline';
+import type {
+  AudioLoop,
+  AudioTimelineItem,
+} from '../../../../utils/AudioTimeline';
 import type { Audio } from '../../../../../project-schema/timeline-items/audio';
 import { getDuration, getStartTime } from '../../../../utils/timeline-item';
+import { parseTime } from '../../../../utils/time';
 import {
   clipTimeSegments,
   getTimeSegments,
@@ -34,6 +38,13 @@ export function getAudioTimelineItems(
     item.timeline?.filter((change) => change.type === 'volume-change'),
   );
 
+  const loop: AudioLoop | undefined = item.loop
+    ? {
+        start: parseTime(item.loopStart || 0),
+        end: item.loopEnd === undefined ? undefined : parseTime(item.loopEnd),
+      }
+    : undefined;
+
   return clipTimeSegments(segments, start, start + duration).map(
     (segment) => ({
       start: segment.start,
@@ -42,6 +53,7 @@ export function getAudioTimelineItems(
       playbackRate: segment.playbackRate,
       source: item.source,
       volume,
+      loop,
     }),
   );
 }
