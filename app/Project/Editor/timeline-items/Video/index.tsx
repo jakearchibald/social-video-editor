@@ -15,6 +15,10 @@ import type { DeepSignal } from 'deepsignal';
 import BaseVideo from '../../BaseVideo';
 import { getDuration, getStartTime } from '../../../../utils/timeline-item';
 import { OutputtingContext } from '../../../../utils/outputting-context';
+import {
+  clipTimeSegments,
+  getTimeSegments,
+} from '../../../../utils/time-segments';
 
 export function getAudioTimelineItems(
   item: VideoClip,
@@ -28,19 +32,37 @@ export function getAudioTimelineItems(
 
   if (!source) return [];
 
-  const audioDelay = parseTime(item.audioDelay || 0);
+  const start = getStartTime(item, parentStart);
+  const duration = getDuration(item, parentStart, parentEnd);
+  const videoStart = parseTime(item.videoStart || 0);
+  // The audio is kept in sync with the video, with a fixed offset
+  const audioOffset =
+    ('audioStart' in item ? parseTime(item.audioStart || 0) : videoStart) -
+    videoStart +
+    parseTime(item.audioDelay || 0);
 
-  return [
-    {
-      start: getStartTime(item, parentStart),
-      audioStart:
-        ('audioStart' in item
-          ? parseTime(item.audioStart || 0)
-          : parseTime(item.videoStart || 0)) + audioDelay,
-      duration: getDuration(item, parentStart, parentEnd),
+  const segments = getTimeSegments(
+    start,
+    videoStart,
+    item.playbackRate ?? 1,
+    item.timeline
+      ?.filter((change) => change.type === 'time-change')
+      .map((change) => ({
+        start: change.start,
+        playbackRate: change.playbackRate,
+        mediaTime: change.videoTime,
+      })),
+  );
+
+  return clipTimeSegments(segments, start, start + duration).map(
+    (segment) => ({
+      start: segment.start,
+      audioStart: segment.mediaStart + audioOffset,
+      duration: segment.duration,
+      playbackRate: segment.playbackRate,
       source,
-    },
-  ];
+    }),
+  );
 }
 
 /** How long, in ms, a frame needs to be stable before it's shown from the full quality source. */

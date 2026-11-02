@@ -16,15 +16,20 @@ export interface AudioTimelineItem {
   source: string;
   /** 0-1 volume. Defaults to 1 */
   volume?: number;
+  /** Playback rate, where 1 is normal. Defaults to 1 */
+  playbackRate?: number;
 }
 
 interface ScheduleItem {
   buffer: AudioBuffer;
-  /** Offset in ms from the start of the play range to the start of the buffer */
+  /** Offset in ms from the start of the play range to when the buffer starts playing */
   delay: number;
+  /** Offset in seconds into the buffer to start playing from */
+  offset: number;
   /** How long to play for, in ms, from the point playback starts */
   duration: number;
   volume?: number;
+  playbackRate: number;
 }
 
 const audioFileDecoders = new WeakMap<object, Promise<AudioFileDecoder>>();
@@ -76,6 +81,8 @@ export class AudioTimeline {
   #getItems(start: number, duration: number): AudioTimelineItem[] {
     const end = start + duration;
     return this.#items.filter((item) => {
+      // Audio can't be played at a stopped or reversed rate
+      if ((item.playbackRate ?? 1) <= 0) return false;
       const itemEnd = item.start + item.duration;
       // Item overlaps if it starts before the range ends and ends after the range starts
       return item.start < end && itemEnd > start;
@@ -105,34 +112,43 @@ export class AudioTimeline {
         items.map(async (item, index) => {
           const decoder = await decoders[index];
           const schedule: ScheduleItem[] = [];
-          const localAudioTime = start - item.start + item.audioStart;
-          // The item may end before the range does, in which case the audio is
-          // cut off there. Otherwise it plays until the audio itself runs out.
+          const playbackRate = item.playbackRate ?? 1;
+          // Converts a time relative to the play range into a time within the audio file
+          const toAudioTime = (time: number) =>
+            item.audioStart + (start + time - item.start) * playbackRate;
+          // The range, relative to the play range, during which this item plays
+          const playFrom = Math.max(0, item.start - start);
           const playUntil = Math.min(
             duration,
             item.start + item.duration - start
           );
+          const audioFrom = toAudioTime(playFrom);
 
           const iterator = decoder.getFrames(
-            Math.max(0, start - item.start + item.audioStart),
-            Math.min(localAudioTime + duration, item.audioStart + item.duration)
+            Math.max(0, audioFrom),
+            toAudioTime(playUntil)
           );
 
           while (true) {
             const { value: wrappedBuffer, done } = await iterator.next();
             if (done) break;
 
-            const delay = wrappedBuffer.timestamp * 1000 - localAudioTime;
-            // Buffers may extend beyond the end of the item, as they're only
-            // decoded in whole chunks.
-            const playDuration = playUntil - Math.max(delay, 0);
+            // Buffers may extend beyond either end of the item, as they're
+            // only decoded in whole chunks.
+            const bufferDelay =
+              (wrappedBuffer.timestamp * 1000 - audioFrom) / playbackRate +
+              playFrom;
+            const delay = Math.max(bufferDelay, playFrom);
+            const playDuration = playUntil - delay;
             if (playDuration <= 0) continue;
 
             schedule.push({
               buffer: wrappedBuffer.buffer,
               delay,
+              offset: ((delay - bufferDelay) * playbackRate) / 1000,
               duration: playDuration,
               volume: item.volume,
+              playbackRate,
             });
           }
 
@@ -162,6 +178,7 @@ export class AudioTimeline {
     for (const item of toPlay) {
       const source = ctx.createBufferSource();
       source.buffer = item.buffer;
+      source.playbackRate.value = item.playbackRate;
 
       if (item.volume !== undefined && item.volume !== 1) {
         const gain = ctx.createGain();
@@ -173,9 +190,10 @@ export class AudioTimeline {
       }
 
       source.start(
-        item.delay > 0 ? currentTime + item.delay / 1000 : 0,
-        item.delay < 0 ? item.delay / -1000 : 0,
-        item.duration / 1000
+        currentTime + item.delay / 1000,
+        item.offset,
+        // Duration is in buffer time, so it's affected by playback rate
+        (item.duration * item.playbackRate) / 1000
       );
 
       signal?.addEventListener('abort', () => {

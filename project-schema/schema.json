@@ -21,6 +21,10 @@
                         "number"
                     ]
                 },
+                "playbackRate": {
+                    "description": "Playback rate of the audio, where 1 is normal",
+                    "type": "number"
+                },
                 "source": {
                     "description": "Relative path to audio file",
                     "type": "string"
@@ -31,6 +35,12 @@
                         "string",
                         "number"
                     ]
+                },
+                "timeline": {
+                    "items": {
+                        "$ref": "#/definitions/AudioTimeChange"
+                    },
+                    "type": "array"
                 },
                 "type": {
                     "const": "audio",
@@ -43,6 +53,36 @@
             },
             "required": [
                 "source",
+                "type"
+            ],
+            "type": "object"
+        },
+        "AudioTimeChange": {
+            "properties": {
+                "audioTime": {
+                    "description": "New time within the audio file. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "playbackRate": {
+                    "type": "number"
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "type": {
+                    "const": "time-change",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "start",
                 "type"
             ],
             "type": "object"
