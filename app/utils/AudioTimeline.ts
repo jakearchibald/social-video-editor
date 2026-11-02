@@ -8,14 +8,15 @@ import { AudioFileDecoder } from './audio-decoder';
 import { getFile } from './file';
 import { parseTime } from './time';
 import { getEndTime, getStartTime } from './timeline-item';
+import { getVolume, type VolumeKeyframe } from './volume-keyframes';
 
 export interface AudioTimelineItem {
   start: number;
   audioStart: number;
   duration: number;
   source: string;
-  /** 0-1 volume. Defaults to 1 */
-  volume?: number;
+  /** Volume over time. Defaults to 1 */
+  volume?: VolumeKeyframe[];
   /** Playback rate, where 1 is normal. Defaults to 1 */
   playbackRate?: number;
 }
@@ -28,8 +29,38 @@ interface ScheduleItem {
   offset: number;
   /** How long to play for, in ms, from the point playback starts */
   duration: number;
-  volume?: number;
+  volume?: VolumeKeyframe[];
   playbackRate: number;
+}
+
+/**
+ * Schedule volume keyframes on an AudioParam.
+ *
+ * @param start Absolute time, in ms, that corresponds to `contextStart`
+ * @param contextStart Audio context time, in seconds, that corresponds to `start`
+ */
+function scheduleVolume(
+  param: AudioParam,
+  keyframes: VolumeKeyframe[],
+  start: number,
+  contextStart: number
+) {
+  param.setValueAtTime(getVolume(keyframes, start), contextStart);
+  let prevTime = start;
+
+  for (const keyframe of keyframes) {
+    if (keyframe.time <= start) continue;
+    const contextTime = contextStart + (keyframe.time - start) / 1000;
+
+    // Keyframes at the same time are an instant change
+    if (keyframe.time === prevTime) {
+      param.setValueAtTime(keyframe.volume, contextTime);
+    } else {
+      param.linearRampToValueAtTime(keyframe.volume, contextTime);
+    }
+
+    prevTime = keyframe.time;
+  }
 }
 
 const audioFileDecoders = new WeakMap<object, Promise<AudioFileDecoder>>();
@@ -180,9 +211,9 @@ export class AudioTimeline {
       source.buffer = item.buffer;
       source.playbackRate.value = item.playbackRate;
 
-      if (item.volume !== undefined && item.volume !== 1) {
+      if (item.volume) {
         const gain = ctx.createGain();
-        gain.gain.value = item.volume;
+        scheduleVolume(gain.gain, item.volume, start, currentTime);
         source.connect(gain);
         gain.connect(ctx.destination);
       } else {

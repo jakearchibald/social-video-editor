@@ -1,4 +1,5 @@
 import type { ChildrenTimelineItemBase, TimelineItemBase } from '../schema';
+import type { VolumeChange } from './volume-change';
 
 export interface Audio extends ChildrenTimelineItemBase {
   type: 'audio';
@@ -11,7 +12,7 @@ export interface Audio extends ChildrenTimelineItemBase {
   timeline?: AudioClipTimelineItem[];
 }
 
-export type AudioClipTimelineItem = AudioTimeChange;
+export type AudioClipTimelineItem = AudioTimeChange | VolumeChange;
 
 export interface AudioTimeChange extends TimelineItemBase {
   type: 'time-change';

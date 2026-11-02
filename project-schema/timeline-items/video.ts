@@ -1,4 +1,5 @@
 import type { ChildrenTimelineItemBase, TimelineItemBase } from '../schema';
+import type { VolumeChange } from './volume-change';
 
 export interface VideoClip extends ChildrenTimelineItemBase {
   type: 'video';
@@ -19,6 +20,8 @@ export interface VideoClip extends ChildrenTimelineItemBase {
   audioDelay?: string | number;
   /** Playback rate of the video, where 1 is normal */
   playbackRate?: number;
+  /** 0-1 volume of the audio. Defaults to 1 */
+  volume?: number;
   /** Path to a poster image, used instead of the first frame */
   posterImage?: (
     | { source: string }
@@ -33,7 +36,7 @@ export interface VideoClip extends ChildrenTimelineItemBase {
   timeline?: VideoClipTimelineItem[];
 }
 
-export type VideoClipTimelineItem = VideoClipTimeChange;
+export type VideoClipTimelineItem = VideoClipTimeChange | VolumeChange;
 
 export interface VideoClipTimeChange extends TimelineItemBase {
   type: 'time-change';

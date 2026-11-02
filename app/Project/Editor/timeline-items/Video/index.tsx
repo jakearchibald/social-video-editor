@@ -19,6 +19,7 @@ import {
   clipTimeSegments,
   getTimeSegments,
 } from '../../../../utils/time-segments';
+import { getVolumeKeyframes } from '../../../../utils/volume-keyframes';
 
 export function getAudioTimelineItems(
   item: VideoClip,
@@ -53,6 +54,10 @@ export function getAudioTimelineItems(
         mediaTime: change.videoTime,
       })),
   );
+  const volume = getVolumeKeyframes(
+    item.volume ?? 1,
+    item.timeline?.filter((change) => change.type === 'volume-change'),
+  );
 
   return clipTimeSegments(segments, start, start + duration).map(
     (segment) => ({
@@ -61,6 +66,7 @@ export function getAudioTimelineItems(
       duration: segment.duration,
       playbackRate: segment.playbackRate,
       source,
+      volume,
     }),
   );
 }

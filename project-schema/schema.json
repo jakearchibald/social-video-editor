@@ -38,7 +38,7 @@
                 },
                 "timeline": {
                     "items": {
-                        "$ref": "#/definitions/AudioTimeChange"
+                        "$ref": "#/definitions/AudioClipTimelineItem"
                     },
                     "type": "array"
                 },
@@ -56,6 +56,16 @@
                 "type"
             ],
             "type": "object"
+        },
+        "AudioClipTimelineItem": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/VolumeChange"
+                },
+                {
+                    "$ref": "#/definitions/AudioTimeChange"
+                }
+            ]
         },
         "AudioTimeChange": {
             "properties": {
@@ -978,7 +988,7 @@
                 },
                 "timeline": {
                     "items": {
-                        "$ref": "#/definitions/VideoClipTimeChange"
+                        "$ref": "#/definitions/VideoClipTimelineItem"
                     },
                     "type": "array"
                 },
@@ -992,6 +1002,10 @@
                         "string",
                         "number"
                     ]
+                },
+                "volume": {
+                    "description": "0-1 volume of the audio. Defaults to 1",
+                    "type": "number"
                 }
             },
             "required": [
@@ -1027,6 +1041,48 @@
             "required": [
                 "start",
                 "type"
+            ],
+            "type": "object"
+        },
+        "VideoClipTimelineItem": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/VolumeChange"
+                },
+                {
+                    "$ref": "#/definitions/VideoClipTimeChange"
+                }
+            ]
+        },
+        "VolumeChange": {
+            "properties": {
+                "duration": {
+                    "description": "Duration of the fade to the new volume. 00:00:00.000 or ms. Defaults to 0 (instant)",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "start": {
+                    "description": "Start time. 00:00:00.000 or ms",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "type": {
+                    "const": "volume-change",
+                    "type": "string"
+                },
+                "volume": {
+                    "description": "0-1 volume",
+                    "type": "number"
+                }
+            },
+            "required": [
+                "start",
+                "type",
+                "volume"
             ],
             "type": "object"
         },
